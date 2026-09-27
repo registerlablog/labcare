@@ -1234,11 +1234,12 @@ function showPrintPreview(html, title, options) {
     '<div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div>' +
     '<button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button>' +
     '</div>' +
-    '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;">' +
-      '<img src="border.png" class="border-img" alt="">' +
-      '<div class="print-content" style="padding:15mm 20mm 20mm 20mm;">' + html + '</div>' +
+    '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;">' +
+      '<img src="border.png" alt="" ' +
+        'style="position:absolute;top:0;left:0;width:100%;height:297mm;object-fit:fill;z-index:0;pointer-events:none;">' +
+      '<div style="position:relative;z-index:1;padding:15mm 20mm 78mm 20mm;height:100%;box-sizing:border-box;overflow:hidden;">' + html + '</div>' +
       (footerHtml ?
-        '<div class="print-footer" style="padding:0 20mm 20mm 20mm;">' + footerHtml + '</div>'
+        '<div style="position:absolute;bottom:14mm;left:20mm;right:20mm;z-index:2;">' + footerHtml + '</div>'
         : '') +
     '</div>';
   overlay.classList.add('open');
@@ -1258,6 +1259,13 @@ function cetakHasil(id) {
   var p = patients.find(function(x) { return x.id === id; });
   if (!p) return;
   var hasil = p.hasil || {};
+  // Auto-shrink: hitung total tes & pilih ukuran font
+var totalTes = (p.tests || []).length;
+var fs;
+if (totalTes <= 18) fs = 12;
+else if (totalTes <= 25) fs = 11;
+else if (totalTes <= 32) fs = 10;
+else fs = 9;
   var tanggalKode = (p.tglDaftar || '').slice(0, 10).replace(/-/g, '');
   var antrianKode = (p.noAntrian || 'A-001').replace('A-', '');
   var nomorLab = tanggalKode + '-' + antrianKode;
@@ -1272,13 +1280,13 @@ function cetakHasil(id) {
 
   var rowsHtml = '';
   Object.keys(grouped).forEach(function(kat) {
-    rowsHtml += '<div style="width: 100%; margin-top: 10px; font-weight: bold; font-size: 12px; color: #000;">' + esc(kat) + '</div>';
+    rowsHtml += '<div style="width: 100%; margin-top: 10px; font-weight: bold; font-size: '+fs+'px; color: #000;">' + esc(kat) + '</div>';
     grouped[kat].forEach(function(item) {
       var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
       rowsHtml += '<div style="width: 100%; margin-bottom: 4px; overflow: hidden;">' +
-        '<div style="float: left; width: 45%; font-size: 12px; color: #000; padding-right: 10px; box-sizing: border-box; text-align: left;">' + esc(item.t.nama) + '</div>' +
-        '<div style="float: left; width: 15%; text-align: center; font-size: 12px; color: #000;">' + esc(item.hasil || '-') + '</div>' +
-        '<div style="float: left; width: 40%; font-size: 12px; color: #000; padding-left: 10px; box-sizing: border-box; text-align: left;">' + esc(rujukanLengkap) + '</div>' +
+        '<div style="float: left; width: 45%; font-size:'+fs+'px; color: #000; padding-right: 10px; box-sizing: border-box; text-align: left;">' + esc(item.t.nama) + '</div>' +
+        '<div style="float: left; width: 15%; text-align: center; font-size: '+fs+'px; color: #000;">' + esc(item.hasil || '-') + '</div>' +
+        '<div style="float: left; width: 40%; font-size: '+fs+'px; color: #000; padding-left: 10px; box-sizing: border-box; text-align: left;">' + esc(rujukanLengkap) + '</div>' +
         '<div style="clear: both;"></div>' +
       '</div>';
     });
