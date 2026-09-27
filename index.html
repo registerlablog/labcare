@@ -1212,10 +1212,10 @@ function showPrintPreview(html, title) {
     '<button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button>' +
     '</div>' +
     '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;overflow:hidden;">' +
-      '<img src="border.png" alt="" ' +
-        'style="position:absolute;top:0;left:0;width:100%;height:297mm;' +
-        'object-fit:fill;z-index:0;pointer-events:none;">' +
-      '<div style="position:relative;z-index:1;padding:5mm 18mm 18mm 18mm;">' + html + '</div>' +
+      '<div style="position:relative;z-index:0;padding:5mm 18mm 18mm 18mm;">' + html + '</div>' +
+'<img src="border.png" alt="" ' +
+  'style="position:absolute;top:0;left:0;width:100%;height:297mm;' +
+  'object-fit:fill;z-index:10;pointer-events:none;">' +
     '</div>';
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
