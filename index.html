@@ -1253,6 +1253,48 @@ function closePrintPreview() {
   }
   document.body.style.overflow = '';
 }
+function buildTwoColumnHtml(grouped) {
+  var catData = Object.keys(grouped).map(function(kat) {
+    return { kat: kat, items: grouped[kat], weight: grouped[kat].length + 1 };
+  });
+  var totalWeight = catData.reduce(function(s, c) { return s + c.weight; }, 0);
+  var halfWeight = totalWeight / 2;
+  var runningWeight = 0;
+  var leftCats = [], rightCats = [];
+  catData.forEach(function(c) {
+    if (leftCats.length === 0 || runningWeight + c.weight <= halfWeight + 1) {
+      leftCats.push(c);
+      runningWeight += c.weight;
+    } else {
+      rightCats.push(c);
+    }
+  });
+  if (rightCats.length === 0 && leftCats.length > 1) {
+    rightCats.push(leftCats.pop());
+  }
+  function renderCat(catList) {
+    return catList.map(function(c) {
+      var h = '<div style="font-size:11px; font-weight:bold; color:#000; margin:10px 0 4px 0; padding-bottom:2px; border-bottom:1px solid #333;">' + esc(c.kat) + '</div>';
+      c.items.forEach(function(item) {
+        var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
+        h += '<div style="margin-bottom:5px;">' +
+          '<div style="font-size:10px; line-height:1.2; overflow:hidden;">' +
+            '<span style="float:left; width:70%; color:#000;">' + esc(item.t.nama) + '</span>' +
+            '<span style="float:right; width:28%; text-align:right; font-weight:bold; color:#000;">' + esc(item.hasil || '-') + '</span>' +
+            '<div style="clear:both;"></div>' +
+          '</div>' +
+          '<div style="font-size:8px; color:#555; margin-top:1px; line-height:1.2;">' + esc(rujukanLengkap) + '</div>' +
+        '</div>';
+      });
+      return h;
+    }).join('');
+  }
+  return '<div style="width:100%; overflow:hidden;">' +
+    '<div style="float:left; width:50%; padding-right:6px; box-sizing:border-box;">' + renderCat(leftCats) + '</div>' +
+    '<div style="float:left; width:50%; padding-left:6px; box-sizing:border-box;">' + renderCat(rightCats) + '</div>' +
+    '<div style="clear:both;"></div>' +
+  '</div>';
+}
 
 /* ================= CETAK HASIL — DESAIN BARU ================= */
 function cetakHasil(id) {
@@ -1279,6 +1321,9 @@ else fs = 9;
   });
 
   var rowsHtml = '';
+if (totalTes > 30) {
+  rowsHtml = buildTwoColumnHtml(grouped);
+} else {
   Object.keys(grouped).forEach(function(kat) {
     rowsHtml += '<div style="width: 100%; margin-top: 10px; font-weight: bold; font-size: '+fs+'px; color: #000;">' + esc(kat) + '</div>';
     grouped[kat].forEach(function(item) {
@@ -1291,7 +1336,7 @@ else fs = 9;
       '</div>';
     });
   });
-
+}
   var logoKiriHtml = CLINIC.logoKiri
     ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">'
     : '<div style="width:60px; height:60px; border:2.5px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px;">🏥</div>';
@@ -1343,14 +1388,14 @@ else fs = 9;
     '<div style="clear: both;"></div>' +
   '</div>' +
 '</div>' +
-    // HEADER TABEL
-    '<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
-      '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
-      '<div style="float: left; width: 15%; text-align: center;">HASIL</div>' +
-      '<div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div>' +
-      '<div style="clear: both;"></div>' +
-    '</div>' +
-
+    // HEADER TABEL (hanya tampil di mode 1 kolom)
+(totalTes > 30 ? '' :
+'<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
+  '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
+  '<div style="float: left; width: 15%; text-align: center;">HASIL</div>' +
+  '<div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div>' +
+  '<div style="clear: both;"></div>' +
+'</div>') +
     // ISI TABEL
     '<div style="width: 100%;">' + rowsHtml + '</div>' +
 
