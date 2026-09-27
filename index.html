@@ -1294,24 +1294,23 @@ function cetakHasil(id) {
 '</div>' +
 
 // INFO PASIEN
-'<div style="margin-top:0; margin-bottom:14px; font-size:12px; color:#000;">' +
-      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
-        '<div style="float: left; width: 15%;">Nama</div><div style="float: left; width: 35%;">: ' + esc(p.nama) + '</div>' +
-        '<div style="float: left; width: 20%;">Tanggal Periksa</div><div style="float: left; width: 30%;">: ' + esc(p.tglDaftar ? p.tglDaftar.slice(0, 10) : '-') + '</div>' +
-        '<div style="clear: both;"></div>' +
-      '</div>' +
-      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
-        '<div style="float: left; width: 15%;">Umur</div><div style="float: left; width: 35%;">: ' + esc(umur(p.tglLahir)) + '</div>' +
-        '<div style="float: left; width: 20%;">Nomor Register</div><div style="float: left; width: 30%;">: ' + esc(nomorLab) + '</div>' +
-        '<div style="clear: both;"></div>' +
-      '</div>' +
-      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
-        '<div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 35%;">: ' + esc(p.alamat || '-') + '</div>' +
-        '<div style="float: left; width: 20%;">Pengirim</div><div style="float: left; width: 30%;">: ' + esc(p.pengirim || '-') + '</div>' +
-        '<div style="clear: both;"></div>' +
-      '</div>' +
-    '</div>' +
-
+'<div style="margin-top:0; margin-bottom:12px; font-size:12px; color:#000; line-height:1.25;">' +
+  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+    '<div style="float: left; width: 15%;">Nama</div><div style="float: left; width: 35%;">: ' + esc(p.nama) + '</div>' +
+    '<div style="float: left; width: 20%;">Tanggal Periksa</div><div style="float: left; width: 30%;">: ' + esc(p.tglDaftar ? p.tglDaftar.slice(0, 10) : '-') + '</div>' +
+    '<div style="clear: both;"></div>' +
+  '</div>' +
+  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+    '<div style="float: left; width: 15%;">Umur</div><div style="float: left; width: 35%;">: ' + esc(umur(p.tglLahir)) + '</div>' +
+    '<div style="float: left; width: 20%;">Nomor Register</div><div style="float: left; width: 30%;">: ' + esc(nomorLab) + '</div>' +
+    '<div style="clear: both;"></div>' +
+  '</div>' +
+  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+    '<div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 35%;">: ' + esc(p.alamat || '-') + '</div>' +
+    '<div style="float: left; width: 20%;">Pengirim</div><div style="float: left; width: 30%;">: ' + esc(p.pengirim || '-') + '</div>' +
+    '<div style="clear: both;"></div>' +
+  '</div>' +
+'</div>' +
     // HEADER TABEL
     '<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
       '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
