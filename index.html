@@ -294,16 +294,37 @@ tbody tr:hover { background: var(--slate-50); }
     padding: 0 !important;
     width: 210mm !important;
     max-width: 210mm !important;
-    height: 297mm !important;
     min-height: 297mm !important;
-    max-height: 297mm !important;
     font-size: 10.5pt;
-    overflow: hidden !important;
     position: relative !important;
     box-sizing: border-box !important;
+    overflow: visible !important;
   }
-  #printOverlay .print-page > div {
-    page-break-inside: auto;
+  /* Border berulang di setiap halaman */
+  #printOverlay .border-img {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 210mm;
+    height: 297mm;
+    object-fit: fill;
+    z-index: 0;
+    pointer-events: none;
+  }
+  /* Konten & footer di atas border */
+  #printOverlay .print-content,
+  #printOverlay .print-footer {
+    position: relative;
+    z-index: 1;
+  }
+  /* Baris tabel tidak terputus di tengah */
+  #printOverlay tr,
+  #printOverlay .print-page div {
+    page-break-inside: avoid;
+  }
+  /* TTD tidak terputus */
+  #printOverlay .print-footer {
+    page-break-inside: avoid;
   }
 }
 #printArea { display: none; }
@@ -1213,13 +1234,11 @@ function showPrintPreview(html, title, options) {
     '<div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div>' +
     '<button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button>' +
     '</div>' +
-    '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;overflow:hidden;width:210mm;height:297mm;">' +
-      '<img src="border.png" alt="" ' +
-        'style="position:absolute;top:0;left:0;width:100%;height:297mm;' +
-        'object-fit:fill;z-index:0;pointer-events:none;">' +
-      '<div style="position:relative;z-index:1;padding:15mm 20mm 78mm 20mm;height:100%;box-sizing:border-box;overflow:hidden;">' + html + '</div>' +
+    '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;">' +
+      '<img src="border.png" class="border-img" alt="">' +
+      '<div class="print-content" style="padding:15mm 20mm 20mm 20mm;">' + html + '</div>' +
       (footerHtml ?
-        '<div style="position:absolute;bottom:14mm;left:20mm;right:20mm;z-index:2;">' + footerHtml + '</div>'
+        '<div class="print-footer" style="padding:0 20mm 20mm 20mm;">' + footerHtml + '</div>'
         : '') +
     '</div>';
   overlay.classList.add('open');
