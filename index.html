@@ -300,30 +300,8 @@ tbody tr:hover { background: var(--slate-50); }
     box-sizing: border-box !important;
     overflow: visible !important;
   }
-  /* Border berulang di setiap halaman */
-  #printOverlay .border-img {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 210mm;
-    height: 297mm;
-    object-fit: fill;
-    z-index: 0;
-    pointer-events: none;
-  }
-  /* Konten & footer di atas border */
-  #printOverlay .print-content,
-  #printOverlay .print-footer {
-    position: relative;
-    z-index: 1;
-  }
-  /* Baris tabel tidak terputus di tengah */
   #printOverlay tr,
   #printOverlay .print-page div {
-    page-break-inside: avoid;
-  }
-  /* TTD tidak terputus */
-  #printOverlay .print-footer {
     page-break-inside: avoid;
   }
 }
@@ -1228,6 +1206,7 @@ function showPrintPreview(html, title, options) {
     overlay.id = 'printOverlay';
     document.body.appendChild(overlay);
   }
+  // ====== FIX: konten dibatasi (absolute) supaya tidak nabrak footer ======
   overlay.innerHTML =
     '<div class="print-toolbar">' +
     '<button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button>' +
@@ -1237,7 +1216,9 @@ function showPrintPreview(html, title, options) {
     '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;">' +
       '<img src="border.png" alt="" ' +
         'style="position:absolute;top:0;left:0;width:100%;height:297mm;object-fit:fill;z-index:0;pointer-events:none;">' +
-      '<div style="position:relative;z-index:1;padding:15mm 20mm 105mm 20mm;height:100%;box-sizing:border-box;overflow:hidden;">' + html + '</div>' +
+      // Konten: absolute, dari atas 13mm sampai 105mm dari bawah → ruang = 179mm
+      '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:105mm;overflow:hidden;z-index:1;">' + html + '</div>' +
+      // Footer: absolute di bawah
       (footerHtml ?
         '<div style="position:absolute;bottom:14mm;left:20mm;right:20mm;z-index:2;">' + footerHtml + '</div>'
         : '') +
@@ -1253,6 +1234,8 @@ function closePrintPreview() {
   }
   document.body.style.overflow = '';
 }
+
+/* ====== FIX: 2-kolom lebih rapat biar hemat ruang ====== */
 function buildTwoColumnHtml(grouped) {
   var catData = Object.keys(grouped).map(function(kat) {
     return { kat: kat, items: grouped[kat], weight: grouped[kat].length + 1 };
@@ -1274,40 +1257,42 @@ function buildTwoColumnHtml(grouped) {
   }
   function renderCat(catList) {
     return catList.map(function(c) {
-      var h = '<div style="font-size:11px; font-weight:bold; color:#000; margin:10px 0 4px 0; padding-bottom:2px; border-bottom:1px solid #333;">' + esc(c.kat) + '</div>';
+      // FIX: margin kategori dirapatkan (10px→5px, 4px→2px)
+      var h = '<div style="font-size:10px; font-weight:bold; color:#000; margin:5px 0 2px 0; padding-bottom:1px; border-bottom:1px solid #333;">' + esc(c.kat) + '</div>';
       c.items.forEach(function(item) {
         var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
-        h += '<div style="margin-bottom:5px;">' +
-          '<div style="font-size:10px; line-height:1.2; overflow:hidden;">' +
+        // FIX: margin item dirapatkan (5px→2px), line-height 1.2→1.1, margin-top 1px→0
+        h += '<div style="margin-bottom:2px;">' +
+          '<div style="font-size:9.5px; line-height:1.1; overflow:hidden;">' +
             '<span style="float:left; width:70%; color:#000;">' + esc(item.t.nama) + '</span>' +
             '<span style="float:right; width:28%; text-align:right; font-weight:bold; color:#000;">' + esc(item.hasil || '-') + '</span>' +
             '<div style="clear:both;"></div>' +
           '</div>' +
-          '<div style="font-size:8px; color:#555; margin-top:1px; line-height:1.2;">' + esc(rujukanLengkap) + '</div>' +
+          '<div style="font-size:7.5px; color:#555; line-height:1.1;">' + esc(rujukanLengkap) + '</div>' +
         '</div>';
       });
       return h;
     }).join('');
   }
   return '<div style="width:100%; overflow:hidden;">' +
-    '<div style="float:left; width:50%; padding-right:6px; box-sizing:border-box;">' + renderCat(leftCats) + '</div>' +
-    '<div style="float:left; width:50%; padding-left:6px; box-sizing:border-box;">' + renderCat(rightCats) + '</div>' +
+    '<div style="float:left; width:50%; padding-right:5px; box-sizing:border-box;">' + renderCat(leftCats) + '</div>' +
+    '<div style="float:left; width:50%; padding-left:5px; box-sizing:border-box;">' + renderCat(rightCats) + '</div>' +
     '<div style="clear:both;"></div>' +
   '</div>';
 }
 
-/* ================= CETAK HASIL — DESAIN BARU ================= */
+/* ================= CETAK HASIL ================= */
 function cetakHasil(id) {
   var p = patients.find(function(x) { return x.id === id; });
   if (!p) return;
   var hasil = p.hasil || {};
-  // Auto-shrink: hitung total tes & pilih ukuran font
-var totalTes = (p.tests || []).length;
-var fs;
-if (totalTes <= 18) fs = 12;
-else if (totalTes <= 25) fs = 11;
-else if (totalTes <= 32) fs = 10;
-else fs = 9;
+
+  var totalTes = (p.tests || []).length;
+  var fs;
+  if (totalTes <= 18) fs = 12;
+  else if (totalTes <= 25) fs = 11;
+  else fs = 10;
+
   var tanggalKode = (p.tglDaftar || '').slice(0, 10).replace(/-/g, '');
   var antrianKode = (p.noAntrian || 'A-001').replace('A-', '');
   var nomorLab = tanggalKode + '-' + antrianKode;
@@ -1321,88 +1306,88 @@ else fs = 9;
   });
 
   var rowsHtml = '';
-if (totalTes > 25) {
-  rowsHtml = buildTwoColumnHtml(grouped);
-} else {
-  Object.keys(grouped).forEach(function(kat) {
-    rowsHtml += '<div style="width: 100%; margin-top: 10px; font-weight: bold; font-size: '+fs+'px; color: #000;">' + esc(kat) + '</div>';
-    grouped[kat].forEach(function(item) {
-      var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
-      rowsHtml += '<div style="width: 100%; margin-bottom: 4px; overflow: hidden;">' +
-        '<div style="float: left; width: 45%; font-size:'+fs+'px; color: #000; padding-right: 10px; box-sizing: border-box; text-align: left;">' + esc(item.t.nama) + '</div>' +
-        '<div style="float: left; width: 15%; text-align: center; font-size: '+fs+'px; color: #000;">' + esc(item.hasil || '-') + '</div>' +
-        '<div style="float: left; width: 40%; font-size: '+fs+'px; color: #000; padding-left: 10px; box-sizing: border-box; text-align: left;">' + esc(rujukanLengkap) + '</div>' +
-        '<div style="clear: both;"></div>' +
-      '</div>';
+  if (totalTes > 25) {
+    rowsHtml = buildTwoColumnHtml(grouped);
+  } else {
+    Object.keys(grouped).forEach(function(kat) {
+      rowsHtml += '<div style="width: 100%; margin-top: 6px; font-weight: bold; font-size: ' + fs + 'px; color: #000;">' + esc(kat) + '</div>';
+      grouped[kat].forEach(function(item) {
+        var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
+        rowsHtml += '<div style="width: 100%; margin-bottom: 3px; overflow: hidden;">' +
+          '<div style="float: left; width: 45%; font-size: ' + fs + 'px; color: #000; padding-right: 10px; box-sizing: border-box; text-align: left;">' + esc(item.t.nama) + '</div>' +
+          '<div style="float: left; width: 15%; text-align: center; font-size: ' + fs + 'px; color: #000;">' + esc(item.hasil || '-') + '</div>' +
+          '<div style="float: left; width: 40%; font-size: ' + fs + 'px; color: #000; padding-left: 10px; box-sizing: border-box; text-align: left;">' + esc(rujukanLengkap) + '</div>' +
+          '<div style="clear: both;"></div>' +
+        '</div>';
+      });
     });
-  });
-}
+  }
+
   var logoKiriHtml = CLINIC.logoKiri
     ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">'
     : '<div style="width:60px; height:60px; border:2.5px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px;">🏥</div>';
-  
+
   var logoKananHtml = CLINIC.logoKanan
     ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">'
     : '<div style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:32px;">⚕️</div>';
 
   var html =
     '<div style="position:relative; width:100%; background:transparent; padding: 0; font-family: Arial, sans-serif;">' +
-    
+
     // ===== HEADER =====
-'<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
-  '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
-  '<div style="flex:1; text-align:center; padding: 0 10px;">' +
-    '<div style="font-size:11.5px; font-weight:800; color:#000; letter-spacing:.3px;">' + esc(CLINIC.baris1) + '</div>' +
-    '<div style="font-size:11.5px; font-weight:800; color:#000; letter-spacing:.3px;">' + esc(CLINIC.baris2) + '</div>' +
-    '<div style="font-size:15px; font-weight:900; color:#000; margin:2px 0; letter-spacing:.3px;">' + esc(CLINIC.baris3) + '</div>' +
-    '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
-    '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
-  '</div>' +
-  '<div style="width:110px; height:110px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
-'</div>' +
-// Garis tebal
-'<div style="border-top:2.5px solid #000; margin:0;"></div>' +
-// Garis tipis (jarak 2mm dari garis tebal)
-'<div style="border-top:0.8px solid #000; margin-top:2px;"></div>' +
+    '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
+      '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
+      '<div style="flex:1; text-align:center; padding: 0 10px;">' +
+        '<div style="font-size:11.5px; font-weight:800; color:#000; letter-spacing:.3px;">' + esc(CLINIC.baris1) + '</div>' +
+        '<div style="font-size:11.5px; font-weight:800; color:#000; letter-spacing:.3px;">' + esc(CLINIC.baris2) + '</div>' +
+        '<div style="font-size:15px; font-weight:900; color:#000; margin:2px 0; letter-spacing:.3px;">' + esc(CLINIC.baris3) + '</div>' +
+        '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+        '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
+      '</div>' +
+      '<div style="width:110px; height:110px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
+    '</div>' +
+    '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
+    '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>' +
 
-// ===== JUDUL =====
-'<div style="text-align:center; margin-top:10px; margin-bottom:4px;">' +
-  '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
-'</div>' +
+    // ===== JUDUL =====
+    '<div style="text-align:center; margin-top:10px; margin-bottom:4px;">' +
+      '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
+    '</div>' +
 
-// INFO PASIEN
-'<div style="margin-top:0; margin-bottom:12px; font-size:12px; color:#000; line-height:1.25;">' +
-  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
-    '<div style="float: left; width: 15%;">Nama</div><div style="float: left; width: 45%;">: ' + esc(p.nama) + '</div>' +
-    '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Tanggal Periksa</div><div style="float: left; width: 20%;">: ' + esc(p.tglDaftar ? p.tglDaftar.slice(0, 10) : '-') + '</div>' +
-    '<div style="clear: both;"></div>' +
-  '</div>' +
-  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
-    '<div style="float: left; width: 15%;">Umur</div><div style="float: left; width: 45%;">: ' + esc(umur(p.tglLahir)) + '</div>' +
-    '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Nomor Register</div><div style="float: left; width: 20%;">: ' + esc(nomorLab) + '</div>' +
-    '<div style="clear: both;"></div>' +
-  '</div>' +
-  '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
-    '<div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 45%;">: ' + esc(p.alamat || '-') + '</div>' +
-    '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Pengirim</div><div style="float: left; width: 20%;">: ' + esc(p.pengirim || '-') + '</div>' +
-    '<div style="clear: both;"></div>' +
-  '</div>' +
-'</div>' +
-    // HEADER TABEL (hanya tampil di mode 1 kolom)
-(totalTes > 25 ? '' :
-'<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
-  '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
-  '<div style="float: left; width: 15%; text-align: center;">HASIL</div>' +
-  '<div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div>' +
-  '<div style="clear: both;"></div>' +
-'</div>') +
-    // ISI TABEL
-    // ISI TABEL
-'<div style="width: 100%; overflow: hidden;">' + rowsHtml + '</div>' +
+    // ===== INFO PASIEN =====
+    '<div style="margin-top:0; margin-bottom:12px; font-size:12px; color:#000; line-height:1.25;">' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+        '<div style="float: left; width: 15%;">Nama</div><div style="float: left; width: 45%;">: ' + esc(p.nama) + '</div>' +
+        '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Tanggal Periksa</div><div style="float: left; width: 20%;">: ' + esc(p.tglDaftar ? p.tglDaftar.slice(0, 10) : '-') + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+        '<div style="float: left; width: 15%;">Umur</div><div style="float: left; width: 45%;">: ' + esc(umur(p.tglLahir)) + '</div>' +
+        '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Nomor Register</div><div style="float: left; width: 20%;">: ' + esc(nomorLab) + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;">' +
+        '<div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 45%;">: ' + esc(p.alamat || '-') + '</div>' +
+        '<div style="float: left; width: 20%; padding-left:10px; box-sizing:border-box;">Pengirim</div><div style="float: left; width: 20%;">: ' + esc(p.pengirim || '-') + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+    '</div>' +
 
-        '</div>';  // tutup html konten
+    // ===== HEADER TABEL (hanya mode 1 kolom) =====
+    (totalTes > 25 ? '' :
+    '<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
+      '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
+      '<div style="float: left; width: 15%; text-align: center;">HASIL</div>' +
+      '<div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div>' +
+      '<div style="clear: both;"></div>' +
+    '</div>') +
 
-  // TTD DIPISAH — jadi footer
+    // ===== ISI TABEL =====
+    '<div style="width: 100%; overflow: hidden;">' + rowsHtml + '</div>' +
+
+    '</div>';
+
+  // ===== TTD (footer) =====
   var ttdHtml =
     '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0; font-size:12px; color:#000;">' +
       '<tr>' +
