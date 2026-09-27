@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LabCare — Sistem Pelayanan Pasien Laboratorium</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
+  --success: #16a34a; --success-light: #dcfce7;
+  --warning: #f59e0b; --warning-light: #fef3c7;
+  --purple: #9333ea; --purple-light: #f3e8ff;
+  --danger: #dc2626;
+  --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+  --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(15,23,42,.08);
+  --shadow-lg: 0 10px 25px -5px rgba(15,23,42,.15);
+}
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--slate-100); color: var(--slate-800);
+  line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  display: none; width: 240px; background: var(--slate-900); color: var(--slate-300);
+  flex-direction: column; position: fixed; height: 100vh; z-index: 20;
+}
+.sidebar-brand { padding: 20px; border-bottom: 1px solid var(--slate-700); }
+.sidebar-brand h1 { color: #fff; font-size: 18px; font-weight: 700; }
+.sidebar-brand p { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
+.sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+.sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--slate-700); font-size: 11px; color: var(--slate-400); }
+.sidebar-footer .reset-btn { display: block; margin-top: 8px; color: #f87171; background: none; border: none; cursor: pointer; font-size: 11px; font-family: inherit; padding: 0; width: 100%; text-align: left; }
+.sidebar-footer .sync-btn { color: #4ade80; }
+.nav-btn {
+  display: block; width: 100%; text-align: left; padding: 10px 14px; border-radius: 8px;
+  border: none; background: none; color: var(--slate-300); font-size: 14px;
+  cursor: pointer; transition: .15s; font-family: inherit; margin-bottom: 4px;
+}
+.nav-btn:hover { background: var(--slate-700); color: #fff; }
+.nav-btn.active { background: var(--primary); color: #fff; font-weight: 600; }
+.main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.mobile-header {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--slate-900); color: #fff; padding: 12px 16px;
+  position: sticky; top: 0; z-index: 30;
+}
+.mobile-header h1 { font-size: 16px; font-weight: 700; }
+.hamburger { background: none; border: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; padding: 0 6px; }
+.mobile-nav { display: none; background: var(--slate-800); padding: 8px; border-bottom: 1px solid var(--slate-700); }
+.mobile-nav.open { display: block; }
+.main { flex: 1; padding: 16px; }
+@media (min-width: 768px) {
+  .sidebar { display: flex; }
+  .main-wrapper { margin-left: 240px; }
+  .mobile-header { display: none; }
+  .mobile-nav { display: none !important; }
+  .main { padding: 24px; }
+}
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-size: 24px; font-weight: 700; color: var(--slate-900); }
+.page-header p { font-size: 14px; color: var(--slate-500); margin-top: 4px; }
+.page-header-flex { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+.page-header-flex h2 { font-size: 24px; font-weight: 700; color: var(--slate-900); }
+.page-header-flex p { font-size: 14px; color: var(--slate-500); margin-top: 4px; }
+.section-title { font-size: 15px; font-weight: 600; color: var(--slate-800); margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--slate-200); }
+.card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+.card + .card { margin-top: 16px; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+@media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+.stat-card { border-radius: var(--radius); padding: 20px; color: #fff; box-shadow: var(--shadow-lg); }
+.stat-card .icon { font-size: 28px; margin-bottom: 6px; }
+.stat-card .val { font-size: 30px; font-weight: 800; line-height: 1.1; }
+.stat-card .lbl { font-size: 13px; opacity: .9; margin-top: 4px; }
+.stat-blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.stat-amber  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat-purple { background: linear-gradient(135deg, #a855f7, #9333ea); }
+.stat-green  { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.table-wrap { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 500px; }
+thead { background: var(--slate-50); color: var(--slate-500); text-align: left; }
+th { padding: 12px 14px; font-weight: 600; font-size: 13px; }
+td { padding: 12px 14px; border-top: 1px solid var(--slate-100); }
+tbody tr:hover { background: var(--slate-50); }
+.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.badge-menunggu { background: var(--warning-light); color: #b45309; }
+.badge-sampling { background: #dbeafe; color: #1d4ed8; }
+.badge-proses   { background: var(--purple-light); color: #7e22ce; }
+.badge-selesai  { background: var(--success-light); color: #15803d; }
+.form-row { display: grid; gap: 16px; }
+@media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
+.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--slate-600); margin-bottom: 6px; }
+.lbl .lbl-hint { font-weight: 400; color: var(--slate-400); font-size: 11px; }
+.inp, .inp-sel, .inp-ta {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--slate-300); border-radius: 8px;
+  font-size: 14px; font-family: inherit; color: var(--slate-800);
+  background: #fff; outline: none; transition: .15s;
+}
+.inp:focus, .inp-sel:focus, .inp-ta:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.inp[readonly] { background: var(--slate-100); color: var(--slate-500); }
+.inp-ta { resize: vertical; min-height: 60px; }
+.info-box { display: flex; gap: 10px; align-items: flex-start; background: var(--warning-light); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #78350f; line-height: 1.5; margin-top: 8px; }
+.info-box.info-blue { background: var(--primary-light); color: #1e3a8a; }
+.info-box .info-em { font-size: 16px; flex-shrink: 0; }
+.info-box a { color: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px; border-radius: 10px; border: none;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: .15s; line-height: 1.4;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,.25); }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--slate-200); color: var(--slate-700); }
+.btn-secondary:hover { background: var(--slate-300); }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+.btn-icon { padding: 6px 10px; font-size: 14px; border-radius: 8px; background: var(--slate-100); color: var(--slate-600); border: none; cursor: pointer; }
+.btn-icon:hover { background: var(--slate-200); }
+.btn-icon.danger { background: #fee2e2; color: var(--danger); }
+.btn-icon.danger:hover { background: #fecaca; }
+.btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.pill {
+  padding: 7px 16px; border-radius: 999px; border: none;
+  background: #fff; color: var(--slate-600); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: .15s; font-family: inherit;
+}
+.pill:hover { background: var(--slate-200); }
+.pill.active { background: var(--primary); color: #fff; }
+.pill .count { opacity: .7; margin-left: 2px; }
+.patient-grid { display: grid; gap: 14px; }
+@media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1200px) { .patient-grid { grid-template-columns: repeat(3, 1fr); } }
+.patient-card {
+  background: #fff; border-radius: var(--radius); padding: 18px;
+  box-shadow: var(--shadow); border-left: 4px solid var(--slate-300);
+  display: flex; flex-direction: column;
+}
+.patient-card.menunggu { border-left-color: var(--warning); }
+.patient-card.sampling { border-left-color: #3b82f6; }
+.patient-card.proses   { border-left-color: var(--purple); }
+.patient-card.selesai  { border-left-color: var(--success); }
+.patient-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.patient-card-head .antrian { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--slate-800); }
+.patient-card-head .rm { font-size: 11px; color: var(--slate-400); font-family: ui-monospace, monospace; }
+.patient-card h4 { font-size: 16px; font-weight: 600; color: var(--slate-800); }
+.patient-card .meta { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+.test-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
+.test-chip { font-size: 10px; background: var(--slate-100); color: var(--slate-600); padding: 3px 8px; border-radius: 6px; }
+.patient-card-actions { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--slate-100); margin-top: auto; }
+.patient-card-actions select { flex: 1; padding: 6px 8px; font-size: 12px; border: 1px solid var(--slate-200); border-radius: 8px; background: #fff; font-family: inherit; cursor: pointer; }
+.empty-state { background: #fff; border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--slate-400); box-shadow: var(--shadow); }
+.empty-state .em { font-size: 48px; display: block; margin-bottom: 12px; opacity: .4; }
+.empty-state p { font-size: 14px; margin-bottom: 12px; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.25); animation: modalIn .25s cubic-bezier(.34,1.4,.64,1); }
+@keyframes modalIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+.modal-body { padding: 24px; }
+.modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--slate-200); margin-bottom: 16px; }
+.modal-head h3 { font-size: 17px; font-weight: 700; }
+.modal-head p { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+.modal-close { background: none; border: none; font-size: 28px; line-height: 1; color: var(--slate-400); cursor: pointer; padding: 0 4px; }
+.modal-close:hover { color: var(--slate-700); }
+.result-list { display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+.result-item { display: grid; grid-template-columns: 1fr 100px 60px; gap: 10px; align-items: center; background: var(--slate-50); border-radius: 10px; padding: 12px; }
+.result-item .ri-name { font-size: 14px; font-weight: 500; }
+.result-item .ri-ref { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
+.result-item input { width: 100%; padding: 8px 10px; font-size: 14px; border: 1px solid var(--slate-300); border-radius: 8px; outline: none; font-family: inherit; }
+.result-item input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.result-item .ri-unit { font-size: 12px; color: var(--slate-500); text-align: left; }
+.modal-success { text-align: center; padding: 32px 24px; }
+.modal-success .big-em { font-size: 56px; margin-bottom: 12px; }
+.modal-success h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.modal-success p { font-size: 14px; color: var(--slate-500); margin-bottom: 16px; }
+.success-number-box { background: var(--primary-light); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.success-number-box p:first-child { font-size: 12px; color: var(--slate-500); }
+.success-number-box .big-no { font-size: 40px; font-weight: 800; color: var(--primary); font-family: ui-monospace, monospace; margin-top: 4px; }
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--slate-900); color: #fff; padding: 12px 22px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 10px 25px rgba(0,0,0,.3); max-width: 90vw; text-align: center; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.err { background: var(--danger); }
+.toast.ok { background: var(--success); }
+.master-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.master-toolbar .search-box { flex: 1; min-width: 200px; max-width: 400px; position: relative; }
+.master-toolbar .search-box input { width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--slate-300); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: .15s; background: #fff; }
+.master-toolbar .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.master-toolbar .search-box::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+.pick-bar { display: grid; gap: 10px; margin-bottom: 14px; }
+@media (min-width: 640px) { .pick-bar { grid-template-columns: 1fr 1fr; } }
+.pick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.pick-chip-row {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px;
+  background: var(--primary-light); border-radius: 10px; margin-bottom: 12px;
+  border: 1px solid #bfdbfe; min-height: 44px; align-items: center;
+}
+.pick-chip-row .empty-text { font-size: 12px; color: #64748b; }
+.pick-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; border: 1px solid #bfdbfe;
+  padding: 4px 8px 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--primary-dark);
+}
+.pick-chip button { background: none; border: none; color: var(--slate-400); font-size: 14px; line-height: 1; cursor: pointer; padding: 0 2px; font-family: inherit; }
+.pick-chip button:hover { color: var(--danger); }
+.pick-grid {
+  display: grid; gap: 6px;
+  max-height: 420px; overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--slate-200); border-radius: 10px;
+  background: var(--slate-50);
+}
+@media (min-width: 768px) { .pick-grid { grid-template-columns: 1fr 1fr; } }
+.pick-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  background: #fff; border: 1.5px solid transparent; transition: .12s;
+}
+.pick-item:hover { border-color: var(--slate-300); }
+.pick-item.picked { background: #eff6ff; border-color: var(--primary); }
+.pick-item input { width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
+.pick-item .pi-body { flex: 1; min-width: 0; }
+.pick-item .pi-name { font-size: 13px; font-weight: 600; color: var(--slate-800); }
+.pick-item .pi-detail { font-size: 10px; color: var(--slate-500); margin-top: 1px; }
+.pick-item .pi-cat {
+  font-size: 9px; text-transform: uppercase; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--slate-100); color: var(--slate-500);
+  white-space: nowrap; flex-shrink: 0;
+}
+.pick-empty { grid-column: 1 / -1; text-align: center; padding: 30px 16px; color: var(--slate-400); font-size: 13px; }
+.footer-actions { display: flex; justify-content: center; gap: 20px; margin-top: 24px; font-size: 12px; }
+.sync-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  margin-top: 6px;
+}
+.sync-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.sync-badge.online { background: rgba(74,222,128,.15); color: #4ade80; }
+.sync-badge.offline { background: rgba(248,113,113,.15); color: #f87171; }
+.sync-badge.syncing { background: rgba(96,165,250,.15); color: #60a5fa; }
+.sync-badge.syncing .dot { animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.fade-in { animation: fadeIn .25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ===== PRINT OVERLAY ===== */
+#printOverlay { display: none; position: fixed; inset: 0; z-index: 99999; background: #e2e8f0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#printOverlay.open { display: block; }
+.print-toolbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 10px 14px; background: #0f172a; color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.2);
+}
+.print-toolbar .print-title { font-size: 13px; font-weight: 600; flex: 1; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.print-toolbar button { padding: 8px 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.print-btn-print { background: #2563eb; color: #fff; }
+.print-btn-print:hover { background: #1d4ed8; }
+.print-btn-cancel { background: rgba(255,255,255,.15); color: #fff; }
+.print-btn-cancel:hover { background: rgba(255,255,255,.25); }
+.print-page {
+  max-width: 210mm; min-height: 297mm; margin: 16px auto; padding: 15mm;
+  background: #fff; box-shadow: 0 4px 25px rgba(0,0,0,.15);
+  font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.4;
+  color: #1e293b; box-sizing: border-box; position: relative; overflow: hidden;
+}
+@media (max-width: 767px) {
+  .print-page { margin: 8px; padding: 14px; min-height: auto; font-size: 10.5px; }
+}
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { background: #fff !important; overflow: visible !important; }
+  body > *:not(#printOverlay):not(#printArea) { display: none !important; }
+  #printOverlay { display: block !important; position: static; background: #fff; overflow: visible; }
+  #printOverlay .print-toolbar { display: none !important; }
+  #printOverlay .print-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    font-size: 10.5pt;
+    overflow: hidden !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+  }
+  #printOverlay .print-page > div {
+    page-break-inside: auto;
+  }
+}
+#printArea { display: none; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🧪 LabCare</h1>
+      <p>Sistem Pelayanan Laboratorium</p>
+      <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncBadgeText">Memuat...</span></span>
+    </div>
+    <nav class="sidebar-nav" id="nav"></nav>
+    <div class="sidebar-footer">
+      <p id="clock"></p>
+      <button class="reset-btn sync-btn" onclick="manualSync()">🔄 Sinkron dari Spreadsheet</button>
+      <button class="reset-btn" onclick="resetData()">🗑️ Reset data pasien</button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="mobile-header">
+      <h1>🧪 LabCare</h1>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="sync-badge" id="syncBadgeMobile" style="margin:0;"><span class="dot"></span></span>
+        <button class="hamburger" onclick="toggleMobileNav()">☰</button>
+      </div>
+    </header>
+    <nav class="mobile-nav" id="mobileNav"></nav>
+    <main class="main"><div id="app"></div></main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal"><div class="modal" id="modalContent"></div></div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+/* ==========================================================================
+   KONFIGURASI SPREADSHEET
+   ========================================================================== */
+var API_URL = 'https://script.google.com/macros/s/AKfycbz16otuWHp5C82j_Pqj6jGxmEaRRv3XzVy4C0NbfaliBwtZuYdDFxqzGI_cuyUqaGcL/exec';
+/* ========================================================================== */
+
+/* ==========================================================================
+   KONFIGURASI KLINIK — UBAH DI SINI UNTUK GANTI NAMA, ALAMAT, LOGO
+   ========================================================================== */
+var CLINIC = {
+  baris1: 'PEMERINTAH KABUPATEN BONDOWOSO',
+  baris2: 'DINAS KESEHATAN',
+  baris3: 'UPTD. LABKESDA BONDOWOSO',
+  alamat: 'Jln. Santawi No. 08 Nangkaan',
+  website: 'https://labkesda.bondowoso.go.id',
+  telp: '085172185410',
+  logoKiri: 'bondowoso.jpg',
+  logoKanan: 'kemenkes.png',
+  warnaHijau: '#16a34a',
+  warnaHijauMuda: '#dcfce7',
+  warnaOranye: '#f59e0b'
+};
+/* ========================================================================== */
+
+var SYNC_ENABLED = /^https?:\/\//.test(API_URL);
+var syncState = 'idle';
+
+var DEFAULT_TESTS = [
+  { kode:'DL',   nama:'Darah Lengkap',      kategori:'Hematologi', satuan:'',       rujukan:'-' },
+  { kode:'LED',  nama:'LED (BBS)',          kategori:'Hematologi', satuan:'mm/jam', rujukan:'< 15' },
+  { kode:'GD',   nama:'Gula Darah Puasa',   kategori:'Kimia',      satuan:'mg/dL',  rujukan:'70 - 110' },
+  { kode:'GDS',  nama:'Gula Darah Sewaktu', kategori:'Kimia',      satuan:'mg/dL',  rujukan:'< 200' },
+  { kode:'KOL',  nama:'Kolesterol Total',   kategori:'Kimia',      satuan:'mg/dL',  rujukan:'< 200' },
+  { kode:'TG',   nama:'Trigliserida',       kategori:'Kimia',      satuan:'mg/dL',  rujukan:'< 150' },
+  { kode:'HDL',  nama:'HDL Kolesterol',     kategori:'Kimia',      satuan:'mg/dL',  rujukan:'> 40' },
+  { kode:'LDL',  nama:'LDL Kolesterol',     kategori:'Kimia',      satuan:'mg/dL',  rujukan:'< 130' },
+  { kode:'AU',   nama:'Asam Urat',          kategori:'Kimia',      satuan:'mg/dL',  rujukan:'L: 3.4-7.0 / P: 2.4-6.0' },
+  { kode:'URE',  nama:'Ureum',              kategori:'Kimia',      satuan:'mg/dL',  rujukan:'15 - 45' },
+  { kode:'CRE',  nama:'Kreatinin',          kategori:'Kimia',      satuan:'mg/dL',  rujukan:'L: 0.7-1.3 / P: 0.6-1.1' },
+  { kode:'SGOT', nama:'SGOT (AST)',         kategori:'Kimia',      satuan:'U/L',    rujukan:'< 35' },
+  { kode:'SGPT', nama:'SGPT (ALT)',         kategori:'Kimia',      satuan:'U/L',    rujukan:'< 35' },
+  { kode:'UR',   nama:'Urine Lengkap',      kategori:'Urinalisa',  satuan:'',       rujukan:'-' },
+  { kode:'WID',  nama:'Widal Test',         kategori:'Serologi',   satuan:'titer',  rujukan:'< 1/80' },
+  { kode:'HBS',  nama:'HBsAg',              kategori:'Serologi',   satuan:'',       rujukan:'Negatif' }
+];
+
+var TESTS = [];
+var analisList = [];
+var dokterList = [];
+
+var STATUS = {
+  menunggu: { label: 'Menunggu', cls: 'badge-menunggu' },
+  sampling: { label: 'Sampling', cls: 'badge-sampling' },
+  proses:   { label: 'Diproses', cls: 'badge-proses' },
+  selesai:  { label: 'Selesai',  cls: 'badge-selesai' }
+};
+
+var NAV_ITEMS = [
+  { view: 'dashboard',   label: '📊 Dashboard' },
+  { view: 'pendaftaran', label: '📝 Pendaftaran Pasien' },
+  { view: 'antrian',     label: '⏳ Antrian & Status' },
+  { view: 'hasil',       label: '🔬 Input Hasil' },
+  { view: 'laporan',     label: '📄 Laporan' },
+  { view: 'master',      label: '🧬 Master Lab' }
+];
+
+var patients = [];
+var view = 'dashboard';
+var mobileNavOpen = false;
+var editKode = null;
+var editKaryawanId = null;
+
+window._pickedTests = window._pickedTests || {};
+window._katFilter = window._katFilter || 'semua';
+window._pickSearch = window._pickSearch || '';
+
+function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
+function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
+function today() { return new Date().toISOString().slice(0, 10); }
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch (e) { return '-'; }
+}
+function umur(tglLahir) {
+  if (!tglLahir) return '-';
+  var d = new Date(tglLahir), n = new Date();
+  var y = n.getFullYear() - d.getFullYear();
+  var m = n.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < d.getDate())) y--;
+  return y + ' th';
+}
+function nextRM() { return 'RM-' + String(patients.length + 1).padStart(4, '0'); }
+function nextQueueNo() {
+  var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
+  return t.length + 1;
+}
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
+
+var _toastTimer;
+function toastMsg(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { t.className = 'toast'; }, 2400);
+}
+
+function setSyncState(state) {
+  syncState = state;
+  var badge = document.getElementById('syncBadge');
+  var badgeText = document.getElementById('syncBadgeText');
+  var mobile = document.getElementById('syncBadgeMobile');
+  var labels = { idle: 'Offline (lokal)', syncing: 'Menyinkron...', online: 'Tersinkron', offline: 'Gagal sinkron' };
+  if (badge) badge.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : '');
+  if (badgeText) badgeText.textContent = labels[state] || state;
+  if (mobile) mobile.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : '');
+}
+
+async function apiCall(action, data) {
+  if (!SYNC_ENABLED) return null;
+  setSyncState('syncing');
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, data: data || {} }),
+      redirect: 'follow'
+    });
+    var json = await res.json();
+    setSyncState(json && json.ok ? 'online' : 'offline');
+    if (json && !json.ok) console.warn('[LabCare] API error:', json.error);
+    return json;
+  } catch (e) {
+    console.warn('[LabCare] Fetch error:', e);
+    setSyncState('offline');
+    return null;
+  }
+}
+
+async function syncAllFromServer(silent) {
+  if (!SYNC_ENABLED) { setSyncState('idle'); return; }
+  var r = await apiCall('getAll');
+  if (!r || !r.ok) {
+    if (!silent) toastMsg('Gagal sinkron dari Spreadsheet', 'err');
+    return;
+  }
+  if (Array.isArray(r.pasien)) patients = r.pasien.map(function(p) { return normalizePasien(p); });
+  if (Array.isArray(r.pemeriksaan) && r.pemeriksaan.length) TESTS = r.pemeriksaan;
+  if (Array.isArray(r.analis)) analisList = r.analis;
+  if (Array.isArray(r.dokter)) dokterList = r.dokter;
+  try {
+    localStorage.setItem('labcare_patients', JSON.stringify(patients));
+    localStorage.setItem('labcare_tests',    JSON.stringify(TESTS));
+    localStorage.setItem('labcare_analis',   JSON.stringify(analisList));
+    localStorage.setItem('labcare_dokter',   JSON.stringify(dokterList));
+  } catch (e) {}
+  renderNav();
+  render();
+  if (!silent) toastMsg('✅ Tersinkron dengan Spreadsheet', 'ok');
+}
+
+function normalizePasien(p) {
+  if (!p) return p;
+  if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } }
+  if (typeof p.hasil === 'string') { try { p.hasil = JSON.parse(p.hasil || '{}'); } catch (e) { p.hasil = {}; } }
+  if (!p.tests) p.tests = [];
+  if (!p.hasil) p.hasil = {};
+  if (!p.status) p.status = 'menunggu';
+  if (typeof p.pengirim !== 'string') p.pengirim = '';
+  return p;
+}
+
+function manualSync() {
+  if (!SYNC_ENABLED) { toastMsg('Mode offline: API belum dikonfigurasi'); return; }
+  syncAllFromServer(false);
+}
+
+function save() { try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); } catch (e) {} }
+function load() {
+  try {
+    var raw = localStorage.getItem('labcare_patients');
+    if (raw) patients = (JSON.parse(raw) || []).map(normalizePasien);
+  } catch (e) { patients = []; }
+}
+function loadTests() {
+  try {
+    var raw = localStorage.getItem('labcare_tests');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) { TESTS = parsed; return; }
+    }
+  } catch (e) {}
+  TESTS = DEFAULT_TESTS.slice();
+}
+function saveTests() {
+  try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS });
+}
+function resetTests() {
+  if (!confirm('Reset master pemeriksaan ke pengaturan awal?')) return;
+  TESTS = DEFAULT_TESTS.slice();
+  try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS });
+  render();
+  toastMsg('Master pemeriksaan direset');
+}
+function loadKaryawan() {
+  try {
+    var a = localStorage.getItem('labcare_analis');
+    if (a) analisList = JSON.parse(a) || [];
+    var d = localStorage.getItem('labcare_dokter');
+    if (d) dokterList = JSON.parse(d) || [];
+  } catch (e) { analisList = []; dokterList = []; }
+}
+function saveAnalis() {
+  try { localStorage.setItem('labcare_analis', JSON.stringify(analisList)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'analis', list: analisList });
+}
+function saveDokter() {
+  try { localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'dokter', list: dokterList });
+}
+function resetAnalis() {
+  if (!confirm('Reset daftar analis?')) return;
+  analisList = []; saveAnalis(); render(); toastMsg('Daftar analis direset');
+}
+function resetDokter() {
+  if (!confirm('Reset daftar dokter?')) return;
+  dokterList = []; saveDokter(); render(); toastMsg('Daftar dokter direset');
+}
+
+function renderNav() {
+  var html = NAV_ITEMS.map(function(i) {
+    return '<button class="nav-btn' + (view === i.view ? ' active' : '') + '" data-view="' + i.view + '">' + i.label + '</button>';
+  }).join('');
+  document.getElementById('nav').innerHTML = html;
+  document.getElementById('mobileNav').innerHTML = html;
+  document.querySelectorAll('.nav-btn').forEach(function(b) {
+    b.onclick = function() {
+      view = b.dataset.view;
+      mobileNavOpen = false;
+      document.getElementById('mobileNav').classList.remove('open');
+      renderNav();
+      render();
+    };
+  });
+}
+function toggleMobileNav() {
+  mobileNavOpen = !mobileNavOpen;
+  document.getElementById('mobileNav').classList.toggle('open', mobileNavOpen);
+}
+
+function render() {
+  var app = document.getElementById('app');
+  app.className = 'fade-in';
+  if (view === 'dashboard')        app.innerHTML = viewDashboard();
+  else if (view === 'pendaftaran') app.innerHTML = viewPendaftaran();
+  else if (view === 'antrian')     app.innerHTML = viewAntrian();
+  else if (view === 'hasil')       app.innerHTML = viewHasil();
+  else if (view === 'laporan')     app.innerHTML = viewLaporan();
+  else if (view === 'master')      app.innerHTML = viewMaster();
+  window.scrollTo(0, 0);
+}
+
+function viewDashboard() {
+  var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
+  var c = function(s) { return t.filter(function(p) { return p.status === s; }).length; };
+  var cards = [
+    { label: 'Pasien Hari Ini', val: t.length,       cls: 'stat-blue',   icon: '👥' },
+    { label: 'Menunggu',        val: c('menunggu'),  cls: 'stat-amber',  icon: '⏳' },
+    { label: 'Diproses',        val: c('proses') + c('sampling'), cls: 'stat-purple', icon: '🔬' },
+    { label: 'Selesai',         val: c('selesai'),   cls: 'stat-green',  icon: '✅' }
+  ];
+  var cardsHtml = cards.map(function(x) {
+    return '<div class="stat-card ' + x.cls + '">' +
+      '<div class="icon">' + x.icon + '</div><div class="val">' + x.val + '</div>' +
+      '<div class="lbl">' + x.label + '</div></div>';
+  }).join('');
+  var recent = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
+  var recentHtml;
+  if (recent.length === 0) {
+    recentHtml = '<div class="empty-state"><span class="em">📭</span><p>Belum ada data pasien.</p></div>';
+  } else {
+    recentHtml = '<div class="table-wrap"><table>' +
+      '<thead><tr><th>Antrian</th><th>No. RM</th><th>Nama</th><th>Tes</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>' +
+      recent.map(function(p) {
+        return '<tr>' +
+          '<td class="mono" style="color:var(--primary);font-weight:700;">' + esc(p.noAntrian) + '</td>' +
+          '<td class="mono" style="font-size:12px;">' + esc(p.noRM) + '</td>' +
+          '<td style="font-weight:500;">' + esc(p.nama) + '</td>' +
+          '<td style="font-size:12px;color:var(--slate-500);">' + (p.tests ? p.tests.length : 0) + ' tes</td>' +
+          '<td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
+          '<td style="font-size:12px;color:var(--slate-500);">' + esc(fmtDate(p.tglDaftar)) + '</td>' +
+          '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  return '<div class="page-header"><h2>Dashboard</h2><p>Ringkasan pelayanan — ' + esc(fmtDate(new Date().toISOString())) + '</p></div>' +
+    '<div class="stats-grid">' + cardsHtml + '</div>' +
+    '<h3 class="section-title">Pasien Terbaru</h3>' + recentHtml;
+}
+
+function viewPendaftaran() {
+  var dokterField;
+  if (dokterList.length > 0) {
+    dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' +
+      dokterList.map(function(d) {
+        return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>';
+      }).join('') + '</select>';
+  } else {
+    dokterField = '<input name="dokter" class="inp" placeholder="Ketik nama dokter">' +
+      '<div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data dokter. Tambahkan di <a onclick="goToMaster(\'dokter\')">Master Lab → Dokter</a>.</span></div>';
+  }
+  var analisField;
+  if (analisList.length > 0) {
+    analisField = '<select name="analis" class="inp-sel"><option value="">— Pilih Analis —</option>' +
+      analisList.map(function(a) {
+        return '<option value="' + esc(a.nama) + '">' + esc(a.nama) + (a.kode ? ' (' + esc(a.kode) + ')' : '') + '</option>';
+      }).join('') + '</select>';
+  } else {
+    analisField = '<input name="analis" class="inp" placeholder="Ketik nama analis">' +
+      '<div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data analis. Tambahkan di <a onclick="goToMaster(\'analis\')">Master Lab → Analis</a>.</span></div>';
+  }
+  return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Daftarkan pasien baru beserta pemeriksaan yang diminta.</p></div>' +
+    '<form id="formDaftar" class="card">' +
+    '<h3 class="section-title" style="margin-top:0;">A. Data Pasien</h3>' +
+    '<div class="form-row">' +
+    '<div><label class="lbl">Nama Lengkap *</label><input name="nama" required class="inp" placeholder="Nama pasien"></div>' +
+    '<div><label class="lbl">No. Rekam Medis</label><input name="noRM" value="' + nextRM() + '" readonly class="inp"></div>' +
+    '<div><label class="lbl">Tanggal Lahir *</label><input type="date" name="tglLahir" required class="inp"></div>' +
+    '<div><label class="lbl">Jenis Kelamin *</label><select name="jk" class="inp-sel"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>' +
+    '<div><label class="lbl">No. Telepon</label><input name="telepon" class="inp" placeholder="08xxxxxxxxxx"></div>' +
+    '<div><label class="lbl">Pengirim <span class="lbl-hint">(asal rujukan / instansi)</span></label>' +
+      '<input name="pengirim" class="inp" placeholder="Contoh: Puskesmas Bondowoso / RS Bhayangkara"></div>' +
+    '<div><label class="lbl">Dokter Penanggung Jawab</label>' + dokterField + '</div>' +
+    '<div><label class="lbl">Nama Analis</label>' + analisField + '</div>' +
+    '</div>' +
+    '<div style="margin-top:16px;"><label class="lbl">Alamat</label><textarea name="alamat" rows="2" class="inp-ta" placeholder="Alamat lengkap"></textarea></div>' +
+    '<h3 class="section-title">B. Pemeriksaan Laboratorium *</h3>' +
+    '<div id="testPickerWrap">' + renderTestPicker() + '</div>' +
+    '<div style="margin-top:24px;"><label class="lbl">Catatan Klinis</label><textarea name="catatan" rows="2" class="inp-ta" placeholder="Keluhan / diagnosis / catatan"></textarea></div>' +
+    '<div class="btn-row"><button type="submit" class="btn btn-primary">💾 Daftarkan Pasien</button>' +
+    '<button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
+}
+
+function renderTestPicker() {
+  if (TESTS.length === 0) {
+    return '<div class="info-box info-blue"><span class="info-em">ℹ️</span><span>Belum ada pemeriksaan. Tambahkan di <a onclick="goToMaster(\'pemeriksaan\')">Master Lab → Pemeriksaan</a>.</span></div>';
+  }
+  var categories = ['semua'].concat(Array.from(new Set(TESTS.map(function(t) { return t.kategori; }))).sort());
+  var katOptions = categories.map(function(k) {
+    var count = k === 'semua' ? TESTS.length : TESTS.filter(function(t) { return t.kategori === k; }).length;
+    var label = k === 'semua' ? '📋 Semua Kategori' : k;
+    return '<option value="' + esc(k) + '"' + (window._katFilter === k ? ' selected' : '') + '>' + label + ' (' + count + ')</option>';
+  }).join('');
+  return '<div class="pick-bar">' +
+    '<div><label class="lbl">Filter Kategori</label><select class="inp-sel" id="katFilter" onchange="changeKatFilter(this.value)">' + katOptions + '</select></div>' +
+    '<div><label class="lbl">Cari Pemeriksaan</label><input class="inp" id="pickSearch" placeholder="Ketik nama atau kode..." value="' + esc(window._pickSearch) + '" oninput="onPickSearchChange(this.value)"></div>' +
+    '</div>' +
+    '<div class="pick-actions">' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="selectAllVisible()">✔️ Pilih Semua (Tampil)</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="clearPickedTests()">🗑️ Bersihkan Semua</button>' +
+    '</div>' +
+    '<div id="pickSummaryWrap">' + renderPickSummary() + '</div>' +
+    '<div class="pick-grid" id="pickGrid">' + renderPickItems() + '</div>';
+}
+function renderPickSummary() {
+  var picked = Object.keys(window._pickedTests);
+  if (picked.length === 0) return '<div class="pick-chip-row"><span class="empty-text">Belum ada pemeriksaan yang dipilih.</span></div>';
+  var chips = picked.map(function(kode) {
+    var t = findTest(kode);
+    var nama = t ? t.nama : kode;
+    return '<span class="pick-chip"><span>' + esc(nama) + '</span>' +
+      '<button type="button" onclick="removePickedTest(\'' + esc(kode) + '\')" title="Hapus">&times;</button></span>';
+  }).join('');
+  return '<div class="pick-chip-row">' + chips + '</div>';
+}
+function renderPickItems() {
+  var filter = window._katFilter;
+  var search = (window._pickSearch || '').toLowerCase();
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0 || t.kategori.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+  if (filtered.length === 0) return '<div class="pick-empty">Tidak ada pemeriksaan yang cocok dengan filter.</div>';
+  return filtered.map(function(t) {
+    var picked = !!window._pickedTests[t.kode];
+    return '<label class="pick-item' + (picked ? ' picked' : '') + '">' +
+      '<input type="checkbox" ' + (picked ? 'checked' : '') + ' onchange="toggleTestPick(\'' + esc(t.kode) + '\', this.checked)">' +
+      '<div class="pi-body"><div class="pi-name">' + esc(t.nama) + '</div>' +
+      '<div class="pi-detail">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
+      '<span class="pi-cat">' + esc(t.kategori) + '</span></label>';
+  }).join('');
+}
+function refreshPicker() {
+  var wrap = document.getElementById('testPickerWrap');
+  if (wrap) wrap.innerHTML = renderTestPicker();
+}
+function changeKatFilter(val) { window._katFilter = val; refreshPicker(); }
+function onPickSearchChange(val) {
+  window._pickSearch = val;
+  var grid = document.getElementById('pickGrid');
+  if (grid) grid.innerHTML = renderPickItems();
+}
+function toggleTestPick(kode, checked) {
+  if (checked) window._pickedTests[kode] = true;
+  else delete window._pickedTests[kode];
+  var summary = document.getElementById('pickSummaryWrap');
+  if (summary) summary.innerHTML = renderPickSummary();
+  var grid = document.getElementById('pickGrid');
+  if (grid) grid.innerHTML = renderPickItems();
+}
+function removePickedTest(kode) {
+  delete window._pickedTests[kode];
+  var summary = document.getElementById('pickSummaryWrap');
+  if (summary) summary.innerHTML = renderPickSummary();
+  var grid = document.getElementById('pickGrid');
+  if (grid) grid.innerHTML = renderPickItems();
+}
+function clearPickedTests() { window._pickedTests = {}; refreshPicker(); }
+function selectAllVisible() {
+  var filter = window._katFilter;
+  var search = (window._pickSearch || '').toLowerCase();
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0 || t.kategori.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+  filtered.forEach(function(t) { window._pickedTests[t.kode] = true; });
+  refreshPicker();
+  toastMsg(filtered.length + ' pemeriksaan ditambahkan');
+}
+
+function viewAntrian() {
+  var filter = window._filter || 'semua';
+  var list = patients.slice().sort(function(a, b) { return (a.tglDaftar || '').localeCompare(b.tglDaftar || ''); });
+  var filtered = filter === 'semua' ? list : list.filter(function(p) { return p.status === filter; });
+  var tabsHtml = ['semua'].concat(Object.keys(STATUS)).map(function(k) {
+    var count = k === 'semua' ? list.length : list.filter(function(p) { return p.status === k; }).length;
+    var label = k === 'semua' ? 'Semua' : STATUS[k].label;
+    return '<button class="pill' + (filter === k ? ' active' : '') + '" onclick="window._filter=\'' + k + '\'; render();">' + label + ' <span class="count">(' + count + ')</span></button>';
+  }).join('');
+  var content;
+  if (filtered.length === 0) {
+    content = '<div class="empty-state"><span class="em">📭</span><p>Tidak ada pasien pada kategori ini.</p></div>';
+  } else {
+    content = '<div class="patient-grid">' + filtered.map(function(p) {
+      var testChips = (p.tests || []).map(function(k) {
+        var t = findTest(k);
+        return '<span class="test-chip">' + esc(t ? t.nama : k) + '</span>';
+      }).join('');
+      var actionsHtml = p.status !== 'selesai' ?
+        '<select onchange="setStatus(\'' + p.id + '\', this.value)">' +
+        Object.keys(STATUS).map(function(k) {
+          return '<option value="' + k + '"' + (p.status === k ? ' selected' : '') + '>' + STATUS[k].label + '</option>';
+        }).join('') + '</select>' :
+        '<span style="flex:1;font-size:12px;color:var(--success);font-weight:600;padding:8px 0;">✔ Selesai</span>';
+      return '<div class="patient-card ' + p.status + '">' +
+        '<div class="patient-card-head"><div><div class="antrian">' + esc(p.noAntrian) + '</div>' +
+        '<div class="rm">' + esc(p.noRM) + '</div></div>' +
+        '<span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></div>' +
+        '<h4>' + esc(p.nama) + '</h4>' +
+        '<p class="meta">' + (p.jk === 'L' ? 'Laki-laki' : 'Perempuan') + ' • ' + esc(umur(p.tglLahir)) + '</p>' +
+        (p.pengirim ? '<p class="meta">📤 Pengirim: ' + esc(p.pengirim) + '</p>' : '') +
+        (p.dokter ? '<p class="meta">DPJP: ' + esc(p.dokter) + '</p>' : '') +
+        (p.analis ? '<p class="meta">Analis: ' + esc(p.analis) + '</p>' : '') +
+        '<div class="test-chips">' + testChips + '</div>' +
+        '<div class="patient-card-actions">' + actionsHtml +
+        '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
+        '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
+        '</div></div>';
+    }).join('') + '</div>';
+  }
+  return '<div class="page-header"><h2>Antrian & Status</h2><p>Kelola alur status pasien dari pendaftaran hingga selesai.</p></div>' +
+    '<div class="pill-row">' + tabsHtml + '</div>' + content;
+}
+
+function viewHasil() {
+  var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
+  if (list.length === 0) {
+    return '<div class="page-header"><h2>Input Hasil Pemeriksaan</h2><p>Masukkan hasil laboratorium untuk setiap pasien.</p></div>' +
+      '<div class="empty-state"><span class="em">🔬</span><p>Belum ada pasien terdaftar.</p></div>';
+  }
+  var rowsHtml = list.map(function(p) {
+    var tests = p.tests || [];
+    var hasil = p.hasil || {};
+    var filled = tests.filter(function(k) { return hasil[k]; }).length;
+    var done = tests.length > 0 && filled === tests.length;
+    return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(p.noAntrian) + '</td>' +
+      '<td><div style="font-weight:500;">' + esc(p.nama) + '</div><div class="mono" style="font-size:11px;color:var(--slate-400);">' + esc(p.noRM) + '</div></td>' +
+      '<td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td>' +
+      '<td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
+      '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasil(\'' + p.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td></tr>';
+  }).join('');
+  return '<div class="page-header"><h2>Input Hasil Pemeriksaan</h2><p>Masukkan hasil laboratorium untuk setiap pasien.</p></div>' +
+    '<div class="table-wrap"><table>' +
+    '<thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody></table></div>';
+}
+
+function viewLaporan() {
+  var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
+  var rowsHtml;
+  if (list.length === 0) {
+    rowsHtml = '<tr><td colspan="10" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada data.</td></tr>';
+  } else {
+    rowsHtml = list.map(function(p, i) {
+      var names = (p.tests || []).map(function(k) { var t = findTest(k); return t ? t.nama : k; }).join(', ');
+      return '<tr><td>' + (i + 1) + '</td>' +
+        '<td class="mono" style="font-size:12px;">' + esc(p.noRM) + '</td>' +
+        '<td style="font-weight:500;">' + esc(p.nama) + '</td>' +
+        '<td style="font-size:12px;">' + esc(umur(p.tglLahir)) + ' / ' + esc(p.jk) + '</td>' +
+        '<td style="font-size:12px;color:var(--slate-500);">' + esc(names) + '</td>' +
+        '<td style="font-size:12px;">' + esc(p.pengirim || '-') + '</td>' +
+        '<td style="font-size:12px;">' + esc(p.dokter || '-') + '</td>' +
+        '<td style="font-size:12px;">' + esc(p.analis || '-') + '</td>' +
+        '<td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
+        '<td style="font-size:12px;color:var(--slate-500);">' + esc(fmtDate(p.tglDaftar)) + '</td></tr>';
+    }).join('');
+  }
+  return '<div class="page-header-flex"><div><h2>Laporan Pasien</h2><p>Riwayat seluruh pasien laboratorium.</p></div>' +
+    '<button class="btn" style="background:var(--slate-800);color:#fff;" onclick="cetakLaporan()">🖨️ Cetak Laporan</button></div>' +
+    '<div class="table-wrap"><table>' +
+    '<thead><tr><th>No</th><th>No. RM</th><th>Nama</th><th>Umur/JK</th><th>Pemeriksaan</th><th>Pengirim</th><th>DPJP</th><th>Analis</th><th>Status</th><th>Tanggal</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody></table></div>';
+}
+
+function goToMaster(tab) {
+  view = 'master';
+  window._masterTab = tab;
+  renderNav();
+  render();
+}
+function viewMaster() {
+  var tab = window._masterTab || 'pemeriksaan';
+  var tabsHtml =
+    '<button class="pill' + (tab === 'pemeriksaan' ? ' active' : '') + '" onclick="window._masterTab=\'pemeriksaan\'; render();">🔬 Pemeriksaan</button>' +
+    '<button class="pill' + (tab === 'analis' ? ' active' : '') + '" onclick="window._masterTab=\'analis\'; render();">👨‍🔬 Analis</button>' +
+    '<button class="pill' + (tab === 'dokter' ? ' active' : '') + '" onclick="window._masterTab=\'dokter\'; render();">🩺 Dokter</button>';
+  var content = '';
+  if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
+  else if (tab === 'analis') content = viewMasterAnalis();
+  else if (tab === 'dokter') content = viewMasterDokter();
+  return '<div class="page-header"><h2>🧬 Master Lab</h2><p>Kelola master data laboratorium: pemeriksaan, analis, dan dokter.</p></div>' +
+    '<div class="pill-row">' + tabsHtml + '</div>' + content;
+}
+function viewMasterPemeriksaan() {
+  var filter = window._testFilter || 'semua';
+  var search = (window._testSearch || '').toLowerCase();
+  var categories = ['semua'].concat(Array.from(new Set(TESTS.map(function(t) { return t.kategori; }))).sort());
+  var pillsHtml = categories.map(function(k) {
+    var count = k === 'semua' ? TESTS.length : TESTS.filter(function(t) { return t.kategori === k; }).length;
+    var label = k === 'semua' ? 'Semua' : k;
+    return '<button class="pill' + (filter === k ? ' active' : '') + '" onclick="window._testFilter=\'' + k.replace(/'/g, "\\'") + '\'; render();">' + esc(label) + ' <span class="count">(' + count + ')</span></button>';
+  }).join('');
+  var filtered = TESTS.filter(function(t) {
+    var matchCat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchCat && matchSearch;
+  });
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Pemeriksaan</h3>' +
+    '<p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar pemeriksaan, kategori, satuan, nilai rujukan.</p></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="modalTest(null)">➕ Tambah Pemeriksaan</button>' +
+    '<button class="btn btn-secondary" onclick="resetTests()">🔄 Reset</button>' +
+    '</div></div>' +
+    '<div class="master-toolbar"><div class="search-box"><input id="testSearch" placeholder="Cari kode atau nama..." value="' + esc(window._testSearch || '') + '" oninput="filterTestTable()"></div>' +
+    '<span id="testCount" style="font-size:13px;color:var(--slate-500);font-weight:600;">' + filtered.length + ' pemeriksaan</span></div>' +
+    '<div class="pill-row">' + pillsHtml + '</div>' +
+    '<div class="table-wrap"><table>' +
+    '<thead><tr><th style="width:80px;">Kode</th><th>Nama Pemeriksaan</th><th>Kategori</th><th>Satuan</th><th>Nilai Rujukan</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead>' +
+    '<tbody id="testTableBody">' + buildTestRows(filtered) + '</tbody></table></div>';
+}
+function buildTestRows(list) {
+  if (list.length === 0) return '<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada pemeriksaan yang cocok.</td></tr>';
+  return list.map(function(t) {
+    return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(t.kode) + '</td>' +
+      '<td style="font-weight:500;">' + esc(t.nama) + '</td>' +
+      '<td><span class="test-chip">' + esc(t.kategori) + '</span></td>' +
+      '<td style="font-size:12px;">' + esc(t.satuan || '-') + '</td>' +
+      '<td style="font-size:12px;color:var(--slate-500);">' + esc(t.rujukan) + '</td>' +
+      '<td style="text-align:right;white-space:nowrap;">' +
+      '<button class="btn-icon" onclick="modalTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Edit">✏️</button> ' +
+      '<button class="btn-icon danger" onclick="hapusTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Hapus">🗑️</button>' +
+      '</td></tr>';
+  }).join('');
+}
+function filterTestTable() {
+  var search = (document.getElementById('testSearch').value || '').toLowerCase();
+  var filter = window._testFilter || 'semua';
+  window._testSearch = document.getElementById('testSearch').value;
+  var filtered = TESTS.filter(function(t) {
+    var matchCat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchCat && matchSearch;
+  });
+  var tbody = document.getElementById('testTableBody');
+  if (tbody) tbody.innerHTML = buildTestRows(filtered);
+  var counter = document.getElementById('testCount');
+  if (counter) counter.textContent = filtered.length + ' pemeriksaan';
+}
+function viewMasterAnalis() {
+  var rows;
+  if (analisList.length === 0) {
+    rows = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada data analis. Tap <b>➕ Tambah Analis</b>.</td></tr>';
+  } else {
+    rows = analisList.map(function(a, i) {
+      return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td>' +
+        '<td style="font-weight:500;">' + esc(a.nama) + '</td>' +
+        '<td style="font-size:12px;">' + esc(a.kode || '-') + '</td>' +
+        '<td style="text-align:right;white-space:nowrap;">' +
+        '<button class="btn-icon" onclick="modalKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Edit">✏️</button> ' +
+        '<button class="btn-icon danger" onclick="hapusKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Hapus">🗑️</button></td></tr>';
+    }).join('');
+  }
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Analis</h3>' +
+    '<p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar nama analis laboratorium.</p></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="modalKaryawan(\'analis\', null)">➕ Tambah Analis</button>' +
+    (analisList.length > 0 ? '<button class="btn btn-secondary" onclick="resetAnalis()">🔄 Reset</button>' : '') +
+    '</div></div>' +
+    '<div class="table-wrap"><table>' +
+    '<thead><tr><th style="width:50px;">No</th><th>Nama Analis</th><th>NIP / Kode</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+function viewMasterDokter() {
+  var rows;
+  if (dokterList.length === 0) {
+    rows = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada data dokter. Tap <b>➕ Tambah Dokter</b>.</td></tr>';
+  } else {
+    rows = dokterList.map(function(d, i) {
+      return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td>' +
+        '<td style="font-weight:500;">' + esc(d.nama) + '</td>' +
+        '<td style="font-size:12px;">' + esc(d.kode || '-') + '</td>' +
+        '<td style="text-align:right;white-space:nowrap;">' +
+        '<button class="btn-icon" onclick="modalKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Edit">✏️</button> ' +
+        '<button class="btn-icon danger" onclick="hapusKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Hapus">🗑️</button></td></tr>';
+    }).join('');
+  }
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Dokter</h3>' +
+    '<p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar dokter penanggung jawab (DPJP).</p></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="modalKaryawan(\'dokter\', null)">➕ Tambah Dokter</button>' +
+    (dokterList.length > 0 ? '<button class="btn btn-secondary" onclick="resetDokter()">🔄 Reset</button>' : '') +
+    '</div></div>' +
+    '<div class="table-wrap"><table>' +
+    '<thead><tr><th style="width:50px;">No</th><th>Nama Dokter</th><th>SIP / Kode</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+
+function modalTest(kode) {
+  editKode = kode || null;
+  var isEdit = !!kode;
+  var t = isEdit ? findTest(kode) : null;
+  if (isEdit && !t) { toastMsg('Pemeriksaan tidak ditemukan'); return; }
+  var kategoriList = Array.from(new Set(TESTS.map(function(x) { return x.kategori; }))).sort();
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? 'Edit Pemeriksaan' : 'Tambah Pemeriksaan') + '</h3>' +
+    '<p>' + (isEdit ? 'Ubah parameter pemeriksaan' : 'Daftarkan pemeriksaan baru') + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Kode *</label>' +
+    '<input id="t_kode" class="inp" value="' + (t ? esc(t.kode) : '') + '" ' + (isEdit ? 'readonly style="background:var(--slate-100);text-transform:uppercase;font-weight:700;"' : 'placeholder="Contoh: GD" maxlength="10" style="text-transform:uppercase;font-weight:700;"') + '></div>' +
+    '<div><label class="lbl">Nama Pemeriksaan *</label><input id="t_nama" class="inp" value="' + (t ? esc(t.nama) : '') + '" placeholder="Contoh: Gula Darah Puasa"></div>' +
+    '<div><label class="lbl">Kategori *</label><input id="t_kat" class="inp" list="katList" value="' + (t ? esc(t.kategori) : '') + '" placeholder="Contoh: Kimia"><datalist id="katList">' +
+    kategoriList.map(function(k) { return '<option value="' + esc(k) + '"></option>'; }).join('') + '</datalist></div>' +
+    '<div><label class="lbl">Satuan</label><input id="t_sat" class="inp" value="' + (t ? esc(t.satuan) : '') + '" placeholder="Contoh: mg/dL"></div>' +
+    '<div><label class="lbl">Nilai Rujukan *</label><input id="t_ruj" class="inp" value="' + (t ? esc(t.rujukan) : '') + '" placeholder="Contoh: 70 - 110"></div>' +
+    '</div>' +
+    (isEdit ? '<div class="info-box"><span class="info-em">ℹ️</span><span>Kode tidak bisa diubah.</span></div>' : '') +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanTest()">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById(isEdit ? 't_nama' : 't_kode'); if (el) el.focus(); }, 100);
+}
+function simpanTest() {
+  var kode = (document.getElementById('t_kode').value || '').trim().toUpperCase().replace(/\s+/g, '');
+  var nama = (document.getElementById('t_nama').value || '').trim();
+  var kategori = (document.getElementById('t_kat').value || '').trim();
+  var satuan = (document.getElementById('t_sat').value || '').trim();
+  var rujukan = (document.getElementById('t_ruj').value || '').trim();
+  if (!kode || !nama || !kategori || !rujukan) { alert('Semua kolom bertanda * harus diisi.'); return; }
+  if (editKode) {
+    var t = findTest(editKode);
+    if (!t) { toastMsg('Pemeriksaan tidak ditemukan'); return; }
+    t.nama = nama; t.kategori = kategori; t.satuan = satuan; t.rujukan = rujukan;
+    saveTests(); closeModal(); render();
+    toastMsg('Pemeriksaan diperbarui');
+  } else {
+    if (findTest(kode)) { alert('Kode "' + kode + '" sudah digunakan.'); return; }
+    TESTS.push({ kode: kode, nama: nama, kategori: kategori, satuan: satuan, rujukan: rujukan });
+    saveTests(); closeModal(); render();
+    toastMsg('Pemeriksaan ditambahkan');
+  }
+}
+function hapusTest(kode) {
+  var t = findTest(kode);
+  if (!t) return;
+  var usedCount = patients.filter(function(p) { return p.tests && p.tests.indexOf(kode) >= 0; }).length;
+  var msg = 'Hapus pemeriksaan "' + t.nama + '" (' + kode + ')?';
+  if (usedCount > 0) msg += '\n\n⚠️ Sudah dipakai di ' + usedCount + ' data pasien.';
+  if (!confirm(msg)) return;
+  TESTS = TESTS.filter(function(x) { return x.kode !== kode; });
+  delete window._pickedTests[kode];
+  saveTests(); render();
+  toastMsg('Pemeriksaan dihapus');
+}
+
+function modalKaryawan(jenis, id) {
+  editKaryawanId = id || null;
+  var isEdit = !!id;
+  var list = jenis === 'analis' ? analisList : dokterList;
+  var k = isEdit ? list.find(function(x) { return x.id === id; }) : null;
+  if (isEdit && !k) { toastMsg('Data tidak ditemukan'); return; }
+  var labelJenis = jenis === 'analis' ? 'Analis' : 'Dokter';
+  var placeholderNama = jenis === 'analis' ? 'Contoh: Siti Rahma, A.Md.AK' : 'Contoh: dr. Budi Santoso';
+  var placeholderKode = jenis === 'analis' ? 'Contoh: NIP-001 (opsional)' : 'Contoh: SIP-12345 (opsional)';
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? 'Edit ' + labelJenis : 'Tambah ' + labelJenis) + '</h3>' +
+    '<p>' + (isEdit ? 'Ubah data ' + labelJenis.toLowerCase() : 'Daftarkan ' + labelJenis.toLowerCase() + ' baru') + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Nama ' + labelJenis + ' *</label><input id="k_nama" class="inp" value="' + (k ? esc(k.nama) : '') + '" placeholder="' + placeholderNama + '"></div>' +
+    '<div><label class="lbl">' + (jenis === 'analis' ? 'NIP / Kode' : 'SIP / Kode') + '</label><input id="k_kode" class="inp" value="' + (k ? esc(k.kode || '') : '') + '" placeholder="' + placeholderKode + '"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKaryawan(\'' + jenis + '\')">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('k_nama'); if (el) el.focus(); }, 100);
+}
+function simpanKaryawan(jenis) {
+  var nama = (document.getElementById('k_nama').value || '').trim();
+  var kodeEl = document.getElementById('k_kode');
+  var kode = kodeEl ? kodeEl.value.trim() : '';
+  if (!nama) { alert('Nama harus diisi.'); return; }
+  var list = jenis === 'analis' ? analisList : dokterList;
+  var saveFn = jenis === 'analis' ? saveAnalis : saveDokter;
+  if (editKaryawanId) {
+    var k = list.find(function(x) { return x.id === editKaryawanId; });
+    if (!k) { toastMsg('Data tidak ditemukan'); return; }
+    k.nama = nama; k.kode = kode;
+    saveFn(); closeModal(); render();
+    toastMsg('Data diperbarui');
+  } else {
+    list.push({ id: uidK(), nama: nama, kode: kode });
+    saveFn(); closeModal(); render();
+    toastMsg('Data ditambahkan');
+  }
+}
+function hapusKaryawan(jenis, id) {
+  var list = jenis === 'analis' ? analisList : dokterList;
+  var k = list.find(function(x) { return x.id === id; });
+  if (!k) return;
+  var usedCount = patients.filter(function(p) { return jenis === 'analis' ? p.analis === k.nama : p.dokter === k.nama; }).length;
+  var msg = 'Hapus ' + (jenis === 'analis' ? 'analis' : 'dokter') + ' "' + k.nama + '"?';
+  if (usedCount > 0) msg += '\n\nℹ️ Sudah dipakai di ' + usedCount + ' pasien.';
+  if (!confirm(msg)) return;
+  if (jenis === 'analis') { analisList = analisList.filter(function(x) { return x.id !== id; }); saveAnalis(); }
+  else { dokterList = dokterList.filter(function(x) { return x.id !== id; }); saveDokter(); }
+  render();
+  toastMsg('Data dihapus');
+}
+
+function setStatus(id, s) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (p) { p.status = s; save(); apiCall('savePasien', p); render(); }
+}
+function hapusPasien(id) {
+  if (!confirm('Hapus data pasien ini?')) return;
+  patients = patients.filter(function(p) { return p.id !== id; });
+  save(); apiCall('deletePasien', { id: id }); render();
+  toastMsg('Pasien dihapus');
+}
+function resetData() {
+  if (!confirm('Hapus SEMUA data pasien? Tindakan ini tidak bisa dibatalkan.')) return;
+  patients = []; save(); apiCall('resetPasien'); render();
+  toastMsg('Semua data pasien dihapus');
+}
+
+function modalHasil(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var tests = p.tests || [];
+  var hasil = p.hasil || {};
+  var fieldsHtml = tests.map(function(k) {
+    var t = findTest(k);
+    if (!t) {
+      return '<div class="result-item" style="opacity:.7;"><div><div class="ri-name">' + esc(k) + '</div><div class="ri-ref">Rujukan: -</div></div>' +
+        '<input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil"><div class="ri-unit">-</div></div>';
+    }
+    return '<div class="result-item"><div><div class="ri-name">' + esc(t.nama) + '</div>' +
+      '<div class="ri-ref">Rujukan: ' + esc(t.rujukan) + '</div></div>' +
+      '<input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil">' +
+      '<div class="ri-unit">' + esc(t.satuan || '-') + '</div></div>';
+  }).join('');
+  var analisField;
+  if (analisList.length > 0) {
+    var currentAnalis = p.analis || '';
+    var options = '<option value="">— Pilih Analis —</option>' +
+      analisList.map(function(a) {
+        return '<option value="' + esc(a.nama) + '"' + (a.nama === currentAnalis ? ' selected' : '') + '>' + esc(a.nama) + (a.kode ? ' (' + esc(a.kode) + ')' : '') + '</option>';
+      }).join('');
+    if (currentAnalis && !analisList.find(function(a) { return a.nama === currentAnalis; })) {
+      options = '<option value="' + esc(currentAnalis) + '" selected>' + esc(currentAnalis) + ' (lama)</option>' + options;
+    }
+    analisField = '<select id="analisEdit" class="inp-sel">' + options + '</select>';
+  } else {
+    analisField = '<input id="analisEdit" class="inp" value="' + esc(p.analis || '') + '" placeholder="Nama analis">';
+  }
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>Input Hasil</h3><p>' + esc(p.nama) + ' • ' + esc(p.noRM) + ' • ' + esc(p.noAntrian) + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="result-list">' + fieldsHtml + '</div>' +
+'<div style="margin-top:16px;"><label class="lbl">Nama Analis</label>' + analisField + '</div>' +
+    '<div style="margin-top:16px;"><label class="lbl">Kesimpulan / Catatan Petugas</label>' +
+    '<textarea id="kesimpulan" rows="2" class="inp-ta">' + esc(p.kesimpulan || '') + '</textarea></div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasil(\'' + p.id + '\')">💾 Simpan Hasil</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function simpanHasil(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  if (!p.hasil) p.hasil = {};
+  (p.tests || []).forEach(function(k) {
+    var el = document.getElementById('h_' + k);
+    if (el && el.value.trim()) p.hasil[k] = el.value.trim();
+  });
+  var analisEl = document.getElementById('analisEdit');
+  if (analisEl) p.analis = analisEl.value.trim();
+  var kes = document.getElementById('kesimpulan');
+  p.kesimpulan = kes ? kes.value.trim() : '';
+  var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
+  if (filled === (p.tests || []).length && p.status !== 'selesai') p.status = 'proses';
+  save(); apiCall('savePasien', p); closeModal(); render();
+  toastMsg('Hasil disimpan');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editKode = null;
+  editKaryawanId = null;
+}
+
+/* ================= PRINT SYSTEM ================= */
+function showPrintPreview(html, title) {
+  var overlay = document.getElementById('printOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'printOverlay';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML =
+    '<div class="print-toolbar">' +
+    '<button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button>' +
+    '<div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div>' +
+    '<button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button>' +
+    '</div>' +
+    '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;overflow:hidden;">' +
+      '<img src="border.png" alt="" ' +
+        'style="position:absolute;top:0;left:0;width:100%;height:297mm;' +
+        'object-fit:fill;z-index:0;pointer-events:none;">' +
+      '<div style="position:relative;z-index:1;padding:22mm 18mm 20mm 18mm;">' + html + '</div>' +
+    '</div>';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePrintPreview() {
+  var overlay = document.getElementById('printOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.innerHTML = '';
+  }
+  document.body.style.overflow = '';
+}
+
+/* ================= CETAK HASIL — DESAIN BARU ================= */
+function cetakHasil(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var hasil = p.hasil || {};
+  var tanggalKode = (p.tglDaftar || '').slice(0, 10).replace(/-/g, '');
+  var antrianKode = (p.noAntrian || 'A-001').replace('A-', '');
+  var nomorLab = tanggalKode + '-' + antrianKode;
+
+  // Kelompokkan pemeriksaan per kategori
+  var grouped = {};
+  (p.tests || []).forEach(function(kode) {
+    var t = findTest(kode) || { nama: kode, kategori: 'Lainnya', satuan: '', rujukan: '-' };
+    var kat = (t.kategori || 'Lainnya').toUpperCase();
+    if (!grouped[kat]) grouped[kat] = [];
+    grouped[kat].push({ kode: kode, t: t, hasil: hasil[kode] });
+  });
+
+  // MEMBUAT "TABEL PALSU" MENGGUNAKAN DIV FLOAT
+  var rowsHtml = '';
+  Object.keys(grouped).forEach(function(kat) {
+    // Judul Kategori
+    rowsHtml += '<div style="width: 100%; margin-top: 10px; font-weight: bold; font-size: 12px; color: #000;">' + esc(kat) + '</div>';
+    
+    grouped[kat].forEach(function(item) {
+      var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
+      
+      rowsHtml += '<div style="width: 100%; margin-bottom: 4px; overflow: hidden;">' +
+        '<div style="float: left; width: 45%; font-size: 12px; color: #000; padding-right: 10px; box-sizing: border-box; text-align: left;">' + esc(item.t.nama) + '</div>' +
+        '<div style="float: left; width: 15%; text-align: center; font-size: 12px; color: #000;">' + esc(item.hasil || '-') + '</div>' +
+        '<div style="float: left; width: 40%; font-size: 12px; color: #000; padding-left: 10px; box-sizing: border-box; text-align: left;">' + esc(rujukanLengkap) + '</div>' +
+        '<div style="clear: both;"></div>' + // Wajib ada untuk menutup float
+      '</div>';
+    });
+  });
+
+  var logoKiriHtml = CLINIC.logoKiri
+    ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">'
+    : '<div style="width:60px; height:60px; border:2.5px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px;">🏥</div>';
+  
+  var logoKananHtml = CLINIC.logoKanan
+    ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">'
+    : '<div style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:32px;">⚕️</div>';
+
+  var html =
+    '<div style="position:relative; width:100%; background:#fff; padding: 20px; font-family: Arial, sans-serif;">' +
+    
+    // === HEADER ===
+    '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; padding-bottom:10px; border-bottom:2px solid #000;">' +
+      '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
+      '<div style="flex:1; text-align:center; padding: 0 10px;">' +
+        '<div style="font-size:11px; font-weight:bold; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+        '<div style="font-size:11px; font-weight:bold; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
+        '<div style="font-size:14px; font-weight:bold; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
+        '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+        '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
+      '</div>' +
+      '<div style="width:120px; height:120px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
+    '</div>' +
+
+    // === JUDUL ===
+    '<div style="text-align:center; margin-bottom:25px;">' +
+      '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
+    '</div>' +
+
+    // === INFO PASIEN ===
+    '<div style="margin-bottom:25px; font-size:12px; color:#000;">' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
+        '<div style="float: left; width: 15%;">Nama</div><div style="float: left; width: 35%;">: ' + esc(p.nama) + '</div>' +
+        '<div style="float: left; width: 20%;">Tanggal Periksa</div><div style="float: left; width: 30%;">: ' + esc(p.tglDaftar ? p.tglDaftar.slice(0, 10) : '-') + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
+        '<div style="float: left; width: 15%;">Umur</div><div style="float: left; width: 35%;">: ' + esc(umur(p.tglLahir)) + '</div>' +
+        '<div style="float: left; width: 20%;">Nomor Register</div><div style="float: left; width: 30%;">: ' + esc(nomorLab) + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+      '<div style="width: 100%; overflow: hidden; margin-bottom: 5px;">' +
+        '<div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 35%;">: ' + esc(p.alamat || '-') + '</div>' +
+        '<div style="float: left; width: 20%;">Pengirim</div><div style="float: left; width: 30%;">: ' + esc(p.pengirim || '-') + '</div>' +
+        '<div style="clear: both;"></div>' +
+      '</div>' +
+    '</div>' +
+
+    // === HEADER TABEL PALSU ===
+    '<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;">' +
+      '<div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div>' +
+      '<div style="float: left; width: 15%; text-align: center;">HASIL</div>' +
+      '<div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div>' +
+      '<div style="clear: both;"></div>' +
+    '</div>' +
+
+    // === ISI TABEL PALSU ===
+    '<div style="width: 100%;">' + rowsHtml + '</div>' +
+
+    // === AREA TANDA TANGAN (TABEL, SEJAJAR) ===
+'<div style="width: 100%; margin-top: 50px; font-size: 12px; color: #000; page-break-inside: avoid;">' +
+  '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0;">' +
+    // Baris 1: QR code di kiri saja
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;">' +
+        '<div style="width:80px; height:80px; border:1px solid #000; text-align:center; line-height:80px; font-size:9px; color:#64748b; box-sizing:border-box;">QR Code</div>' +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;"></td>' +
+    '</tr>' +
+    // Baris 2: Label
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+        '&nbsp;<br>Pemeriksa,' +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+        'Mengetahui,<br>Dokter Penanggungjawab' +
+      '</td>' +
+    '</tr>' +
+    // Baris 3: Ruang tanda tangan
+    '<tr>' +
+      '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
+      '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
+    '</tr>' +
+    // Baris 4: Nama
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+        esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+        esc(p.dokter || 'dr. Arief Sudibyo') +
+      '</td>' +
+    '</tr>' +
+    // Baris 5: NIP
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+        'NIP. 123412122000201001' +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+        'NIP. 123412122000201001' +
+      '</td>' +
+    '</tr>' +
+  '</table>' +
+'</div>' +
+
+    '</div>'; 
+
+  showPrintPreview(html, 'Hasil Lab — ' + p.nama);
+}
+
+/* ================= CETAK LAPORAN — DESAIN BARU ================= */
+function cetakLaporan() {
+  var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
+  var rows = list.map(function(p, i) {
+    var names = (p.tests || []).map(function(k) { var t = findTest(k); return t ? t.nama : k; }).join(', ');
+    return '<tr>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;text-align:center;">' + (i + 1) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:10px;">' + esc(p.noRM) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-weight:500;">' + esc(p.nama) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + esc(umur(p.tglLahir)) + ' / ' + esc(p.jk) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;color:#64748b;">' + esc(names) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + esc(p.pengirim || '-') + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + esc(p.dokter || '-') + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + esc(p.analis || '-') + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + (STATUS[p.status] ? STATUS[p.status].label : p.status) + '</td>' +
+      '<td style="padding:5px 6px;border-bottom:1px solid #e2e8f0;font-size:10px;">' + esc(fmtDate(p.tglDaftar)) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var tglCetak = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  var jamCetak = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  var totalPasien = list.length;
+  var totalSelesai = list.filter(function(p) { return p.status === 'selesai'; }).length;
+  var totalProses = list.filter(function(p) { return p.status === 'proses' || p.status === 'sampling'; }).length;
+  var totalMenunggu = list.filter(function(p) { return p.status === 'menunggu'; }).length;
+
+  var logoKiriHtml = CLINIC.logoKiri
+    ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%;max-height:100%;object-fit:contain;">'
+    : '<div style="width:52px;height:52px;border:2.5px solid ' + CLINIC.warnaHijau + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;">🏥</div>';
+  var logoKananHtml = CLINIC.logoKanan
+    ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%;max-height:100%;object-fit:contain;">'
+    : '<div style="width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:38px;">⚕️</div>';
+
+  var html =
+    '<div style="position:relative;">' +
+    
+
+    '<div style="position:relative;z-index:2;">' +
+    '<div style="display:flex;align-items:center;gap:14px;padding-bottom:10px;border-bottom:1px solid #94a3b8;margin-bottom:4px;">' +
+    '<div style="width:75px;height:75px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' + logoKiriHtml + '</div>' +
+    '<div style="flex:1;text-align:center;">' +
+    '<div style="font-size:10.5px;font-weight:600;color:#334155;letter-spacing:1px;">' + esc(CLINIC.baris1) + '</div>' +
+    '<div style="font-size:10.5px;font-weight:600;color:#334155;letter-spacing:1px;">' + esc(CLINIC.baris2) + '</div>' +
+    '<div style="font-size:15px;font-weight:800;color:#0f172a;letter-spacing:.5px;margin-top:2px;">' + esc(CLINIC.baris3) + '</div>' +
+    '<div style="font-size:9px;color:#64748b;margin-top:3px;">' + esc(CLINIC.alamat) + '</div>' +
+    '<div style="font-size:9px;color:#64748b;">Website: ' + esc(CLINIC.website) + ' • ' + esc(CLINIC.telp) + '</div>' +
+    '</div>' +
+    '<div style="width:130px;height:130px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' + logoKananHtml + '</div>' +
+    '</div>' +
+    
+
+    '<div style="text-align:center;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;padding:6px 0;margin-bottom:12px;">' +
+    '<div style="font-size:13px;font-weight:800;color:#0f172a;letter-spacing:1px;">LAPORAN DATA PASIEN LABORATORIUM</div>' +
+    '</div>' +
+
+    // Statistik
+    '<div style="display:flex;gap:8px;margin-bottom:12px;font-size:10px;">' +
+    '<div style="flex:1;padding:8px 10px;background:#fef3c7;border-radius:6px;"><b style="font-size:14px;color:#b45309;">' + totalMenunggu + '</b><br><span style="color:#78350f;">Menunggu</span></div>' +
+    '<div style="flex:1;padding:8px 10px;background:#f3e8ff;border-radius:6px;"><b style="font-size:14px;color:#7e22ce;">' + totalProses + '</b><br><span style="color:#581c87;">Diproses</span></div>' +
+    '<div style="flex:1;padding:8px 10px;background:#dcfce7;border-radius:6px;"><b style="font-size:14px;color:#15803d;">' + totalSelesai + '</b><br><span style="color:#14532d;">Selesai</span></div>' +
+    '<div style="flex:1;padding:8px 10px;background:#dbeafe;border-radius:6px;"><b style="font-size:14px;color:#1d4ed8;">' + totalPasien + '</b><br><span style="color:#1e3a8a;">Total</span></div>' +
+    '</div>' +
+
+    // Tabel
+    '<table style="width:100%;border-collapse:collapse;font-size:10px;">' +
+    '<thead><tr style="background:' + CLINIC.warnaHijau + ';color:#fff;">' +
+    '<th style="text-align:center;padding:6px;width:28px;">No</th>' +
+    '<th style="text-align:left;padding:6px;">No. RM</th>' +
+    '<th style="text-align:left;padding:6px;">Nama</th>' +
+    '<th style="text-align:left;padding:6px;">Umur/JK</th>' +
+    '<th style="text-align:left;padding:6px;">Pemeriksaan</th>' +
+    '<th style="text-align:left;padding:6px;">Pengirim</th>' +
+    '<th style="text-align:left;padding:6px;">DPJP</th>' +
+    '<th style="text-align:left;padding:6px;">Analis</th>' +
+    '<th style="text-align:left;padding:6px;">Status</th>' +
+    '<th style="text-align:left;padding:6px;">Tanggal</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>' +
+
+    // TTD
+    '<div style="margin-top:24px;display:flex;justify-content:flex-end;font-size:11px;">' +
+    '<div style="text-align:center;">' +
+    '<div style="color:#64748b;font-size:10px;margin-bottom:4px;">Dicetak: ' + esc(tglCetak) + ' ' + esc(jamCetak) + '</div>' +
+    '<div style="height:40px;"></div>' +
+    '<div style="border-top:1px solid #0f172a;padding-top:4px;font-weight:600;min-width:180px;">Petugas LabCare</div>' +
+    '</div></div>' +
+
+    '<div style="margin-top:18px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center;font-style:italic;">' +
+    'Dokumen ini dicetak otomatis oleh sistem LabCare' +
+    '</div>' +
+    '</div></div>';
+
+  showPrintPreview(html, 'Laporan Pasien — ' + totalPasien + ' data');
+}
+
+function updateClock() {
+  var d = new Date();
+  var t = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  var dd = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
+  var el = document.getElementById('clock');
+  if (el) el.textContent = t + ' • ' + dd;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+document.addEventListener('submit', function(e) {
+  if (e.target.id !== 'formDaftar') return;
+  e.preventDefault();
+  var f = new FormData(e.target);
+  var tests = Object.keys(window._pickedTests);
+  if (tests.length === 0) { alert('Pilih minimal satu pemeriksaan laboratorium.'); return; }
+  var p = {
+    id: uid(), noRM: f.get('noRM'), nama: f.get('nama').trim(),
+    tglLahir: f.get('tglLahir'), jk: f.get('jk'), telepon: f.get('telepon'),
+    pengirim: (f.get('pengirim') || '').trim(),
+    dokter: f.get('dokter'), analis: f.get('analis'), alamat: f.get('alamat'),
+    catatan: f.get('catatan'), tests: tests, hasil: {}, status: 'menunggu',
+    noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'),
+    tglDaftar: new Date().toISOString(), kesimpulan: ''
+  };
+  patients.push(p);
+  save();
+  apiCall('savePasien', p);
+  e.target.reset();
+  window._pickedTests = {};
+  window._katFilter = 'semua';
+  window._pickSearch = '';
+  document.getElementById('modalContent').innerHTML =
+    '<div class="modal-success"><div class="big-em">✅</div>' +
+    '<h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p>' +
+    '<div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
+    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Lihat Antrian</button></div>';
+  document.getElementById('modal').classList.add('open');
+});
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target.id === 'modal') closeModal();
+});
+
+loadTests();
+loadKaryawan();
+load();
+renderNav();
+render();
+setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
+if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
+</script>
+</body>
+</html>
