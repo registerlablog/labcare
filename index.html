@@ -1327,49 +1327,48 @@ function cetakHasil(id) {
     // ISI TABEL
     '<div style="width: 100%;">' + rowsHtml + '</div>' +
 
-    // TANDA TANGAN
-    '<div style="width: 100%; margin-top: 40px; font-size: 12px; color: #000; page-break-inside: avoid;">' +
-      '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0;">' +
-        '<tr>' +
-          '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;">' +
-            '<div style="width:80px; height:80px; border:1px solid #000; text-align:center; line-height:80px; font-size:9px; color:#64748b; box-sizing:border-box;">QR Code</div>' +
-          '</td>' +
-          '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;"></td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
-            '&nbsp;<br>Pemeriksa,' +
-          '</td>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
-            'Mengetahui,<br>Dokter Penanggungjawab' +
-          '</td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
-          '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
-            esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') +
-          '</td>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
-            esc(p.dokter || 'dr. Arief Sudibyo') +
-          '</td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-            'NIP. 123412122000201001' +
-          '</td>' +
-          '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-            'NIP. 123412122000201001' +
-          '</td>' +
-        '</tr>' +
-      '</table>' +
-    '</div>' +
+        '</div>';  // tutup html konten
 
-    '</div>';
+  // TTD DIPISAH — jadi footer
+  var ttdHtml =
+    '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0; font-size:12px; color:#000;">' +
+      '<tr>' +
+        '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;">' +
+          '<div style="width:80px; height:80px; border:1px solid #000; text-align:center; line-height:80px; font-size:9px; color:#64748b; box-sizing:border-box;">QR Code</div>' +
+        '</td>' +
+        '<td style="width:50%; vertical-align:top; padding:0 12px; border:0 none;"></td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+          '&nbsp;<br>Pemeriksa,' +
+        '</td>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:16px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+          'Mengetahui,<br>Dokter Penanggungjawab' +
+        '</td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
+        '<td style="width:50%; height:56px; padding:0 12px; border:0 none;"></td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+          esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') +
+        '</td>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+          esc(p.dokter || 'dr. Arief Sudibyo') +
+        '</td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+          'NIP. 123412122000201001' +
+        '</td>' +
+        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+          'NIP. 123412122000201001' +
+        '</td>' +
+      '</tr>' +
+    '</table>';
 
-  showPrintPreview(html, 'Hasil Lab — ' + p.nama);
+  showPrintPreview(html, 'Hasil Lab — ' + p.nama, { footerHtml: ttdHtml });
 }
 
 /* ================= CETAK LAPORAN ================= */
