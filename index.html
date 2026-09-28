@@ -1263,12 +1263,12 @@ function buildTwoColumnHtml(grouped) {
         var rujukanLengkap = item.t.rujukan + (item.t.satuan ? ' ' + item.t.satuan : '');
         // FIX: margin item dirapatkan (5px→2px), line-height 1.2→1.1, margin-top 1px→0
         h += '<div style="margin-bottom:2px;">' +
-          '<div style="font-size:9.5px; line-height:1.1; overflow:hidden;">' +
-            '<span style="float:left; width:70%; color:#000;">' + esc(item.t.nama) + '</span>' +
-            '<span style="float:right; width:28%; text-align:right; font-weight:bold; color:#000;">' + esc(item.hasil || '-') + '</span>' +
-            '<div style="clear:both;"></div>' +
-          '</div>' +
-          '<div style="font-size:7.5px; color:#555; line-height:1.1;">' + esc(rujukanLengkap) + '</div>' +
+          '<div style="line-height:1.15; overflow:hidden;">' +
+  '<span style="float:left; width:65%; font-size:10px; color:#000;">' + esc(item.t.nama) + '</span>' +
+  '<span style="float:right; width:33%; text-align:right; font-weight:bold; font-size:12px; color:#000;">' + esc(item.hasil || '-') + '</span>' +
+  '<div style="clear:both;"></div>' +
+'</div>' +
+'<div style="font-size:8px; color:#555; line-height:1.15;">' + esc(rujukanLengkap) + '</div>' +
         '</div>';
       });
       return h;
