@@ -1452,36 +1452,40 @@ var ttdDokterHtml = dokterData && dokterData.ttd
 
   // ===== TTD (footer) =====
   var ttdHtml =
-    '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0; font-size:12px; color:#000;">' +
-      '<tr>' +
-  '<td style="width:50%; vertical-align:top; text-align:center; padding:6px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
-    '&nbsp;<br>Pemeriksa,' +
-  '</td>' +
-  '<td style="width:50%; vertical-align:top; text-align:center; padding:6px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
-    'Mengetahui,<br>Dokter Penanggungjawab' +
-  '</td>' +
-'</tr>' +
-'<tr>' +
-  '<td style="width:50%; height:80px; padding:0 12px; border:0 none;"></td>' +
-  '<td style="width:50%; height:80px; padding:0 12px; border:0 none;"></td>' +
-'</tr>' +
-      '<tr>' +
-        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
-          ttdAnalisHtml + esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') +
-        '</td>' +
-        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
-          ttdDokterHtml + esc(p.dokter || 'dr. Arief Sudibyo') +
-        '</td>' +
-      '</tr>' +
-      '<tr>' +
-        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-          'NIP. 123412122000201001' +
-        '</td>' +
-        '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-          'NIP. 123412122000201001' +
-        '</td>' +
-      '</tr>' +
-    '</table>';
+  '<table style="width:100%; border-collapse:collapse; border:0; border-spacing:0; font-size:12px; color:#000;">' +
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:6px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+        '&nbsp;<br>Pemeriksa,' +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:6px 12px 0; font-weight:bold; line-height:1.5; border:0 none;">' +
+        'Mengetahui,<br>Dokter Penanggungjawab' +
+      '</td>' +
+    '</tr>' +
+    '<tr>' +
+      '<td style="width:50%; height:80px; padding:0 12px; border:0 none; position:relative;">' +
+        (ttdAnalisHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdAnalisHtml + '</div>' : '') +
+      '</td>' +
+      '<td style="width:50%; height:80px; padding:0 12px; border:0 none; position:relative;">' +
+        (ttdDokterHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokterHtml + '</div>' : '') +
+      '</td>' +
+    '</tr>' +
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+        esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; font-weight:bold; border:0 none;">' +
+        esc(p.dokter || 'dr. Arief Sudibyo') +
+      '</td>' +
+    '</tr>' +
+    '<tr>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+        'NIP. 123412122000201001' +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+        'NIP. 123412122000201001' +
+      '</td>' +
+    '</tr>' +
+  '</table>';
 
   showPrintPreview(html, 'Hasil Lab — ' + p.nama, { footerHtml: ttdHtml });
 }
