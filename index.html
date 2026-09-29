@@ -1389,10 +1389,10 @@ function cetakHasil(id) {
 var analisData = analisList.find(function(a) { return a.nama === p.analis; });
 var dokterData = dokterList.find(function(d) { return d.nama === p.dokter; });
 var ttdAnalisHtml = analisData && analisData.ttd
-  ? '<img src="' + analisData.ttd + '" style="max-height:100px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">'
+  ? '<img src="' + analisData.ttd + '" style="max-height:130px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">'
   : '';
 var ttdDokterHtml = dokterData && dokterData.ttd
-  ? '<img src="' + dokterData.ttd + '" style="max-height:55px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">'
+  ? '<img src="' + dokterData.ttd + '" style="max-height:130px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">'
   : '';
   var html =
     '<div style="position:relative; width:100%; background:transparent; padding: 0; font-family: Arial, sans-serif;">' +
