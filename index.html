@@ -1117,7 +1117,7 @@ function hapusTTD() {
   if (ph) ph.style.display = '';
   toastMsg('Tanda tangan dihapus saat disimpan');
 }
-function simpanKaryawan(jenis) {
+async function simpanKaryawan(jenis) {
   var nama = (document.getElementById('k_nama').value || '').trim();
   var kodeEl = document.getElementById('k_kode');
   var kode = kodeEl ? kodeEl.value.trim() : '';
@@ -1125,18 +1125,35 @@ function simpanKaryawan(jenis) {
   var list = jenis === 'analis' ? analisList : dokterList;
   var saveFn = jenis === 'analis' ? saveAnalis : saveDokter;
 
-  // TTD: undefined = tidak diubah, '' = dihapus, string = TTD baru
   var ttdBaru = window._ttdTemp;
+  var ttdUrl = undefined; // undefined = tidak diubah, '' = dihapus, string = URL baru
+
+  // Kalau ada upload baru (base64), kirim ke Drive dulu
+  if (ttdBaru === '') {
+    ttdUrl = '';
+  } else if (ttdBaru && ttdBaru.indexOf('data:image') === 0) {
+    toastMsg('Mengunggah tanda tangan ke Drive...');
+    var up = await apiCall('uploadTTD', { jenis: jenis, nama: nama, base64: ttdBaru });
+    if (!up || !up.ok) {
+      toastMsg('Gagal upload: ' + (up && up.error ? up.error : 'error'), 'err');
+      return;
+    }
+    ttdUrl = up.url;
+    toastMsg('Tanda tangan tersimpan di Drive');
+  } else if (ttdBaru && ttdBaru.indexOf('http') === 0) {
+    // Sudah berupa URL (kalau ada kasus edit tanpa re-upload)
+    ttdUrl = ttdBaru;
+  }
 
   if (editKaryawanId) {
     var k = list.find(function(x) { return x.id === editKaryawanId; });
     if (!k) { toastMsg('Data tidak ditemukan'); return; }
     k.nama = nama; k.kode = kode;
-    if (ttdBaru !== undefined) k.ttd = ttdBaru;
+    if (ttdUrl !== undefined) k.ttd = ttdUrl;
     saveFn(); closeModal(); render();
     toastMsg('Data diperbarui');
   } else {
-    list.push({ id: uidK(), nama: nama, kode: kode, ttd: ttdBaru || '' });
+    list.push({ id: uidK(), nama: nama, kode: kode, ttd: ttdUrl || '' });
     saveFn(); closeModal(); render();
     toastMsg('Data ditambahkan');
   }
