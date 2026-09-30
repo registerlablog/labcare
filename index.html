@@ -414,6 +414,7 @@ var view = 'dashboard';
 var mobileNavOpen = false;
 var editKode = null;
 var editKaryawanId = null;
+var stempelUrl = '';
 
 window._pickedTests = window._pickedTests || {};
 window._katFilter = window._katFilter || 'semua';
@@ -886,9 +887,10 @@ function goToMaster(tab) {
 function viewMaster() {
   var tab = window._masterTab || 'pemeriksaan';
   var tabsHtml =
-    '<button class="pill' + (tab === 'pemeriksaan' ? ' active' : '') + '" onclick="window._masterTab=\'pemeriksaan\'; render();">🔬 Pemeriksaan</button>' +
-    '<button class="pill' + (tab === 'analis' ? ' active' : '') + '" onclick="window._masterTab=\'analis\'; render();">👨‍🔬 Analis</button>' +
-    '<button class="pill' + (tab === 'dokter' ? ' active' : '') + '" onclick="window._masterTab=\'dokter\'; render();">🩺 Dokter</button>';
+  '<button class="pill' + (tab === 'pemeriksaan' ? ' active' : '') + '" onclick="window._masterTab=\'pemeriksaan\'; render();">🔬 Pemeriksaan</button>' +
+  '<button class="pill' + (tab === 'analis' ? ' active' : '') + '" onclick="window._masterTab=\'analis\'; render();">👨🔬 Analis</button>' +
+  '<button class="pill' + (tab === 'dokter' ? ' active' : '') + '" onclick="window._masterTab=\'dokter\'; render();">🩺 Dokter</button>' +
+  '<button class="pill' + (tab === 'stempel' ? ' active' : '') + '" onclick="window._masterTab=\'stempel\'; render();">🏢 Stempel</button>';
   var content = '';
   if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
   else if (tab === 'analis') content = viewMasterAnalis();
@@ -998,6 +1000,70 @@ function viewMasterDokter() {
     '<div class="table-wrap"><table>' +
     '<thead><tr><th style="width:50px;">No</th><th>Nama Dokter</th><th>SIP / Kode</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table></div>';
+}
+function viewMasterStempel() {
+  var s = stempelUrl || '';
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Stempel Klinik</h3>' +
+    '<p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Stempel akan otomatis muncul di atas tanda tangan dokter saat cetak.</p></div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<label class="lbl">Gambar Stempel <span class="lbl-hint">(PNG transparan disarankan, maks 500 KB)</span></label>' +
+      '<input type="file" id="stempelFile" accept="image/*" class="inp" onchange="previewStempel(this)">' +
+      '<div style="margin-top:12px; padding:20px; border:1px dashed var(--slate-300); border-radius:10px; background:#fff; min-height:160px; display:flex; align-items:center; justify-content:center;">' +
+        '<img id="stempelPreview" src="' + (s ? esc(s) : '') + '" style="max-height:140px; max-width:100%; object-fit:contain; ' + (s ? '' : 'display:none;') + '">' +
+        '<span id="stempelPlaceholder" style="font-size:13px; color:var(--slate-400); ' + (s ? 'display:none;' : '') + '">Belum ada stempel</span>' +
+      '</div>' +
+      '<div class="btn-row">' +
+        '<button class="btn btn-primary" onclick="simpanStempel()">💾 Simpan Stempel</button>' +
+        (s ? '<button class="btn btn-secondary" onclick="hapusStempel()">🗑️ Hapus Stempel</button>' : '') +
+      '</div>' +
+    '</div>';
+}
+
+function previewStempel(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024) {
+    alert('Ukuran gambar terlalu besar. Maksimal 500 KB.');
+    input.value = '';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    window._stempelTemp = e.target.result;
+    var prev = document.getElementById('stempelPreview');
+    var ph = document.getElementById('stempelPlaceholder');
+    if (prev) { prev.src = e.target.result; prev.style.display = ''; }
+    if (ph) ph.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function simpanStempel() {
+  var ttdBaru = window._stempelTemp;
+  if (!ttdBaru || ttdBaru.indexOf('data:image') !== 0) {
+    toastMsg('Pilih gambar stempel terlebih dahulu');
+    return;
+  }
+  toastMsg('Mengunggah stempel ke Drive...');
+  var up = await apiCall('uploadTTD', { jenis: 'stempel', nama: 'klinik', base64: ttdBaru });
+  if (!up || !up.ok) {
+    toastMsg('Gagal upload: ' + (up && up.error ? up.error : 'error'), 'err');
+    return;
+  }
+  stempelUrl = up.url;
+  try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {}
+  window._stempelTemp = undefined;
+  render();
+  toastMsg('Stempel tersimpan');
+}
+
+function hapusStempel() {
+  if (!confirm('Hapus stempel klinik?')) return;
+  stempelUrl = '';
+  try { localStorage.removeItem('labcare_stempel_url'); } catch (e) {}
+  render();
+  toastMsg('Stempel dihapus');
 }
 
 function modalTest(kode) {
@@ -1467,6 +1533,7 @@ var ttdDokterHtml = dokterData && dokterData.ttd
       '</td>' +
       '<td style="width:50%; height:80px; padding:0 12px; border:0 none; position:relative;">' +
         (ttdDokterHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokterHtml + '</div>' : '') +
+    (stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90px; height:90px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '') +
       '</td>' +
     '</tr>' +
     '<tr>' +
@@ -1617,6 +1684,11 @@ document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target.id === 'modal') closeModal();
 });
 
+  try {
+  var _s = localStorage.getItem('labcare_stempel_url');
+  if (_s) stempelUrl = _s;
+} catch (e) {}
+  
 loadTests();
 loadKaryawan();
 load();
