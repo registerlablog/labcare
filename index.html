@@ -895,6 +895,7 @@ function viewMaster() {
   if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
   else if (tab === 'analis') content = viewMasterAnalis();
   else if (tab === 'dokter') content = viewMasterDokter();
+  else if (tab === 'stempel') content = viewMasterStempel();
   return '<div class="page-header"><h2>🧬 Master Lab</h2><p>Kelola master data laboratorium: pemeriksaan, analis, dan dokter.</p></div>' +
     '<div class="pill-row">' + tabsHtml + '</div>' + content;
 }
