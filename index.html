@@ -866,34 +866,58 @@ var _panggilTimer;
     var AudioCtx = window.AudioContext || window.webkitAudioContext;
     var ctx = new AudioCtx();
     
+    // Master volume
+    var masterGain = ctx.createGain();
+    masterGain.gain.value = 0.6;
+    masterGain.connect(ctx.destination);
+    
     function playNote(freq, startTime, duration, vol) {
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      var filter = ctx.createBiquadFilter();
       
+      // Filter untuk suara lebih lembut (seperti chime YouTube)
+      filter.type = 'lowpass';
+      filter.frequency.value = 4000;
+      filter.Q.value = 1;
+      
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+      
+      // Waveform: sine + sedikit triangle untuk karakter "bell"
       osc.type = 'sine';
       osc.frequency.value = freq;
       
+      // Envelope (attack cepat, decay lembut seperti bell)
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(vol, startTime + 0.05);
+      gain.gain.linearRampToValueAtTime(vol, startTime + 0.008);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
       
       osc.start(startTime);
       osc.stop(startTime + duration);
     }
+    
     var now = ctx.currentTime;
-    // Pola chime 4 nada khas stasiun
-    // Pola chime 3 nada - YouTube call to attention
-playNote(880,     now,        0.30, 0.30);  // A5
-playNote(1108.73, now + 0.30, 0.30, 0.30);  // C#6
-playNote(1318.51, now + 0.60, 0.70, 0.35);  // E6
+    
+    // YouTube Call to Attention - 3 nada naik (F#5 - A#5 - C#6)
+    // Nada dasar F# Mayor - cerah dan profesional
+    playNote(739.99,  now,        0.25, 0.35);  // F#5
+    playNote(932.33,  now + 0.18, 0.25, 0.35);  // A#5
+    playNote(1108.73, now + 0.36, 0.60, 0.40);  // C#6
+    
+    // Tambahkan echo/reverb effect (seperti YouTube)
+    // Nada pertama echo
+    playNote(739.99,  now + 0.60, 0.20, 0.15);
+    playNote(932.33,  now + 0.78, 0.20, 0.15);
+    playNote(1108.73, now + 0.96, 0.40, 0.20);
     
     // Setelah chime selesai, jalankan callback (TTS)
     setTimeout(function() {
       if (callback) callback();
       try { ctx.close(); } catch (e) {}
-    }, 1600);
+    }, 1800);
+    
   } catch (e) {
     console.warn('[LabCare] Chime error:', e);
     if (callback) callback();
