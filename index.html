@@ -507,11 +507,18 @@ async function syncAllFromServer(silent) {
     localStorage.setItem('labcare_analis',   JSON.stringify(analisList));
     localStorage.setItem('labcare_dokter',   JSON.stringify(dokterList));
   } catch (e) {}
+  try {
+    var sr = await apiCall('getStempel');
+    if (sr && sr.ok && sr.url) {
+      stempelUrl = sr.url;
+      try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {}
+    }
+  } catch (e) {}
+
   renderNav();
   render();
   if (!silent) toastMsg('✅ Tersinkron dengan Spreadsheet', 'ok');
 }
-
 function normalizePasien(p) {
   if (!p) return p;
   if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } }
@@ -1054,19 +1061,20 @@ async function simpanStempel() {
   }
   stempelUrl = up.url;
   try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {}
+  await apiCall('saveStempel', { url: stempelUrl });   // ← TAMBAH BARIS INI
   window._stempelTemp = undefined;
   render();
   toastMsg('Stempel tersimpan');
 }
 
-function hapusStempel() {
+async function hapusStempel() {
   if (!confirm('Hapus stempel klinik?')) return;
   stempelUrl = '';
   try { localStorage.removeItem('labcare_stempel_url'); } catch (e) {}
+  await apiCall('saveStempel', { url: '' });
   render();
   toastMsg('Stempel dihapus');
 }
-
 function modalTest(kode) {
   editKode = kode || null;
   var isEdit = !!kode;
