@@ -419,6 +419,7 @@ var stempelUrl = '';
 window._pickedTests = window._pickedTests || {};
 window._katFilter = window._katFilter || 'semua';
 window._pickSearch = window._pickSearch || '';
+window._dateFilter = window._dateFilter || 'today';
 
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -793,16 +794,37 @@ function selectAllVisible() {
 
 function viewAntrian() {
   var filter = window._filter || 'semua';
+  var dateFilter = window._dateFilter || 'today';
+  
   var list = patients.slice().sort(function(a, b) { return (a.tglDaftar || '').localeCompare(b.tglDaftar || ''); });
+  
+  // Filter tanggal: hari ini atau semua
+  if (dateFilter === 'today') {
+    list = list.filter(function(p) { 
+      return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); 
+    });
+  }
+  
   var filtered = filter === 'semua' ? list : list.filter(function(p) { return p.status === filter; });
+  
+  // Tab status
   var tabsHtml = ['semua'].concat(Object.keys(STATUS)).map(function(k) {
     var count = k === 'semua' ? list.length : list.filter(function(p) { return p.status === k; }).length;
     var label = k === 'semua' ? 'Semua' : STATUS[k].label;
     return '<button class="pill' + (filter === k ? ' active' : '') + '" onclick="window._filter=\'' + k + '\'; render();">' + label + ' <span class="count">(' + count + ')</span></button>';
   }).join('');
+  
+  // Tab tanggal
+  var dateTabsHtml = 
+    '<button class="pill' + (dateFilter === 'today' ? ' active' : '') + '" onclick="window._dateFilter=\'today\'; window._filter=\'semua\'; render();">📅 Hari Ini</button>' +
+    '<button class="pill' + (dateFilter === 'all' ? ' active' : '') + '" onclick="window._dateFilter=\'all\'; window._filter=\'semua\'; render();">📋 Semua Tanggal</button>';
+  
   var content;
   if (filtered.length === 0) {
-    content = '<div class="empty-state"><span class="em">📭</span><p>Tidak ada pasien pada kategori ini.</p></div>';
+    var emptyMsg = dateFilter === 'today' 
+      ? 'Belum ada pasien terdaftar hari ini.' 
+      : 'Tidak ada pasien pada kategori ini.';
+    content = '<div class="empty-state"><span class="em">📭</span><p>' + emptyMsg + '</p></div>';
   } else {
     content = '<div class="patient-grid">' + filtered.map(function(p) {
       var testChips = (p.tests || []).map(function(k) {
@@ -831,7 +853,9 @@ function viewAntrian() {
         '</div></div>';
     }).join('') + '</div>';
   }
+  
   return '<div class="page-header"><h2>Antrian & Status</h2><p>Kelola alur status pasien dari pendaftaran hingga selesai.</p></div>' +
+    '<div class="pill-row">' + dateTabsHtml + '</div>' +
     '<div class="pill-row">' + tabsHtml + '</div>' + content;
 }
 
