@@ -899,7 +899,7 @@ function panggilPasien(id) {
       var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
       
       var utt = new SpeechSynthesisUtterance(teks);
-      utt.lang = 'jv-ID';
+      utt.lang = 'id-ID';
       utt.rate = 0.7;
       utt.pitch = 0.9;
       utt.volume = 1;
@@ -908,7 +908,7 @@ function panggilPasien(id) {
       utt.onend = function() {
         setTimeout(function() {
           var utt2 = new SpeechSynthesisUtterance(teks);
-          utt2.lang = 'jv-ID';
+          utt2.lang = 'id-ID';
           utt2.rate = 0.7;
           utt2.pitch = 0.9;
           utt2.volume = 1;
