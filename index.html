@@ -882,23 +882,6 @@ var _panggilTimer;
       osc.start(startTime);
       osc.stop(startTime + duration);
     }
-    // Pola chime 4 nada khas stasiun
-    playNote(880,  now,        0.35, 0.35);  // A5
-    playNote(1175, now + 0.30, 0.35, 0.35);  // D6
-    playNote(987,  now + 0.60, 0.35, 0.35);  // B5
-    playNote(1318, now + 0.90, 0.60, 0.40);  // E6
-    
-    // Setelah chime selesai, jalankan callback (TTS)
-    setTimeout(function() {
-      if (callback) callback();
-      try { ctx.close(); } catch (e) {}
-    }, 1600);
-  } catch (e) {
-    console.warn('[LabCare] Chime error:', e);
-    if (callback) callback();
-  }
-}
-    
     var now = ctx.currentTime;
     // Pola chime 4 nada khas stasiun
     playNote(880,  now,        0.35, 0.35);  // A5
