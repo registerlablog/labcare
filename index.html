@@ -900,7 +900,7 @@ function panggilPasien(id) {
       
       var utt = new SpeechSynthesisUtterance(teks);
       utt.lang = 'id-ID';
-      utt.rate = 0.9;
+      utt.rate = 0.7;
       utt.pitch = 0.9;
       utt.volume = 1;
       if (suaraID) utt.voice = suaraID;
@@ -909,7 +909,7 @@ function panggilPasien(id) {
         setTimeout(function() {
           var utt2 = new SpeechSynthesisUtterance(teks);
           utt2.lang = 'id-ID';
-          utt2.rate = 0.9;
+          utt2.rate = 0.7;
           utt2.pitch = 0.9;
           utt2.volume = 1;
           if (suaraID) utt2.voice = suaraID;
