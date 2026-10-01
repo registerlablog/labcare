@@ -861,6 +861,64 @@ function selectAllVisible() {
   toastMsg(filtered.length + ' pemeriksaan ditambahkan');
 }
 var _panggilTimer;
+  function mainkanChime(callback) {
+  try {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    var ctx = new AudioCtx();
+    
+    function playNote(freq, startTime, duration, vol) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(vol, startTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    }
+    
+    var now = ctx.currentTime;
+    // Pola chime 4 nada khas stasiun
+    playNote(880,  now,        0.35, 0.35);  // A5
+    playNote(1175, now + 0.30, 0.35, 0.35);  // D6
+    playNote(987,  now + 0.60, 0.35, 0.35);  // B5
+    playNote(1318, now + 0.90, 0.60, 0.40);  // E6
+    
+    // Setelah chime selesai, jalankan callback (TTS)
+    setTimeout(function() {
+      if (callback) callback();
+      try { ctx.close(); } catch (e) {}
+    }, 1600);
+  } catch (e) {
+    console.warn('[LabCare] Chime error:', e);
+    if (callback) callback();
+  }
+}
+    
+    var now = ctx.currentTime;
+    // Pola chime 4 nada khas stasiun
+    playNote(880,  now,        0.35, 0.35);  // A5
+    playNote(1175, now + 0.30, 0.35, 0.35);  // D6
+    playNote(987,  now + 0.60, 0.35, 0.35);  // B5
+    playNote(1318, now + 0.90, 0.60, 0.40);  // E6
+    
+    // Setelah chime selesai, jalankan callback (TTS)
+    setTimeout(function() {
+      if (callback) callback();
+      try { ctx.close(); } catch (e) {}
+    }, 1600);
+  } catch (e) {
+    console.warn('[LabCare] Chime error:', e);
+    if (callback) callback();
+  }
+}
+
 function panggilPasien(id) {
   var p = patients.find(function(x) { return x.id === id; });
   if (!p) return;
@@ -871,37 +929,41 @@ function panggilPasien(id) {
   var ov = document.getElementById('panggilOverlay');
   ov.classList.add('open');
   
-  try {
-    speechSynthesis.cancel();
-    var teks = 'Nomor antrian ' + (p.noAntrian || '').replace('A-', 'A ') + ', silakan menuju ruang sampling';
-    var voices = speechSynthesis.getVoices();
-    var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
-    
-    var utt = new SpeechSynthesisUtterance(teks);
-    utt.lang = 'id-ID';
-    utt.rate = 0.9;
-    utt.volume = 1;
-    if (suaraID) utt.voice = suaraID;
-    
-    utt.onend = function() {
-      setTimeout(function() {
-        var utt2 = new SpeechSynthesisUtterance(teks);
-        utt2.lang = 'id-ID';
-        utt2.rate = 0.9;
-        if (suaraID) utt2.voice = suaraID;
-        speechSynthesis.speak(utt2);
-      }, 800);
-    };
-    
-    speechSynthesis.speak(utt);
-  } catch (e) {
-    console.warn('[LabCare] TTS error:', e);
-  }
+  // Chime dulu, baru TTS
+  mainkanChime(function() {
+    try {
+      speechSynthesis.cancel();
+      var teks = 'Nomor antrian ' + (p.noAntrian || '').replace('A-', 'A ') + ', silakan menuju ruang sampling';
+      var voices = speechSynthesis.getVoices();
+      var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
+      
+      var utt = new SpeechSynthesisUtterance(teks);
+      utt.lang = 'id-ID';
+      utt.rate = 0.85;
+      utt.pitch = 1;
+      utt.volume = 1;
+      if (suaraID) utt.voice = suaraID;
+      
+      utt.onend = function() {
+        setTimeout(function() {
+          var utt2 = new SpeechSynthesisUtterance(teks);
+          utt2.lang = 'id-ID';
+          utt2.rate = 0.85;
+          utt2.pitch = 1;
+          if (suaraID) utt2.voice = suaraID;
+          speechSynthesis.speak(utt2);
+        }, 700);
+      };
+      
+      speechSynthesis.speak(utt);
+    } catch (e) {
+      console.warn('[LabCare] TTS error:', e);
+    }
+  });
   
   clearTimeout(_panggilTimer);
-  _panggilTimer = setTimeout(tutupPanggil, 10000);
+  _panggilTimer = setTimeout(tutupPanggil, 13000);
 }
-
 function tutupPanggil() {
   var ov = document.getElementById('panggilOverlay');
   if (ov) ov.classList.remove('open');
