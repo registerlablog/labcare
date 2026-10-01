@@ -692,6 +692,16 @@ function viewPendaftaran() {
     '<div><label class="lbl">No. Telepon</label><input name="telepon" class="inp" placeholder="08xxxxxxxxxx"></div>' +
     '<div><label class="lbl">Pengirim <span class="lbl-hint">(asal rujukan / instansi)</span></label>' +
       '<input name="pengirim" class="inp" placeholder="Contoh: Puskesmas Bondowoso / RS Bhayangkara"></div>' +
+    '<div style="grid-column:1/-1;"><label class="lbl">Status Spesimen *</label>' +
+  '<div style="display:flex;gap:24px;padding-top:8px;flex-wrap:wrap;">' +
+    '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">' +
+      '<input type="radio" name="spesimen" value="belum" checked required style="accent-color:var(--primary);width:18px;height:18px;cursor:pointer;"> 📦 Belum Ada (perlu sampling)' +
+    '</label>' +
+    '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">' +
+      '<input type="radio" name="spesimen" value="ada" required style="accent-color:var(--primary);width:18px;height:18px;cursor:pointer;"> 📦 Sudah Ada (dari luar)' +
+    '</label>' +
+  '</div>' +
+'</div>' +
     '<div><label class="lbl">Dokter Penanggung Jawab</label>' + dokterField + '</div>' +
     '<div><label class="lbl">Nama Analis</label>' + analisField + '</div>' +
     '</div>' +
@@ -843,6 +853,9 @@ function viewAntrian() {
         '<span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></div>' +
         '<h4>' + esc(p.nama) + '</h4>' +
         '<p class="meta">' + (p.jk === 'L' ? 'Laki-laki' : 'Perempuan') + ' • ' + esc(umur(p.tglLahir)) + '</p>' +
+        (p.spesimen === 'ada' 
+  ? '<p class="meta" style="color:#16a34a;font-weight:600;">📦 Spesimen: Sudah ada (dari luar)</p>' 
+  : '<p class="meta" style="color:#d97706;font-weight:600;">📦 Spesimen: Perlu sampling</p>') +  
         (p.pengirim ? '<p class="meta">📤 Pengirim: ' + esc(p.pengirim) + '</p>' : '') +
         (p.dokter ? '<p class="meta">DPJP: ' + esc(p.dokter) + '</p>' : '') +
         (p.analis ? '<p class="meta">Analis: ' + esc(p.analis) + '</p>' : '') +
@@ -1689,15 +1702,18 @@ document.addEventListener('submit', function(e) {
   var f = new FormData(e.target);
   var tests = Object.keys(window._pickedTests);
   if (tests.length === 0) { alert('Pilih minimal satu pemeriksaan laboratorium.'); return; }
-  var p = {
-    id: uid(), noRM: f.get('noRM'), nama: f.get('nama').trim(),
-    tglLahir: f.get('tglLahir'), jk: f.get('jk'), telepon: f.get('telepon'),
-    pengirim: (f.get('pengirim') || '').trim(),
-    dokter: f.get('dokter'), analis: f.get('analis'), alamat: f.get('alamat'),
-    catatan: f.get('catatan'), tests: tests, hasil: {}, status: 'menunggu',
-    noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'),
-    tglDaftar: new Date().toISOString(), kesimpulan: ''
-  };
+  var spesimen = f.get('spesimen') || 'belum';
+var statusAwal = spesimen === 'ada' ? 'proses' : 'menunggu';
+var p = {
+  id: uid(), noRM: f.get('noRM'), nama: f.get('nama').trim(),
+  tglLahir: f.get('tglLahir'), jk: f.get('jk'), telepon: f.get('telepon'),
+  pengirim: (f.get('pengirim') || '').trim(),
+  dokter: f.get('dokter'), analis: f.get('analis'), alamat: f.get('alamat'),
+  catatan: f.get('catatan'), tests: tests, hasil: {}, status: statusAwal,
+  spesimen: spesimen,
+  noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'),
+  tglDaftar: new Date().toISOString(), kesimpulan: ''
+};
   patients.push(p);
   save();
   apiCall('savePasien', p);
