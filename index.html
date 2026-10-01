@@ -305,6 +305,58 @@ tbody tr:hover { background: var(--slate-50); }
     page-break-inside: avoid;
   }
 }
+/* ===== PANGGILAN BIOSKOP ===== */
+#panggilOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  z-index: 99998;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #fff;
+  padding: 40px 20px;
+  text-align: center;
+  animation: panggilIn 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+#panggilOverlay.open { display: flex; }
+@keyframes panggilIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
+#panggilOverlay .panggil-label {
+  font-size: 22px; font-weight: 600; color: #94a3b8;
+  letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px;
+}
+#panggilOverlay .panggil-no {
+  font-size: 140px; font-weight: 900;
+  font-family: ui-monospace, monospace;
+  color: #fbbf24; letter-spacing: 8px; line-height: 1;
+  text-shadow: 0 0 40px rgba(251,191,36,.6);
+  animation: panggilPulse 1.5s ease-in-out infinite;
+}
+@keyframes panggilPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+#panggilOverlay .panggil-nama {
+  font-size: 36px; font-weight: 700;
+  margin-top: 30px; color: #fff;
+}
+#panggilOverlay .panggil-ruang {
+  font-size: 22px; margin-top: 16px; color: #cbd5e1;
+}
+#panggilOverlay .panggil-close {
+  position: absolute; top: 24px; right: 24px;
+  background: rgba(255,255,255,.15); border: none; color: #fff;
+  font-size: 32px; width: 56px; height: 56px;
+  border-radius: 50%; cursor: pointer; font-family: inherit;
+}
+#panggilOverlay .panggil-close:hover { background: rgba(255,255,255,.25); }
+@media (max-width: 767px) {
+  #panggilOverlay .panggil-no { font-size: 90px; letter-spacing: 4px; }
+  #panggilOverlay .panggil-nama { font-size: 24px; }
+  #panggilOverlay .panggil-ruang { font-size: 16px; }
+  #panggilOverlay .panggil-label { font-size: 14px; letter-spacing: 2px; }
+}
 #printArea { display: none; }
 </style>
 </head>
@@ -340,6 +392,13 @@ tbody tr:hover { background: var(--slate-50); }
 
 <div class="modal-overlay" id="modal"><div class="modal" id="modalContent"></div></div>
 <div class="toast" id="toast"></div>
+<div id="panggilOverlay">
+  <button class="panggil-close" onclick="tutupPanggil()">&times;</button>
+  <div class="panggil-label">Nomor Antrian</div>
+  <div class="panggil-no" id="panggilNo">A-000</div>
+  <div class="panggil-nama" id="panggilNama">—</div>
+  <div class="panggil-ruang">Silakan menuju ruang sampling</div>
+</div>
 <div id="printArea"></div>
 
 <script>
@@ -801,6 +860,54 @@ function selectAllVisible() {
   refreshPicker();
   toastMsg(filtered.length + ' pemeriksaan ditambahkan');
 }
+var _panggilTimer;
+function panggilPasien(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  
+  document.getElementById('panggilNo').textContent = p.noAntrian || 'A-000';
+  document.getElementById('panggilNama').textContent = p.nama || '';
+  
+  var ov = document.getElementById('panggilOverlay');
+  ov.classList.add('open');
+  
+  try {
+    speechSynthesis.cancel();
+    var teks = 'Nomor antrian ' + (p.noAntrian || '').replace('A-', 'A ') + ', silakan menuju ruang sampling';
+    var voices = speechSynthesis.getVoices();
+    var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
+    
+    var utt = new SpeechSynthesisUtterance(teks);
+    utt.lang = 'id-ID';
+    utt.rate = 0.9;
+    utt.volume = 1;
+    if (suaraID) utt.voice = suaraID;
+    
+    utt.onend = function() {
+      setTimeout(function() {
+        var utt2 = new SpeechSynthesisUtterance(teks);
+        utt2.lang = 'id-ID';
+        utt2.rate = 0.9;
+        if (suaraID) utt2.voice = suaraID;
+        speechSynthesis.speak(utt2);
+      }, 800);
+    };
+    
+    speechSynthesis.speak(utt);
+  } catch (e) {
+    console.warn('[LabCare] TTS error:', e);
+  }
+  
+  clearTimeout(_panggilTimer);
+  _panggilTimer = setTimeout(tutupPanggil, 10000);
+}
+
+function tutupPanggil() {
+  var ov = document.getElementById('panggilOverlay');
+  if (ov) ov.classList.remove('open');
+  clearTimeout(_panggilTimer);
+  try { speechSynthesis.cancel(); } catch (e) {}
+}
 
 function viewAntrian() {
   var filter = window._filter || 'semua';
@@ -861,9 +968,12 @@ function viewAntrian() {
         (p.analis ? '<p class="meta">Analis: ' + esc(p.analis) + '</p>' : '') +
         '<div class="test-chips">' + testChips + '</div>' +
         '<div class="patient-card-actions">' + actionsHtml +
-        '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
-        '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
-        '</div></div>';
+(p.spesimen !== 'ada' && p.status === 'menunggu'
+  ? '<button class="btn-icon" onclick="panggilPasien(\'' + p.id + '\')" title="Panggil ke Sampling" style="background:#fef3c7;color:#b45309;font-weight:bold;">🔊</button>'
+  : '') +
+'<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
+'<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
+'</div></div>';
     }).join('') + '</div>';
   }
   
