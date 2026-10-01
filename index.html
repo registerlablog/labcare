@@ -884,10 +884,10 @@ var _panggilTimer;
     }
     var now = ctx.currentTime;
     // Pola chime 4 nada khas stasiun
-    playNote(880,  now,        0.35, 0.35);  // A5
-    playNote(1175, now + 0.30, 0.35, 0.35);  // D6
-    playNote(987,  now + 0.60, 0.35, 0.35);  // B5
-    playNote(1318, now + 0.90, 0.60, 0.40);  // E6
+    // Pola chime 3 nada - YouTube call to attention
+playNote(880,     now,        0.30, 0.30);  // A5
+playNote(1108.73, now + 0.30, 0.30, 0.30);  // C#6
+playNote(1318.51, now + 0.60, 0.70, 0.35);  // E6
     
     // Setelah chime selesai, jalankan callback (TTS)
     setTimeout(function() {
