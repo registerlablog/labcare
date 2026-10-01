@@ -85,7 +85,7 @@ function loadVoices() {
   var html = '<b>Suara Tersedia (' + voices.length + '):</b>';
   var adaID = false;
   voices.forEach(function(v) {
-    var isID = v.lang === 'jv-ID' || v.lang.indexOf('id') === 0;
+    var isID = v.lang === 'id-ID' || v.lang.indexOf('id') === 0;
     if (isID) adaID = true;
     html += '<p style="' + (isID ? 'background:#dcfce7;font-weight:bold;' : '') + '">' + 
       (isID ? '🇮🇩 ' : '') + v.name + '<br><i style="font-size:11px;color:#64748b;">' + v.lang + '</i></p>';
