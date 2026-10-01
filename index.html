@@ -899,19 +899,18 @@ function panggilPasien(id) {
       var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
       
       var utt = new SpeechSynthesisUtterance(teks);
-      utt.lang = 'id-ID';
-      utt.rate = 0.85;
-      utt.pitch = 1;
-      utt.volume = 1;
-      if (suaraID) utt.voice = suaraID;
+utt.lang = 'id-ID';
+utt.rate = 0.9;
+utt.pitch = 1.3;
+utt.volume = 1;
+if (suaraID) utt.voice = suaraID;
       
-      utt.onend = function() {
-        setTimeout(function() {
-          var utt2 = new SpeechSynthesisUtterance(teks);
-          utt2.lang = 'id-ID';
-          utt2.rate = 0.85;
-          utt2.pitch = 1;
-          if (suaraID) utt2.voice = suaraID;
+      var utt2 = new SpeechSynthesisUtterance(teks);
+utt2.lang = 'id-ID';
+utt2.rate = 0.9;
+utt2.pitch = 1.3;
+utt2.volume = 1;
+if (suaraID) utt2.voice = suaraID;
           speechSynthesis.speak(utt2);
         }, 700);
       };
