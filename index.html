@@ -452,9 +452,8 @@ var TESTS = [];
 var analisList = [];
 var dokterList = [];
 
-var STATUS = {
+  var STATUS = {
   menunggu: { label: 'Menunggu', cls: 'badge-menunggu' },
-  sampling: { label: 'Sampling', cls: 'badge-sampling' },
   proses:   { label: 'Diproses', cls: 'badge-proses' },
   selesai:  { label: 'Selesai',  cls: 'badge-selesai' }
 };
@@ -927,6 +926,13 @@ var teks = 'Nomor antrian A - ' + nomorStr + ', silakan menuju ruang sampling';
       console.warn('[LabCare] TTS error:', e);
     }
   });
+// Otomatis ubah status ke Diproses setelah dipanggil
+if (p.status === 'menunggu') {
+  p.status = 'proses';
+  save();
+  apiCall('savePasien', p);
+  render();
+}
   
   clearTimeout(_panggilTimer);
   _panggilTimer = setTimeout(tutupPanggil, 13000);
@@ -977,12 +983,7 @@ function viewAntrian() {
         var t = findTest(k);
         return '<span class="test-chip">' + esc(t ? t.nama : k) + '</span>';
       }).join('');
-      var actionsHtml = p.status !== 'selesai' ?
-        '<select onchange="setStatus(\'' + p.id + '\', this.value)">' +
-        Object.keys(STATUS).map(function(k) {
-          return '<option value="' + k + '"' + (p.status === k ? ' selected' : '') + '>' + STATUS[k].label + '</option>';
-        }).join('') + '</select>' :
-        '<span style="flex:1;font-size:12px;color:var(--success);font-weight:600;padding:8px 0;">✔ Selesai</span>';
+      var actionsHtml = '<span style="flex:1;font-size:12px;color:var(--slate-500);font-weight:600;padding:8px 0;">Status: ' + STATUS[p.status].label + '</span>';
       return '<div class="patient-card ' + p.status + '">' +
         '<div class="patient-card-head"><div><div class="antrian">' + esc(p.noAntrian) + '</div>' +
         '<div class="rm">' + esc(p.noRM) + '</div></div>' +
@@ -1525,11 +1526,6 @@ function hapusKaryawan(jenis, id) {
   render();
   toastMsg('Data dihapus');
 }
-
-function setStatus(id, s) {
-  var p = patients.find(function(x) { return x.id === id; });
-  if (p) { p.status = s; save(); apiCall('savePasien', p); render(); }
-}
 function hapusPasien(id) {
   if (!confirm('Hapus data pasien ini?')) return;
   patients = patients.filter(function(p) { return p.id !== id; });
@@ -1597,7 +1593,7 @@ function simpanHasil(id) {
   var kes = document.getElementById('kesimpulan');
   p.kesimpulan = kes ? kes.value.trim() : '';
   var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
-  if (filled === (p.tests || []).length && p.status !== 'selesai') p.status = 'proses';
+  if (filled === (p.tests || []).length && p.status !== 'selesai') p.status = 'selesai';
   save(); apiCall('savePasien', p); closeModal(); render();
   toastMsg('Hasil disimpan');
 }
