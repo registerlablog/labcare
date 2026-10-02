@@ -910,16 +910,24 @@ var teks = 'Nomor antrian A - ' + nomorStr + ', silakan menuju ruang sampling';
       if (suaraID) utt.voice = suaraID;
       
       utt.onend = function() {
-        setTimeout(function() {
-          var utt2 = new SpeechSynthesisUtterance(teks);
-          utt2.lang = 'id-ID';
-          utt2.rate = 0.85;
-          utt2.pitch = 0.85;
-          utt2.volume = 1;
-          if (suaraID) utt2.voice = suaraID;
-          speechSynthesis.speak(utt2);
-        }, 700);
-      };
+  setTimeout(function() {
+    var utt2 = new SpeechSynthesisUtterance(teks);
+    utt2.lang = 'id-ID';
+    utt2.rate = 0.85;
+    utt2.pitch = 0.85;
+    utt2.volume = 1;
+    if (suaraID) utt2.voice = suaraID;
+    
+    // Setelah TTS kedua selesai, baru tutup overlay
+    utt2.onend = function() {
+      setTimeout(function() {
+        tutupPanggil();
+      }, 500);  // jeda 0.5 detik sebelum tutup
+    };
+    
+    speechSynthesis.speak(utt2);
+  }, 700);
+};
       
       speechSynthesis.speak(utt);
     } catch (e) {
@@ -932,10 +940,6 @@ if (p.status === 'menunggu') {
   save();
   apiCall('savePasien', p);
   render();
-}
-  
-  clearTimeout(_panggilTimer);
-  _panggilTimer = setTimeout(tutupPanggil, 20000);
 }
 function tutupPanggil() {
   var ov = document.getElementById('panggilOverlay');
