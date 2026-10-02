@@ -6,99 +6,92 @@
 <title>Tes Suara LabCare</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; text-align: center; background: #f1f5f9; color: #1e293b; }
-h1 { color: #0f172a; font-size: 24px; }
-button { padding: 16px 32px; font-size: 16px; border-radius: 12px; border: none; background: #2563eb; color: #fff; font-weight: bold; margin: 8px; cursor: pointer; width: 100%; max-width: 320px; }
+h1 { color: #0f172a; font-size: 24px; margin-bottom: 8px; }
+h2 { color: #334155; font-size: 16px; margin: 24px 0 12px; }
+button { padding: 16px 24px; font-size: 15px; border-radius: 12px; border: none; background: #2563eb; color: #fff; font-weight: bold; margin: 6px; cursor: pointer; width: 100%; max-width: 400px; }
 button:hover { background: #1d4ed8; }
-.voice-list { background: #fff; padding: 16px; border-radius: 12px; margin-top: 24px; text-align: left; font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
-.voice-list p { margin: 4px 0; padding: 8px; border-bottom: 1px solid #e2e8f0; border-radius: 6px; }
-.info { font-size: 12px; color: #64748b; margin-top: 20px; }
+button.green { background: #16a34a; }
+button.green:hover { background: #15803d; }
+button.orange { background: #ea580c; }
+button.orange:hover { background: #c2410c; }
+button.purple { background: #9333ea; }
+button.purple:hover { background: #7e22ce; }
+.section { background: #fff; padding: 16px; border-radius: 12px; margin: 16px auto; max-width: 450px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.info { font-size: 12px; color: #64748b; margin-top: 8px; }
 </style>
 </head>
 <body>
+
 <h1>🔊 Tes Suara LabCare</h1>
-<p>Klik tombol di bawah untuk tes suara</p>
+<p style="font-size:13px;color:#64748b;">Pilih format nomor antrian yang paling enak</p>
 
-<button onclick="tes1()">Tes 1: Suara Sederhana</button>
-<button onclick="tes2()">Tes 2: Nomor Antrian</button>
-<button onclick="tes3()">Tes 3: Paksa Bahasa Indonesia</button>
-<button onclick="tes4()">Tes 4: Volume Maksimal</button>
-
-<div class="voice-list" id="voiceList">
-  <b>Memuat daftar suara...</b>
+<div class="section">
+<h2>Format 1: "A - 0 0 1"</h2>
+<button onclick="tes1()">Nomor antrian A - 0 0 1</button>
+<button onclick="tes1b()">Nomor antrian A - 0 1 2</button>
+<div class="info">Angka diucapkan satu-satu dengan pemisah "A -"</div>
 </div>
 
-<div class="info">
-  Jika tidak ada suara, cek:<br>
-  1. Volume Media HP (bukan volume notifikasi)<br>
-  2. Settings Android → Text-to-speech → Google TTS aktif<br>
-  3. Coba pakai Chrome atau Edge
+<div class="section">
+<h2>Format 2: "A nol nol satu"</h2>
+<button class="green" onclick="tes2()">Nomor antrian A nol nol satu</button>
+<button class="green" onclick="tes2b()">Nomor antrian A nol satu dua</button>
+<div class="info">Angka dieja jadi kata — paling jelas</div>
+</div>
+
+<div class="section">
+<h2>Format 3: "A satu"</h2>
+<button class="orange" onclick="tes3()">Nomor antrian A satu</button>
+<button class="orange" onclick="tes3b()">Nomor antrian A dua belas</button>
+<div class="info">Angka utuh — paling cepat</div>
+</div>
+
+<div class="section">
+<h2>Format 4: "A 0 0 1" (tanpa strip)</h2>
+<button class="purple" onclick="tes4()">Nomor antrian A 0 0 1</button>
+<button class="purple" onclick="tes4b()">Nomor antrian A 0 1 2</button>
+<div class="info">Angka satu-satu tanpa pemisah strip</div>
+</div>
+
+<div class="section">
+<h2>Test dengan Chime + Suara Lengkap</h2>
+<button onclick="tesLengkap()" style="background:#0f172a;">🎬 Tes Lengkap (Chime + Suara)</button>
+<div class="info">Panggilan bioskop lengkap</div>
 </div>
 
 <script>
-function tes1() {
+function speak(teks) {
   speechSynthesis.cancel();
-  speechSynthesis.speak(new SpeechSynthesisUtterance('Halo, ini tes suara satu'));
-}
-
-function tes2() {
-  speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance('Nomor antrian A satu, silakan menuju ruang sampling');
+  var u = new SpeechSynthesisUtterance(teks);
   u.lang = 'id-ID';
-  u.rate = 0.9;
-  speechSynthesis.speak(u);
-}
-
-function tes3() {
-  speechSynthesis.cancel();
-  var voices = speechSynthesis.getVoices();
-  var vID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
-  var u = new SpeechSynthesisUtterance('Nomor antrian A satu, silakan menuju ruang sampling');
-  u.lang = 'id-ID';
-  u.rate = 0.9;
-  u.volume = 1;
-  if (vID) {
-    u.voice = vID;
-    alert('Voice ditemukan:\n' + vID.name + '\nLang: ' + vID.lang);
-  } else {
-    alert('Tidak ada voice id-ID.\nPakai default browser.\n\nTotal voice: ' + voices.length);
-  }
-  speechSynthesis.speak(u);
-}
-
-function tes4() {
-  speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance('Nomor antrian A satu, silakan menuju ruang sampling. Volume maksimal.');
-  u.lang = 'id-ID';
+  u.pitch = 0.9;
   u.rate = 0.85;
-  u.pitch = 1;
   u.volume = 1;
+  var v = speechSynthesis.getVoices().find(x => x.lang === 'id-ID');
+  if (v) u.voice = v;
   speechSynthesis.speak(u);
 }
 
-function loadVoices() {
-  var voices = speechSynthesis.getVoices();
-  var div = document.getElementById('voiceList');
-  if (voices.length === 0) {
-    div.innerHTML = '<b>Suara Tersedia:</b><p>Tidak ada suara terdeteksi. Coba install Google TTS dari Play Store.</p>';
-    return;
-  }
-  var html = '<b>Suara Tersedia (' + voices.length + '):</b>';
-  var adaID = false;
-  voices.forEach(function(v) {
-    var isID = v.lang === 'id-ID' || v.lang.indexOf('id') === 0;
-    if (isID) adaID = true;
-    html += '<p style="' + (isID ? 'background:#dcfce7;font-weight:bold;' : '') + '">' + 
-      (isID ? '🇮🇩 ' : '') + v.name + '<br><i style="font-size:11px;color:#64748b;">' + v.lang + '</i></p>';
-  });
-  if (!adaID) {
-    html += '<p style="background:#fef3c7;color:#78350f;">⚠️ Tidak ada voice Bahasa Indonesia. Install Google TTS + Bahasa Indonesia di Settings Android.</p>';
-  }
-  div.innerHTML = html;
-}
+function tes1()  { speak('Nomor antrian A - 0 0 1, silakan menuju ruang sampling'); }
+function tes1b() { speak('Nomor antrian A - 0 1 2, silakan menuju ruang sampling'); }
+function tes2()  { speak('Nomor antrian A nol nol satu, silakan menuju ruang sampling'); }
+function tes2b() { speak('Nomor antrian A nol satu dua, silakan menuju ruang sampling'); }
+function tes3()  { speak('Nomor antrian A satu, silakan menuju ruang sampling'); }
+function tes3b() { speak('Nomor antrian A dua belas, silakan menuju ruang sampling'); }
+function tes4()  { speak('Nomor antrian A 0 0 1, silakan menuju ruang sampling'); }
+function tes4b() { speak('Nomor antrian A 0 1 2, silakan menuju ruang sampling'); }
 
-speechSynthesis.onvoiceschanged = loadVoices;
-setTimeout(loadVoices, 500);
-setTimeout(loadVoices, 2000);
+function tesLengkap() {
+  var audio = new Audio('universfield-attention-chime-123107.mp3');
+  audio.volume = 0.7;
+  audio.play().then(function() {
+    setTimeout(function() {
+      speak('Nomor antrian A - 0 0 1, silakan menuju ruang sampling');
+    }, 2000);
+  }).catch(function(e) {
+    speak('Nomor antrian A - 0 0 1, silakan menuju ruang sampling');
+  });
+}
 </script>
 </body>
 </html>
