@@ -479,6 +479,10 @@ window._pickedTests = window._pickedTests || {};
 window._katFilter = window._katFilter || 'semua';
 window._pickSearch = window._pickSearch || '';
 window._dateFilter = window._dateFilter || 'today';
+window._editPickedTests = window._editPickedTests || {};
+window._editPatientId = null;
+window._editKatFilter = 'semua';
+window._editPickSearch = '';
 
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -995,6 +999,7 @@ function viewAntrian() {
 (p.spesimen !== 'ada' && p.status === 'menunggu'
   ? '<button class="btn-icon" onclick="panggilPasien(\'' + p.id + '\')" title="Panggil ke Sampling" style="background:#fef3c7;color:#b45309;font-weight:bold;">🔊</button>'
   : '') +
+        '<button class="btn-icon" onclick="modalEditPemeriksaan(\'' + p.id + '\')" title="Edit Pemeriksaan" style="background:#dbeafe;color:#1d4ed8;">✏️</button>' +
 '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
 '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
 '</div></div>';
@@ -1245,6 +1250,108 @@ async function hapusStempel() {
   await apiCall('saveStempel', { url: '' });
   render();
   toastMsg('Stempel dihapus');
+}
+function modalEditPemeriksaan(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  window._editPickedTests = {};
+  (p.tests || []).forEach(function(k) { window._editPickedTests[k] = true; });
+  window._editPatientId = id;
+  window._editKatFilter = 'semua';
+  window._editPickSearch = '';
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>Edit Pemeriksaan</h3>' +
+    '<p>' + esc(p.nama) + ' • ' + esc(p.noRM) + ' • ' + esc(p.noAntrian) + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div id="editTestPickerWrap">' + renderEditTestPicker() + '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPemeriksaan()">💾 Simpan Pemeriksaan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function renderEditTestPicker() {
+  var categories = ['semua'].concat(Array.from(new Set(TESTS.map(function(t) { return t.kategori; }))).sort());
+  var katOptions = categories.map(function(k) {
+    var count = k === 'semua' ? TESTS.length : TESTS.filter(function(t) { return t.kategori === k; }).length;
+    var label = k === 'semua' ? '📋 Semua Kategori' : k;
+    return '<option value="' + esc(k) + '"' + (window._editKatFilter === k ? ' selected' : '') + '>' + label + ' (' + count + ')</option>';
+  }).join('');
+  return '<div class="pick-bar">' +
+    '<div><label class="lbl">Filter Kategori</label><select class="inp-sel" onchange="window._editKatFilter=this.value; refreshEditPicker();">' + katOptions + '</select></div>' +
+    '<div><label class="lbl">Cari Pemeriksaan</label><input class="inp" placeholder="Ketik nama atau kode..." value="' + esc(window._editPickSearch) + '" oninput="window._editPickSearch=this.value; refreshEditPickerItems();"></div>' +
+    '</div>' +
+    '<div id="editPickSummaryWrap">' + renderEditPickSummary() + '</div>' +
+    '<div class="pick-grid" id="editPickGrid">' + renderEditPickItems() + '</div>';
+}
+
+function renderEditPickSummary() {
+  var picked = Object.keys(window._editPickedTests);
+  if (picked.length === 0) return '<div class="pick-chip-row"><span class="empty-text">Belum ada pemeriksaan yang dipilih.</span></div>';
+  var chips = picked.map(function(kode) {
+    var t = findTest(kode);
+    var nama = t ? t.nama : kode;
+    return '<span class="pick-chip"><span>' + esc(nama) + '</span>' +
+      '<button type="button" onclick="removeEditPickedTest(\'' + esc(kode) + '\')" title="Hapus">&times;</button></span>';
+  }).join('');
+  return '<div class="pick-chip-row">' + chips + '</div>';
+}
+
+function renderEditPickItems() {
+  var filter = window._editKatFilter;
+  var search = (window._editPickSearch || '').toLowerCase();
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+  if (filtered.length === 0) return '<div class="pick-empty">Tidak ada pemeriksaan yang cocok.</div>';
+  return filtered.map(function(t) {
+    var picked = !!window._editPickedTests[t.kode];
+    return '<label class="pick-item' + (picked ? ' picked' : '') + '">' +
+      '<input type="checkbox" ' + (picked ? 'checked' : '') + ' onchange="toggleEditPickedTest(\'' + esc(t.kode) + '\', this.checked)">' +
+      '<div class="pi-body"><div class="pi-name">' + esc(t.nama) + '</div>' +
+      '<div class="pi-detail">Rujukan: ' + esc(t.rujukan) + '</div></div>' +
+      '<span class="pi-cat">' + esc(t.kategori) + '</span></label>';
+  }).join('');
+}
+
+function refreshEditPicker() {
+  var wrap = document.getElementById('editTestPickerWrap');
+  if (wrap) wrap.innerHTML = renderEditTestPicker();
+}
+function refreshEditPickerItems() {
+  var summary = document.getElementById('editPickSummaryWrap');
+  if (summary) summary.innerHTML = renderEditPickSummary();
+  var grid = document.getElementById('editPickGrid');
+  if (grid) grid.innerHTML = renderEditPickItems();
+}
+function toggleEditPickedTest(kode, checked) {
+  if (checked) window._editPickedTests[kode] = true;
+  else delete window._editPickedTests[kode];
+  refreshEditPickerItems();
+}
+function removeEditPickedTest(kode) {
+  delete window._editPickedTests[kode];
+  refreshEditPickerItems();
+}
+async function simpanEditPemeriksaan() {
+  var id = window._editPatientId;
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var newTests = Object.keys(window._editPickedTests);
+  if (newTests.length === 0) { alert('Pilih minimal 1 pemeriksaan.'); return; }
+  var oldTests = p.tests || [];
+  if (!p.hasil) p.hasil = {};
+  oldTests.forEach(function(k) {
+    if (newTests.indexOf(k) < 0) delete p.hasil[k];
+  });
+  p.tests = newTests;
+  save();
+  apiCall('savePasien', p);
+  closeModal();
+  render();
+  toastMsg('Pemeriksaan diperbarui (' + newTests.length + ' tes)');
 }
 function modalTest(kode) {
   editKode = kode || null;
