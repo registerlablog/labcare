@@ -898,7 +898,8 @@ function panggilPasien(id) {
   mainkanChime(function() {
     try {
       speechSynthesis.cancel();
-      var teks = 'Nomor antrian ' + (p.noAntrian || '').replace('A-', 'A ') + ', silakan menuju ruang sampling';
+      var nomorStr = (p.noAntrian || 'A-000').replace('A-', '').split('').join(' ');
+var teks = 'Nomor antrian A - ' + nomorStr + ', silakan menuju ruang sampling';
       var voices = speechSynthesis.getVoices();
       var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
       
