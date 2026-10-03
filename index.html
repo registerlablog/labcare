@@ -570,6 +570,15 @@ async function syncAllFromServer(silent) {
   if (Array.isArray(r.pemeriksaan) && r.pemeriksaan.length) TESTS = r.pemeriksaan;
   if (Array.isArray(r.analis)) analisList = r.analis;
   if (Array.isArray(r.dokter)) dokterList = r.dokter;
+  if (Array.isArray(r.program)) {
+  programs = r.program.map(function(p) {
+    if (typeof p.paket_tes === 'string') {
+      p.paket_tes = p.paket_tes ? p.paket_tes.split(',') : [];
+    }
+    return p;
+  });
+  try { localStorage.setItem('labcare_programs', JSON.stringify(programs)); } catch (e) {}
+}
   try {
     localStorage.setItem('labcare_patients', JSON.stringify(patients));
     localStorage.setItem('labcare_tests',    JSON.stringify(TESTS));
@@ -1078,7 +1087,14 @@ function viewLaporan() {
 function loadPrograms() {
   try {
     var raw = localStorage.getItem('labcare_programs');
-    if (raw) programs = JSON.parse(raw) || [];
+    if (raw) {
+      programs = (JSON.parse(raw) || []).map(function(p) {
+        if (typeof p.paket_tes === 'string') {
+          p.paket_tes = p.paket_tes ? p.paket_tes.split(',') : [];
+        }
+        return p;
+      });
+    }
   } catch (e) { programs = []; }
   if (programs.length === 0) {
     programs = [
@@ -1091,7 +1107,18 @@ function loadPrograms() {
 
 function savePrograms() {
   try { localStorage.setItem('labcare_programs', JSON.stringify(programs)); } catch (e) {}
-  apiCall('saveMaster', { jenis: 'program', list: programs });
+  // Konversi paket_tes array → string untuk kirim ke server
+  var listKirim = programs.map(function(p) {
+    return {
+      id: p.id,
+      nama: p.nama,
+      kode: p.kode || '',
+      deskripsi: p.deskripsi || '',
+      paket_tes: (p.paket_tes || []).join(','),
+      aktif: p.aktif || 'ya'
+    };
+  });
+  apiCall('saveMaster', { jenis: 'program', list: listKirim });
 }
 
 function viewProgram() {
