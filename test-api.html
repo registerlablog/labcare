@@ -10,7 +10,10 @@ h1 { font-size: 20px; margin-bottom: 8px; }
 .card { background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
 button { padding: 14px 20px; font-size: 15px; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; }
 button:hover { background: #1d4ed8; }
-.result { background: #0f172a; color: #4ade80; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 80px; max-height: 400px; overflow-y: auto; }
+button.red { background: #dc2626; }
+button.red:hover { background: #b91c1c; }
+button.green { background: #16a34a; }
+.result { background: #0f172a; color: #4ade80; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; min-height: 80px; max-height: 500px; overflow-y: auto; }
 .result.err { color: #f87171; }
 .result.loading { color: #fbbf24; }
 .info { font-size: 12px; color: #64748b; margin-top: 8px; }
@@ -19,17 +22,17 @@ button:hover { background: #1d4ed8; }
 <body>
 
 <h1>🔍 Tes API LabCare</h1>
-<p class="info">Klik tombol untuk tes koneksi ke Apps Script</p>
 
 <div class="card">
   <button onclick="testGetAll()">1. Tes getAll (semua data)</button>
   <button onclick="testProgram()">2. Cek Data Program</button>
-  <button onclick="testPing()">3. Ping API</button>
+  <button class="green" onclick="testSaveProgram()">3. ⚠️ TES SIMPAN PROGRAM</button>
+  <button class="red" onclick="testClearProgram()">4. Hapus Semua Program</button>
 </div>
 
 <div class="card">
   <h3 style="font-size:14px;margin-bottom:8px;">Hasil:</h3>
-  <div id="result" class="result">Belum ada hasil. Klik tombol di atas.</div>
+  <div id="result" class="result">Klik tombol di atas.</div>
 </div>
 
 <script>
@@ -40,75 +43,72 @@ function show(msg, isErr) {
   el.textContent = msg;
   el.className = 'result' + (isErr ? ' err' : '');
 }
-
-function showLoading(msg) {
+function showLoading(m) {
   var el = document.getElementById('result');
-  el.textContent = msg;
+  el.textContent = m;
   el.className = 'result loading';
 }
 
-async function callAPI(action) {
-  showLoading('⏳ Mengirim request...');
+async function callAPI(action, data) {
+  showLoading('⏳ Mengirim ' + action + '...');
   try {
     var res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: action, data: {} }),
+      body: JSON.stringify({ action: action, data: data || {} }),
       redirect: 'follow'
     });
-    var json = await res.json();
-    return json;
+    var text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      show('❌ Response bukan JSON:\n\n' + text, true);
+      return null;
+    }
   } catch (e) {
-    show('❌ Error: ' + e.message, true);
+    show('❌ Fetch error: ' + e.message, true);
     return null;
   }
-}
-
-async function testPing() {
-  var r = await callAPI('getStempel');
-  if (!r) return;
-  show('✅ API Aktif!\n\nResponse:\n' + JSON.stringify(r, null, 2));
 }
 
 async function testGetAll() {
   var r = await callAPI('getAll');
   if (!r) return;
   if (!r.ok) { show('❌ API error: ' + r.error, true); return; }
-  var summary = '✅ getAll BERHASIL!\n\n' +
-    '📊 Jumlah data:\n' +
+  show('✅ getAll BERHASIL!\n\n' +
     '- Pasien     : ' + (r.pasien ? r.pasien.length : 0) + '\n' +
     '- Pemeriksaan: ' + (r.pemeriksaan ? r.pemeriksaan.length : 0) + '\n' +
     '- Analis     : ' + (r.analis ? r.analis.length : 0) + '\n' +
     '- Dokter     : ' + (r.dokter ? r.dokter.length : 0) + '\n' +
-    '- Program    : ' + (r.program ? r.program.length : '❌ TIDAK ADA (sheet Program belum dibuat)');
-  show(summary);
+    '- Program    : ' + (r.program ? r.program.length : 'undefined'));
 }
 
 async function testProgram() {
   var r = await callAPI('getAll');
   if (!r) return;
-  if (!r.ok) { show('❌ API error: ' + r.error, true); return; }
-  if (r.program === undefined) {
-    show('❌ Sheet "Program" TIDAK KEBACA\n\n' +
-      'Kemungkinan penyebab:\n' +
-      '1. Sheet "Program" belum dibuat di Spreadsheet\n' +
-      '2. Apps Script belum di-deploy ulang\n' +
-      '3. Nama sheet bukan "Program" (huruf besar/kecil)', true);
-    return;
-  }
-  if (r.program.length === 0) {
-    show('✅ Sheet "Program" SUDAH KEBACA!\n\n' +
-      'Tapi masih kosong (0 baris data).\n' +
-      'Ini normal — belum ada program yang ditambahkan.\n\n' +
-      'Selanjutnya: tambahkan fitur di index.html untuk isi program.');
-    return;
-  }
-  var list = r.program.map(function(p, i) {
-    return (i+1) + '. ' + (p.nama || '(tanpa nama)') + ' [Kode: ' + (p.kode || '-') + ']';
+  if (r.program === undefined) { show('❌ Sheet "Program" TIDAK KEBACA', true); return; }
+  if (r.program.length === 0) { show('✅ Sheet "Program" KEBACA, tapi KOSONG'); return; }
+  var list = r.program.map(function(p,i) {
+    return (i+1) + '. ' + (p.nama||'-') + ' | paket: ' + p.paket_tes + ' (' + typeof p.paket_tes + ')';
   }).join('\n');
-  show('✅ Sheet "Program" SUDAH KEBACA!\n\n' +
-    'Jumlah: ' + r.program.length + ' program\n\n' +
-    'Daftar:\n' + list);
+  show('✅ Program ADA:\n\n' + list);
+}
+
+async function testSaveProgram() {
+  var testData = [
+    { id: 'TEST001', nama: 'Test Program A', kode: 'A', deskripsi: 'Test deskripsi A', paket_tes: 'GD,GD2PP,KOL', aktif: 'ya' },
+    { id: 'TEST002', nama: 'Test Program B', kode: 'B', deskripsi: 'Test deskripsi B', paket_tes: 'DL,UR,GD', aktif: 'ya' }
+  ];
+  var r = await callAPI('saveMaster', { jenis: 'program', list: testData });
+  if (!r) return;
+  show('📤 Response saveMaster:\n\n' + JSON.stringify(r, null, 2));
+}
+
+async function testClearProgram() {
+  if (!confirm('Hapus semua program?')) return;
+  var r = await callAPI('saveMaster', { jenis: 'program', list: [] });
+  if (!r) return;
+  show('🗑️ Response clear:\n\n' + JSON.stringify(r, null, 2));
 }
 </script>
 </body>
