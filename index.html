@@ -1145,9 +1145,12 @@ function viewProgram() {
   }
 
   return '<div class="page-header-flex"><div><h2>🏥 Program Pelayanan</h2>' +
-    '<p>Kelola program pelayanan khusus (Prolanis, Haji, dll)</p></div>' +
-    '<button class="btn btn-primary" onclick="modalProgram(null)">➕ Tambah Program</button></div>' +
-    '<div class="patient-grid">' + listHtml + '</div>';
+  '<p>Kelola program pelayanan khusus (Prolanis, Haji, dll)</p></div>' +
+  '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+  '<button class="btn btn-primary" onclick="modalProgram(null)">➕ Tambah Program</button>' +
+  '<button class="btn btn-secondary" onclick="resetPrograms()">🔄 Reset</button>' +
+  '</div></div>' +
+  '<div class="patient-grid">' + listHtml + '</div>';
 }
 
 function modalProgram(id) {
@@ -1272,6 +1275,16 @@ function simpanProgram() {
     savePrograms(); closeModal(); render();
     toastMsg('Program ditambahkan');
   }
+}
+function resetPrograms() {
+  if (!confirm('Reset daftar program ke default? (Prolanis & Pemeriksaan Haji)')) return;
+  programs = [
+    { id: 'PRG001', nama: 'Prolanis', kode: 'P', deskripsi: 'Program Pengelolaan Penyakit Kronis (BPJS)', paket_tes: ['GD','GD2PP','KOL','TG','HDL','LDL','URE','CRE','AU'], aktif: 'ya' },
+    { id: 'PRG002', nama: 'Pemeriksaan Haji', kode: 'H', deskripsi: 'Pemeriksaan Kesehatan Calon Jemaah Haji', paket_tes: ['DL','UR','GD','KOL','SGOT','SGPT','HBS'], aktif: 'ya' }
+  ];
+  savePrograms();
+  render();
+  toastMsg('Program direset ke default');
 }
 
 function hapusProgram(id) {
