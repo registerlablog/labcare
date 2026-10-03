@@ -1834,13 +1834,13 @@ var ttdDokterHtml = dokterData && dokterData.ttd
       '</td>' +
     '</tr>' +
     '<tr>' +
-      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-        'NIP. 123412122000201001' +
-      '</td>' +
-      '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
-        'NIP. 123412122000201001' +
-      '</td>' +
-    '</tr>' +
+  '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+    esc(analisData && analisData.kode ? analisData.kode : 'NIP. -') +
+  '</td>' +
+  '<td style="width:50%; vertical-align:top; text-align:center; padding:0 12px; border:0 none;">' +
+    esc(dokterData && dokterData.kode ? dokterData.kode : 'NIP. -') +
+  '</td>' +
+'</tr>' +
   '</table>';
 
   showPrintPreview(html, 'Hasil Lab — ' + p.nama, { footerHtml: ttdHtml });
