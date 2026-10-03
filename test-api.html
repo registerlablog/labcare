@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tes API LabCare</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; background: #f1f5f9; color: #1e293b; }
+h1 { font-size: 20px; margin-bottom: 8px; }
+.card { background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+button { padding: 14px 20px; font-size: 15px; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; }
+button:hover { background: #1d4ed8; }
+.result { background: #0f172a; color: #4ade80; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 80px; max-height: 400px; overflow-y: auto; }
+.result.err { color: #f87171; }
+.result.loading { color: #fbbf24; }
+.info { font-size: 12px; color: #64748b; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>🔍 Tes API LabCare</h1>
+<p class="info">Klik tombol untuk tes koneksi ke Apps Script</p>
+
+<div class="card">
+  <button onclick="testGetAll()">1. Tes getAll (semua data)</button>
+  <button onclick="testProgram()">2. Cek Data Program</button>
+  <button onclick="testPing()">3. Ping API</button>
+</div>
+
+<div class="card">
+  <h3 style="font-size:14px;margin-bottom:8px;">Hasil:</h3>
+  <div id="result" class="result">Belum ada hasil. Klik tombol di atas.</div>
+</div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+
+function show(msg, isErr) {
+  var el = document.getElementById('result');
+  el.textContent = msg;
+  el.className = 'result' + (isErr ? ' err' : '');
+}
+
+function showLoading(msg) {
+  var el = document.getElementById('result');
+  el.textContent = msg;
+  el.className = 'result loading';
+}
+
+async function callAPI(action) {
+  showLoading('⏳ Mengirim request...');
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, data: {} }),
+      redirect: 'follow'
+    });
+    var json = await res.json();
+    return json;
+  } catch (e) {
+    show('❌ Error: ' + e.message, true);
+    return null;
+  }
+}
+
+async function testPing() {
+  var r = await callAPI('getStempel');
+  if (!r) return;
+  show('✅ API Aktif!\n\nResponse:\n' + JSON.stringify(r, null, 2));
+}
+
+async function testGetAll() {
+  var r = await callAPI('getAll');
+  if (!r) return;
+  if (!r.ok) { show('❌ API error: ' + r.error, true); return; }
+  var summary = '✅ getAll BERHASIL!\n\n' +
+    '📊 Jumlah data:\n' +
+    '- Pasien     : ' + (r.pasien ? r.pasien.length : 0) + '\n' +
+    '- Pemeriksaan: ' + (r.pemeriksaan ? r.pemeriksaan.length : 0) + '\n' +
+    '- Analis     : ' + (r.analis ? r.analis.length : 0) + '\n' +
+    '- Dokter     : ' + (r.dokter ? r.dokter.length : 0) + '\n' +
+    '- Program    : ' + (r.program ? r.program.length : '❌ TIDAK ADA (sheet Program belum dibuat)');
+  show(summary);
+}
+
+async function testProgram() {
+  var r = await callAPI('getAll');
+  if (!r) return;
+  if (!r.ok) { show('❌ API error: ' + r.error, true); return; }
+  if (r.program === undefined) {
+    show('❌ Sheet "Program" TIDAK KEBACA\n\n' +
+      'Kemungkinan penyebab:\n' +
+      '1. Sheet "Program" belum dibuat di Spreadsheet\n' +
+      '2. Apps Script belum di-deploy ulang\n' +
+      '3. Nama sheet bukan "Program" (huruf besar/kecil)', true);
+    return;
+  }
+  if (r.program.length === 0) {
+    show('✅ Sheet "Program" SUDAH KEBACA!\n\n' +
+      'Tapi masih kosong (0 baris data).\n' +
+      'Ini normal — belum ada program yang ditambahkan.\n\n' +
+      'Selanjutnya: tambahkan fitur di index.html untuk isi program.');
+    return;
+  }
+  var list = r.program.map(function(p, i) {
+    return (i+1) + '. ' + (p.nama || '(tanpa nama)') + ' [Kode: ' + (p.kode || '-') + ']';
+  }).join('\n');
+  show('✅ Sheet "Program" SUDAH KEBACA!\n\n' +
+    'Jumlah: ' + r.program.length + ' program\n\n' +
+    'Daftar:\n' + list);
+}
+</script>
+</body>
+</html>
