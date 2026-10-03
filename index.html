@@ -464,6 +464,7 @@ var NAV_ITEMS = [
   { view: 'antrian',     label: '⏳ Antrian & Status' },
   { view: 'hasil',       label: '🔬 Input Hasil' },
   { view: 'laporan',     label: '📄 Laporan' },
+  { view: 'program',     label: '🏥 Program Pelayanan' },
   { view: 'master',      label: '🧬 Master Lab' }
 ];
 
@@ -482,6 +483,11 @@ window._editPickedTests = window._editPickedTests || {};
 window._editPatientId = null;
 window._editKatFilter = 'semua';
 window._editPickSearch = '';
+var programs = [];
+window._programPickedTests = {};
+window._programEditId = null;
+window._programKatFilter = 'semua';
+window._programPickSearch = '';
 
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -681,6 +687,7 @@ function render() {
   else if (view === 'antrian')     app.innerHTML = viewAntrian();
   else if (view === 'hasil')       app.innerHTML = viewHasil();
   else if (view === 'laporan')     app.innerHTML = viewLaporan();
+  else if (view === 'program')     app.innerHTML = viewProgram();
   else if (view === 'master')      app.innerHTML = viewMaster();
   window.scrollTo(0, 0);
 }
@@ -1066,6 +1073,194 @@ function viewLaporan() {
     '<div class="table-wrap"><table>' +
     '<thead><tr><th>No</th><th>No. RM</th><th>Nama</th><th>Umur/JK</th><th>Pemeriksaan</th><th>Pengirim</th><th>DPJP</th><th>Analis</th><th>Status</th><th>Tanggal</th></tr></thead>' +
     '<tbody>' + rowsHtml + '</tbody></table></div>';
+}
+/* ===== PROGRAM PELAYANAN ===== */
+function loadPrograms() {
+  try {
+    var raw = localStorage.getItem('labcare_programs');
+    if (raw) programs = JSON.parse(raw) || [];
+  } catch (e) { programs = []; }
+  if (programs.length === 0) {
+    programs = [
+      { id: 'PRG001', nama: 'Prolanis', kode: 'P', deskripsi: 'Program Pengelolaan Penyakit Kronis (BPJS)', paket_tes: ['GD','GD2PP','KOL','TG','HDL','LDL','URE','CRE','AU'], aktif: 'ya' },
+      { id: 'PRG002', nama: 'Pemeriksaan Haji', kode: 'H', deskripsi: 'Pemeriksaan Kesehatan Calon Jemaah Haji', paket_tes: ['DL','UR','GD','KOL','SGOT','SGPT','HBS'], aktif: 'ya' }
+    ];
+    savePrograms();
+  }
+}
+
+function savePrograms() {
+  try { localStorage.setItem('labcare_programs', JSON.stringify(programs)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'program', list: programs });
+}
+
+function viewProgram() {
+  var listHtml = programs.map(function(p) {
+    var jumlahTes = (p.paket_tes || []).length;
+    return '<div class="patient-card">' +
+      '<div class="patient-card-head">' +
+        '<div><div style="font-size:18px;font-weight:800;color:var(--slate-800);">' + esc(p.nama) + '</div>' +
+        '<div style="font-size:11px;color:var(--slate-400);">Kode: ' + esc(p.kode || '-') + '</div></div>' +
+        '<span class="badge ' + (p.aktif === 'ya' ? 'badge-selesai' : 'badge-menunggu') + '">' + (p.aktif === 'ya' ? 'Aktif' : 'Nonaktif') + '</span>' +
+      '</div>' +
+      '<p class="meta">' + esc(p.deskripsi || '-') + '</p>' +
+      '<p class="meta" style="margin-top:6px;"><b>Paket Tes:</b> ' + jumlahTes + ' pemeriksaan</p>' +
+      '<div class="patient-card-actions">' +
+        '<button class="btn btn-primary btn-sm" onclick="viewProgramDetail(\'' + p.id + '\')" style="flex:1;">Buka</button>' +
+        '<button class="btn-icon" onclick="modalProgram(\'' + p.id + '\')" title="Edit">✏️</button>' +
+        '<button class="btn-icon danger" onclick="hapusProgram(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  if (programs.length === 0) {
+    listHtml = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">🏥</span><p>Belum ada program. Klik "➕ Tambah Program".</p></div>';
+  }
+
+  return '<div class="page-header-flex"><div><h2>🏥 Program Pelayanan</h2>' +
+    '<p>Kelola program pelayanan khusus (Prolanis, Haji, dll)</p></div>' +
+    '<button class="btn btn-primary" onclick="modalProgram(null)">➕ Tambah Program</button></div>' +
+    '<div class="patient-grid">' + listHtml + '</div>';
+}
+
+function modalProgram(id) {
+  var isEdit = !!id;
+  var p = isEdit ? programs.find(function(x) { return x.id === id; }) : null;
+  if (isEdit && !p) { toastMsg('Program tidak ditemukan'); return; }
+  
+  window._programPickedTests = {};
+  if (p && p.paket_tes) p.paket_tes.forEach(function(k) { window._programPickedTests[k] = true; });
+  window._programEditId = id || null;
+  window._programKatFilter = 'semua';
+  window._programPickSearch = '';
+  
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? 'Edit Program' : 'Tambah Program') + '</h3>' +
+    '<p>' + (isEdit ? 'Ubah data program' : 'Buat program pelayanan baru') + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Nama Program *</label><input id="prg_nama" class="inp" value="' + (p ? esc(p.nama) : '') + '" placeholder="Contoh: Prolanis"></div>' +
+    '<div><label class="lbl">Kode <span class="lbl-hint">(opsional, max 3 huruf)</span></label><input id="prg_kode" class="inp" value="' + (p ? esc(p.kode || '') : '') + '" placeholder="Contoh: P" maxlength="3" style="text-transform:uppercase;font-weight:700;"></div>' +
+    '<div><label class="lbl">Deskripsi</label><textarea id="prg_deskripsi" class="inp-ta" rows="2" placeholder="Keterangan program">' + (p ? esc(p.deskripsi || '') : '') + '</textarea></div>' +
+    '<div><label class="lbl">Status</label><select id="prg_aktif" class="inp-sel">' +
+    '<option value="ya"' + (!p || p.aktif === 'ya' ? ' selected' : '') + '>Aktif</option>' +
+    '<option value="tidak"' + (p && p.aktif === 'tidak' ? ' selected' : '') + '>Nonaktif</option>' +
+    '</select></div>' +
+    '</div>' +
+    '<h3 class="section-title">Paket Tes Default</h3>' +
+    '<div id="programTestPickerWrap">' + renderProgramTestPicker() + '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanProgram()">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('prg_nama'); if (el) el.focus(); }, 100);
+}
+
+function renderProgramTestPicker() {
+  var categories = ['semua'].concat(Array.from(new Set(TESTS.map(function(t) { return t.kategori; }))).sort());
+  var katOptions = categories.map(function(k) {
+    var count = k === 'semua' ? TESTS.length : TESTS.filter(function(t) { return t.kategori === k; }).length;
+    var label = k === 'semua' ? '📋 Semua Kategori' : k;
+    return '<option value="' + esc(k) + '"' + (window._programKatFilter === k ? ' selected' : '') + '>' + label + ' (' + count + ')</option>';
+  }).join('');
+  return '<div class="pick-bar">' +
+    '<div><label class="lbl">Filter Kategori</label><select class="inp-sel" onchange="window._programKatFilter=this.value; refreshProgramPicker();">' + katOptions + '</select></div>' +
+    '<div><label class="lbl">Cari</label><input class="inp" placeholder="Ketik nama atau kode..." value="' + esc(window._programPickSearch || '') + '" oninput="window._programPickSearch=this.value; refreshProgramPickerItems();"></div>' +
+    '</div>' +
+    '<div id="programPickSummaryWrap">' + renderProgramPickSummary() + '</div>' +
+    '<div class="pick-grid" id="programPickGrid">' + renderProgramPickItems() + '</div>';
+}
+
+function renderProgramPickSummary() {
+  var picked = Object.keys(window._programPickedTests);
+  if (picked.length === 0) return '<div class="pick-chip-row"><span class="empty-text">Belum ada tes yang dipilih.</span></div>';
+  var chips = picked.map(function(kode) {
+    var t = findTest(kode);
+    var nama = t ? t.nama : kode;
+    return '<span class="pick-chip"><span>' + esc(nama) + '</span>' +
+      '<button type="button" onclick="removeProgramPickedTest(\'' + esc(kode) + '\')" title="Hapus">&times;</button></span>';
+  }).join('');
+  return '<div class="pick-chip-row">' + chips + '</div>';
+}
+
+function renderProgramPickItems() {
+  var filter = window._programKatFilter;
+  var search = (window._programPickSearch || '').toLowerCase();
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+  if (filtered.length === 0) return '<div class="pick-empty">Tidak ada pemeriksaan yang cocok.</div>';
+  return filtered.map(function(t) {
+    var picked = !!window._programPickedTests[t.kode];
+    return '<label class="pick-item' + (picked ? ' picked' : '') + '">' +
+      '<input type="checkbox" ' + (picked ? 'checked' : '') + ' onchange="toggleProgramPickedTest(\'' + esc(t.kode) + '\', this.checked)">' +
+      '<div class="pi-body"><div class="pi-name">' + esc(t.nama) + '</div>' +
+      '<div class="pi-detail">Rujukan: ' + esc(t.rujukan) + '</div></div>' +
+      '<span class="pi-cat">' + esc(t.kategori) + '</span></label>';
+  }).join('');
+}
+
+function refreshProgramPicker() {
+  var wrap = document.getElementById('programTestPickerWrap');
+  if (wrap) wrap.innerHTML = renderProgramTestPicker();
+}
+function refreshProgramPickerItems() {
+  var summary = document.getElementById('programPickSummaryWrap');
+  if (summary) summary.innerHTML = renderProgramPickSummary();
+  var grid = document.getElementById('programPickGrid');
+  if (grid) grid.innerHTML = renderProgramPickItems();
+}
+function toggleProgramPickedTest(kode, checked) {
+  if (checked) window._programPickedTests[kode] = true;
+  else delete window._programPickedTests[kode];
+  refreshProgramPickerItems();
+}
+function removeProgramPickedTest(kode) {
+  delete window._programPickedTests[kode];
+  refreshProgramPickerItems();
+}
+
+function simpanProgram() {
+  var nama = (document.getElementById('prg_nama').value || '').trim();
+  if (!nama) { alert('Nama program harus diisi.'); return; }
+  var kode = (document.getElementById('prg_kode').value || '').trim().toUpperCase();
+  var deskripsi = (document.getElementById('prg_deskripsi').value || '').trim();
+  var aktif = document.getElementById('prg_aktif').value;
+  var paket = Object.keys(window._programPickedTests);
+  
+  if (window._programEditId) {
+    var p = programs.find(function(x) { return x.id === window._programEditId; });
+    if (!p) { toastMsg('Program tidak ditemukan'); return; }
+    p.nama = nama; p.kode = kode; p.deskripsi = deskripsi; p.aktif = aktif; p.paket_tes = paket;
+    savePrograms(); closeModal(); render();
+    toastMsg('Program diperbarui');
+  } else {
+    programs.push({
+      id: 'PRG' + Date.now(),
+      nama: nama, kode: kode, deskripsi: deskripsi, aktif: aktif, paket_tes: paket
+    });
+    savePrograms(); closeModal(); render();
+    toastMsg('Program ditambahkan');
+  }
+}
+
+function hapusProgram(id) {
+  var p = programs.find(function(x) { return x.id === id; });
+  if (!p) return;
+  if (!confirm('Hapus program "' + p.nama + '"?')) return;
+  programs = programs.filter(function(x) { return x.id !== id; });
+  savePrograms(); render();
+  toastMsg('Program dihapus');
+}
+
+function viewProgramDetail(id) {
+  var p = programs.find(function(x) { return x.id === id; });
+  if (!p) return;
+  alert('Program: ' + p.nama + '\n\nJumlah paket tes: ' + (p.paket_tes || []).length +
+    '\n\nDetail kegiatan & peserta akan dibuat di tahap berikutnya.');
 }
 
 function goToMaster(tab) {
@@ -1967,7 +2162,7 @@ var p = {
   document.getElementById('modalContent').innerHTML =
     '<div class="modal-success"><div class="big-em">✅</div>' +
     '<h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p>' +
-    '<div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
+    '<div class="success-number-box"><p>Nomber-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
     '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Lihat Antrian</button></div>';
   document.getElementById('modal').classList.add('open');
 });
@@ -1982,10 +2177,10 @@ document.getElementById('modal').addEventListener('click', function(e) {
 } catch (e) {}
   
 loadTests();
+loadPrograms();
 loadKaryawan();
 load();
-renderNav();
-render();
+renderNav(
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
 </script>
