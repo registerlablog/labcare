@@ -1454,7 +1454,7 @@ function hapusKegiatan(kegiatanId) {
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
     '<button class="btn btn-primary" onclick="modalJumlahBatch()">➕ Tambah Batch Peserta</button>' +
-'<button class="btn btn-secondary" onclick="bukaModalTambahPeserta()">➕ Tambah 1 Peserta</button>' +
+'<button class="btn btn-secondary" onclick="editBatchPeserta()">✏️ Edit Batch Peserta</button>' +
     (listPeserta.length > 0 ? '<button class="btn btn-secondary" onclick="cetakSemuaPeserta()">🖨️ Cetak PDF</button>' : '') +
     '</div></div>' +
     listHtml;
@@ -1577,6 +1577,7 @@ function simpanPeserta() {
 }
 
 function lanjutBatchInput() {
+  window._batchMode = 'add';
   var jml = parseInt((document.getElementById('jmlBatch').value || '0'), 10);
   if (!jml || jml < 1 || jml > 200) { alert('Jumlah harus 1-200'); return; }
   window._batchCount = jml;
@@ -1606,7 +1607,7 @@ function viewBatchInput() {
   });
 
   var rowsHtml = batch.map(function(item, idx) {
-    var noSample = 'P-' + String(lastNo + idx + 1).padStart(3, '0');
+    var noSample = window._batchMode === 'edit' ? esc(item.no_sample || '-') : ('P-' + String(lastNo + idx + 1).padStart(3, '0'));
     return '<tr>' +
       '<td class="mono" style="font-weight:700;color:var(--primary);text-align:center;">' + noSample + '</td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:13px;" value="' + esc(item.nama) + '" oninput="updateBatch(' + idx + ', \'nama\', this.value)" placeholder="Nama"></td>' +
@@ -1620,7 +1621,7 @@ function viewBatchInput() {
 
   return '<div class="page-header">' +
     '<button class="btn btn-secondary btn-sm" onclick="window._batchPeserta=[]; view=\'peserta-kegiatan\'; render();" style="margin-bottom:8px;">← Batal</button>' +
-    '<h2 style="margin-top:8px;">📝 Input Batch Peserta</h2>' +
+    '<h2 style="margin-top:8px;">' + (window._batchMode === 'edit' ? '✏️ Edit Batch Peserta' : '📝 Input Batch Peserta') + '</h2>' +
     '<p>' + esc(k.nama || '-') + ' • ' + batch.length + ' peserta</p>' +
     '</div>' +
     '<div class="table-wrap"><table style="min-width:900px;">' +
@@ -1643,6 +1644,27 @@ function simpanBatch() {
   if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
   var batch = window._batchPeserta || [];
   if (batch.length === 0) { toastMsg('Tidak ada peserta'); return; }
+  if (window._batchMode === 'edit') {
+  batch.forEach(function(item) {
+    var p = pesertas.find(function(x) { return x.id === item.id; });
+    if (p) {
+      p.nama = item.nama || '';
+      p.umur = item.umur || '';
+      p.jk = item.jk || '';
+      p.diagnosa = item.diagnosa || '';
+      p.nik = item.nik || '';
+      p.no_bpjs = item.no_bpjs || '';
+    }
+  });
+  savePeserta();
+  window._batchPeserta = [];
+  window._batchMode = 'add';
+  view = 'peserta-kegiatan';
+  window.scrollTo(0, 0);
+  render();
+  toastMsg(batch.length + ' peserta diupdate');
+  return;
+}
 
   var lastNo = 0;
   pesertas.filter(function(p) { return p.kegiatan_id === kegId; }).forEach(function(p) {
