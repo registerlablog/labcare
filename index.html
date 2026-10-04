@@ -1107,49 +1107,53 @@ function buildHasilUmumContent() {
     '<thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead>' +
     '<tbody>' + rowsHtml + '</tbody></table></div>';
 }
-
 function buildHasilKegiatanContent() {
   if (pesertas.length === 0) {
     return '<div class="empty-state"><span class="em">📋</span><p>Belum ada peserta kegiatan.</p></div>';
   }
-  var filterKeg = window._hasilKegFilter || 'semua';
   var kegiatanIds = Array.from(new Set(pesertas.map(function(p) { return p.kegiatan_id; })));
-  var filterOptions = '<option value="semua">📋 Semua Kegiatan</option>' +
-    kegiatanIds.map(function(kid) {
-      var k = kegiatans.find(function(x) { return x.id === kid; });
-      if (!k) return '';
-      return '<option value="' + kid + '"' + (filterKeg === kid ? ' selected' : '') + '>' + esc(k.nama) + '</option>';
+  var html = '';
+  kegiatanIds.forEach(function(kid) {
+    var k = kegiatans.find(function(x) { return x.id === kid; });
+    var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === kid; });
+    if (listPeserta.length === 0) return;
+    listPeserta = listPeserta.slice().sort(function(a, b) {
+      return (a.no_sample || '').localeCompare(b.no_sample || '');
+    });
+    var rowsHtml = listPeserta.map(function(ps) {
+      var tests = ps.tests || [];
+      var hasil = ps.hasil || {};
+      var filled = tests.filter(function(t) { return hasil[t]; }).length;
+      var done = tests.length > 0 && filled === tests.length;
+      return '<tr>' +
+        '<td class="mono" style="font-weight:700;color:var(--primary);">' + esc(ps.no_sample) + '</td>' +
+        '<td style="font-weight:500;">' + esc(ps.nama || '-') + '</td>' +
+        '<td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td>' +
+        '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasilPeserta(\'' + ps.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td>' +
+        '</tr>';
     }).join('');
-  var list = filterKeg === 'semua' ? pesertas : pesertas.filter(function(p) { return p.kegiatan_id === filterKeg; });
-  list = list.slice().sort(function(a, b) {
-    var ka = a.kegiatan_id || '', kb = b.kegiatan_id || '';
-    if (ka !== kb) return ka.localeCompare(kb);
-    return (a.no_sample || '').localeCompare(b.no_sample || '');
+    var infoKeg = k ?
+      (esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-')) :
+      '-';
+    html += '<div class="card" style="margin-bottom:16px;padding:16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
+      '<div>' +
+      '<div style="font-size:15px;font-weight:700;color:var(--slate-800);">📋 ' + esc(k ? k.nama : 'Kegiatan') + '</div>' +
+      '<div style="font-size:12px;color:var(--slate-500);margin-top:2px;">' + infoKeg + '</div>' +
+      '</div>' +
+      '<span class="badge badge-proses">' + listPeserta.length + ' peserta</span>' +
+      '</div>' +
+      '<div class="table-wrap" style="box-shadow:none;">' +
+      '<table style="min-width:auto;">' +
+      '<thead><tr><th style="width:90px;">No. Sample</th><th>Nama</th><th>Pemeriksaan</th><th style="text-align:right;width:100px;">Aksi</th></tr></thead>' +
+      '<tbody>' + rowsHtml + '</tbody></table></div>' +
+      '</div>';
   });
-  var rowsHtml = list.map(function(ps) {
-    var k = kegiatans.find(function(x) { return x.id === ps.kegiatan_id; });
-    var tests = ps.tests || [];
-    var hasil = ps.hasil || {};
-    var filled = tests.filter(function(t) { return hasil[t]; }).length;
-    var done = tests.length > 0 && filled === tests.length;
-    return '<tr>' +
-      '<td style="font-size:11px;color:var(--slate-500);">' + esc(k ? k.nama : '-') + '</td>' +
-      '<td class="mono" style="font-weight:700;color:var(--primary);">' + esc(ps.no_sample) + '</td>' +
-      '<td style="font-weight:500;">' + esc(ps.nama || '-') + '</td>' +
-      '<td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td>' +
-      '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasilPeserta(\'' + ps.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td>' +
-      '</tr>';
-  }).join('');
-  return '<div class="master-toolbar">' +
-    '<div style="flex:1;max-width:400px;"><label class="lbl">Filter Kegiatan</label>' +
-    '<select class="inp-sel" onchange="window._hasilKegFilter=this.value; render();">' + filterOptions + '</select></div>' +
-    '<div style="font-size:13px;color:var(--slate-500);font-weight:600;align-self:flex-end;padding-bottom:10px;">' + list.length + ' peserta</div>' +
-    '</div>' +
-    '<div class="table-wrap"><table>' +
-    '<thead><tr><th>Kegiatan</th><th>No. Sample</th><th>Nama</th><th>Pemeriksaan</th><th style="text-align:right;">Aksi</th></tr></thead>' +
-    '<tbody>' + rowsHtml + '</tbody></table></div>';
+  if (html === '') {
+    return '<div class="empty-state"><span class="em">📋</span><p>Belum ada peserta kegiatan.</p></div>';
+  }
+  return html;
 }
-
 function modalHasilPeserta(id) {
   var ps = pesertas.find(function(x) { return x.id === id; });
   if (!ps) return;
