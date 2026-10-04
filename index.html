@@ -520,6 +520,14 @@ function esc(s) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+  function fmtTanggalKeg(tgl) {
+  if (!tgl) return '-';
+  var s = String(tgl);
+  if (s.indexOf('T') > 0) {
+    try { return new Date(s).toISOString().slice(0, 10); } catch (e) { return s; }
+  }
+  return s;
+}
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
 
 var _toastTimer;
@@ -585,7 +593,10 @@ async function syncAllFromServer(silent) {
   try { localStorage.setItem('labcare_programs', JSON.stringify(programs)); } catch (e) {}
 }
   if (Array.isArray(r.kegiatan)) {
-  kegiatans = r.kegiatan;
+  kegiatans = r.kegiatan.map(function(k) {
+  if (k.tanggal) k.tanggal = fmtTanggalKeg(k.tanggal);
+  return k;
+});
   try { localStorage.setItem('labcare_kegiatan', JSON.stringify(kegiatans)); } catch (e) {}
 }
 if (Array.isArray(r.peserta)) {
@@ -1127,7 +1138,12 @@ function loadPrograms() {
   // Load kegiatans & pesertas
 try {
   var rawKeg = localStorage.getItem('labcare_kegiatan');
-  if (rawKeg) kegiatans = JSON.parse(rawKeg) || [];
+  if (rawKeg) {
+  kegiatans = (JSON.parse(rawKeg) || []).map(function(k) {
+    if (k.tanggal) k.tanggal = fmtTanggalKeg(k.tanggal);
+    return k;
+  });
+}
   var rawPes = localStorage.getItem('labcare_peserta');
   if (rawPes) pesertas = JSON.parse(rawPes) || [];
 } catch (e) { kegiatans = []; pesertas = []; }
@@ -1433,7 +1449,7 @@ function hapusKegiatan(kegiatanId) {
   return '<div class="page-header-flex"><div>' +
     '<button class="btn btn-secondary btn-sm" onclick="window._currentKegiatanId=null; view=\'program\'; render();" style="margin-bottom:8px;">← Kembali</button>' +
     '<h2 style="margin-top:8px;">📋 ' + esc(k.nama || 'Kegiatan') + '</h2>' +
-    '<p>' + esc(k.tanggal || '-') + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
+    '<p>' + esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + listPeserta.length + ' peserta</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
@@ -1621,7 +1637,7 @@ function viewProgramDetail(id) {
       return '<div class="patient-card">' +
         '<div class="patient-card-head">' +
           '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">' + esc(k.nama || 'Kegiatan') + '</div>' +
-          '<div style="font-size:11px;color:var(--slate-400);">' + esc(k.tanggal || '-') + '</div></div>' +
+          '<div style="font-size:11px;color:var(--slate-400);">' + esc(fmtTanggalKeg(k.tanggal)) + '</div></div>' +
           '<span class="badge badge-proses">' + jml + ' peserta</span>' +
         '</div>' +
         '<p class="meta">🏥 Pengirim: ' + esc(k.pengirim || '-') + '</p>' +
