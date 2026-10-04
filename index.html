@@ -1439,7 +1439,7 @@ function hapusKegiatan(kegiatanId) {
           '<td style="font-size:11px;">' + esc(ps.nik || '-') + '</td>' +
           '<td style="font-size:11px;">' + esc(ps.no_bpjs || '-') + '</td>' +
           '<td style="text-align:right;white-space:nowrap;">' +
-            '<button class="btn-icon" onclick="modalEditPeserta(\'' + ps.id + '\')" title="Edit">✏️</button> ' +
+            '<button class="btn-icon" onclick="bukamodalEditPeserta(\'' + ps.id + '\')" title="Edit">✏️</button> ' +
             '<button class="btn-icon danger" onclick="hapusPeserta(\'' + ps.id + '\')" title="Hapus">🗑️</button>' +
           '</td>' +
         '</tr>';
@@ -1679,10 +1679,6 @@ function simpanBatch() {
   window.scrollTo(0, 0);
   render();
   toastMsg(batch.length + ' peserta ditambahkan');
-}
-
-function modalEditPeserta(id) {
-  toastMsg('Edit peserta — segera hadir');
 }
 
 function hapusPeserta(id) {
