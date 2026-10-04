@@ -1113,8 +1113,44 @@ function buildHasilKegiatanContent() {
   if (pesertas.length === 0) {
     return '<div class="empty-state"><span class="em">📋</span><p>Belum ada peserta kegiatan.</p></div>';
   }
+  var selectedPeserta = window._hasilPesertaSelected || null;
+  // LEVEL 3: input hasil 1 peserta
+  if (selectedPeserta) {
+    var ps = pesertas.find(function(x) { return x.id === selectedPeserta; });
+    if (!ps) { window._hasilPesertaSelected = null; return buildHasilKegiatanContent(); }
+    var tests = ps.tests || [];
+    var hasil = ps.hasil || {};
+    var rowsInput = tests.map(function(kode) {
+      var t = findTest(kode) || { nama: kode, rujukan: '-', satuan: '' };
+      var val = hasil[kode] || '';
+      var inputId = 'hinline_' + ps.id + '_' + kode;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--slate-100);">' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:14px;font-weight:500;color:var(--slate-800);">' + esc(t.nama) + '</div>' +
+        '<div style="font-size:11px;color:var(--slate-400);">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' ' + esc(t.satuan) : '') + '</div>' +
+        '</div>' +
+        '<input id="' + inputId + '" class="inp" style="width:130px;padding:8px 10px;font-size:14px;" value="' + esc(val) + '" placeholder="Hasil">' +
+        '</div>';
+    }).join('');
+    return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilPesertaSelected=null; render();">← Kembali ke Daftar Peserta</button>' +
+      '<div class="card" style="padding:16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
+      '<div>' +
+      '<div style="font-size:20px;font-weight:800;color:var(--slate-800);">' + esc(ps.no_sample) + '</div>' +
+      '<div style="font-size:12px;color:var(--slate-500);">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(umur(ps.umur)) : '') + '</div>' +
+      '</div>' +
+      '<span class="badge badge-proses">' + tests.length + ' tes</span>' +
+      '</div>' +
+      '<h4 style="margin-bottom:4px;">' + esc(ps.nama || '-') + '</h4>' +
+      (ps.diagnosa ? '<p class="meta" style="margin-bottom:12px;">🩺 Diagnosa: ' + esc(ps.diagnosa) + '</p>' : '') +
+      '<div style="margin-top:10px;">' + rowsInput + '</div>' +
+      '<div class="btn-row" style="margin-top:16px;">' +
+      '<button class="btn btn-primary" style="flex:1;" onclick="simpanHasilPesertaInline(\'' + ps.id + '\')">💾 Simpan Hasil</button>' +
+      '</div>' +
+      '</div>';
+  }
+  // LEVEL 2: daftar peserta satu kegiatan
   var selected = window._hasilKegSelected || null;
-  // LEVEL 2: kartu peserta inline input
   if (selected) {
     var k = kegiatans.find(function(x) { return x.id === selected; });
     var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === selected; });
@@ -1123,47 +1159,22 @@ function buildHasilKegiatanContent() {
     });
     var infoKeg = k ? (esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-')) : '-';
     var cardsHtml = listPeserta.map(function(ps) {
-  var tests = ps.tests || [];
-  var hasil = ps.hasil || {};
-  var filled = tests.filter(function(t) { return hasil[t]; }).length;
-  var done = tests.length > 0 && filled === tests.length;
-  var cls = done ? 'selesai' : (filled > 0 ? 'proses' : 'menunggu');
-  var isExpanded = window._hasilExpandPeserta === ps.id;
-  var headerHtml = '<div onclick="window._hasilExpandPeserta = (window._hasilExpandPeserta === \'' + ps.id + '\' ? null : \'' + ps.id + '\'); render();" style="cursor:pointer;">' +
-    '<div class="patient-card-head">' +
-    '<div><div class="antrian">' + esc(ps.no_sample) + '</div>' +
-    '<div class="rm">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(umur(ps.umur)) : '') + '</div></div>' +
-    '<div style="display:flex;align-items:center;gap:8px;">' +
-    '<span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Menunggu')) + '</span>' +
-    '<span style="font-size:16px;color:var(--slate-400);">' + (isExpanded ? '▲' : '▼') + '</span>' +
-    '</div>' +
-    '</div>' +
-    '<h4 style="margin-bottom:4px;">' + esc(ps.nama || '-') + '</h4>' +
-    (ps.diagnosa ? '<p class="meta" style="margin-bottom:4px;">🩺 Diagnosa: ' + esc(ps.diagnosa) + '</p>' : '') +
-    '<div style="font-size:11px;color:var(--slate-500);margin-top:6px;">Tes: <b>' + filled + '/' + tests.length + '</b> • Klik untuk ' + (isExpanded ? 'tutup' : 'isi hasil') + '</div>' +
-    '</div>';
-  if (!isExpanded) {
-    return '<div class="patient-card ' + cls + '" style="margin-bottom:14px;">' + headerHtml + '</div>';
-  }
-  var rowsTes = tests.map(function(kode) {
-    var t = findTest(kode) || { nama: kode, rujukan: '-', satuan: '' };
-    var val = hasil[kode] || '';
-    var inputId = 'hinline_' + ps.id + '_' + kode;
-    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--slate-100);">' +
-      '<div style="flex:1;min-width:0;">' +
-      '<div style="font-size:13px;font-weight:500;color:var(--slate-800);">' + esc(t.nama) + '</div>' +
-      '<div style="font-size:10px;color:var(--slate-400);">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' ' + esc(t.satuan) : '') + '</div>' +
-      '</div>' +
-      '<input id="' + inputId + '" class="inp" style="width:110px;padding:6px 8px;font-size:13px;" value="' + esc(val) + '" placeholder="Hasil">' +
-      '</div>';
-  }).join('');
-  return '<div class="patient-card ' + cls + '" style="margin-bottom:14px;">' + headerHtml +
-    '<div style="margin-top:10px;border-top:1px solid var(--slate-200);padding-top:10px;">' + rowsTes + '</div>' +
-    '<div class="patient-card-actions" style="margin-top:12px;">' +
-    '<button class="btn btn-primary btn-sm" style="flex:1;" onclick="simpanHasilPesertaInline(\'' + ps.id + '\')">💾 Simpan Hasil</button>' +
-    '</div>' +
-    '</div>';
-}).join('');
+      var tests = ps.tests || [];
+      var hasil = ps.hasil || {};
+      var filled = tests.filter(function(t) { return hasil[t]; }).length;
+      var done = tests.length > 0 && filled === tests.length;
+      var cls = done ? 'selesai' : (filled > 0 ? 'proses' : 'menunggu');
+      return '<div class="patient-card ' + cls + '" style="cursor:pointer;" onclick="window._hasilPesertaSelected=\'' + ps.id + '\'; render();">' +
+        '<div class="patient-card-head">' +
+        '<div><div class="antrian">' + esc(ps.no_sample) + '</div>' +
+        '<div class="rm">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(umur(ps.umur)) : '') + '</div></div>' +
+        '<span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Menunggu')) + '</span>' +
+        '</div>' +
+        '<h4 style="margin-bottom:4px;">' + esc(ps.nama || '-') + '</h4>' +
+        (ps.diagnosa ? '<p class="meta" style="margin-bottom:4px;">🩺 Diagnosa: ' + esc(ps.diagnosa) + '</p>' : '') +
+        '<div style="font-size:11px;color:var(--slate-500);margin-top:6px;">Tes: <b>' + filled + '/' + tests.length + '</b> • Klik untuk input →</div>' +
+        '</div>';
+    }).join('');
     return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilKegSelected=null; render();">← Kembali ke Daftar Kegiatan</button>' +
       '<div class="card" style="margin-bottom:16px;padding:16px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
@@ -1173,7 +1184,7 @@ function buildHasilKegiatanContent() {
       '</div>' +
       '<span class="badge badge-proses">' + listPeserta.length + ' peserta</span>' +
       '</div>' +
-      '<div>' + cardsHtml + '</div>' +
+      '<div class="patient-grid">' + cardsHtml + '</div>' +
       '</div>';
   }
   // LEVEL 1: kartu judul kegiatan
@@ -1210,7 +1221,6 @@ function buildHasilKegiatanContent() {
   }
   return '<div class="patient-grid">' + cardsKegHtml + '</div>';
 }
-
 function simpanHasilPesertaInline(id) {
   var ps = pesertas.find(function(x) { return x.id === id; });
   if (!ps) return;
