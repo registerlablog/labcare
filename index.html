@@ -1132,7 +1132,7 @@ function buildHasilKegiatanContent() {
   var headerHtml = '<div onclick="window._hasilExpandPeserta = (window._hasilExpandPeserta === \'' + ps.id + '\' ? null : \'' + ps.id + '\'); render();" style="cursor:pointer;">' +
     '<div class="patient-card-head">' +
     '<div><div class="antrian">' + esc(ps.no_sample) + '</div>' +
-    '<div class="rm">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(fmtTglLahir(ps.umur)) : '') + '</div></div>' +
+    '<div class="rm">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(umur(ps.umur)) : '') + '</div></div>' +
     '<div style="display:flex;align-items:center;gap:8px;">' +
     '<span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Menunggu')) + '</span>' +
     '<span style="font-size:16px;color:var(--slate-400);">' + (isExpanded ? '▲' : '▼') + '</span>' +
