@@ -1560,6 +1560,7 @@ function hapusKegiatan(kegiatanId) {
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
     '<button class="btn btn-primary" onclick="modalJumlahBatch()">➕ Tambah Batch Peserta</button>' +
 '<button class="btn btn-secondary" onclick="editBatchPeserta()">✏️ Edit Batch Peserta</button>' +
+    '<button class="btn btn-secondary" onclick="sinkronPaketPeserta()">🔄 Sinkron Paket Tes</button>' +
     (listPeserta.length > 0 ? '<button class="btn btn-secondary" onclick="cetakSemuaPeserta()">🖨️ Cetak PDF</button>' : '') +
     '</div></div>' +
     listHtml;
@@ -1840,7 +1841,53 @@ function hapusPeserta(id) {
 function cetakSemuaPeserta() {
   toastMsg('Cetak PDF — segera hadir (Step 5c-3)');
 }
+function sinkronPaketPeserta() {
+  if (!window._currentKegiatanId) { toastMsg('Buka kegiatan dulu'); return; }
+  var kegId = window._currentKegiatanId;
+  var k = kegiatans.find(function(x) { return x.id === kegId; });
+  if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
+  var prog = programs.find(function(p) { return p.id === k.program_id; });
+  if (!prog) { toastMsg('Program tidak ditemukan'); return; }
+  var paketBaru = (prog.paket_tes || []).slice();
+  if (paketBaru.length === 0) { toastMsg('Program belum punya paket tes'); return; }
 
+  var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === kegId; });
+  if (listPeserta.length === 0) { toastMsg('Belum ada peserta'); return; }
+
+  // Cek kondisi
+  var belumAdaHasil = 0;
+  var sudahAdaHasil = 0;
+  listPeserta.forEach(function(ps) {
+    var hasil = ps.hasil || {};
+    var jmlHasil = Object.keys(hasil).filter(function(k) { return hasil[k]; }).length;
+    if (jmlHasil === 0) belumAdaHasil++;
+    else sudahAdaHasil++;
+  });
+
+  var msg = '🔄 SINKRON PAKET TES\n\n' +
+    'Program: ' + prog.nama + '\n' +
+    'Paket baru: ' + paketBaru.length + ' tes\n\n' +
+    'Total peserta: ' + listPeserta.length + '\n' +
+    '• Belum ada hasil: ' + belumAdaHasil + ' (akan diupdate)\n' +
+    '• Sudah ada hasil: ' + sudahAdaHasil + ' (akan DILEWATI)\n\n' +
+    'Lanjutkan?';
+  if (!confirm(msg)) return;
+
+  var diupdate = 0;
+  var dilewati = 0;
+  listPeserta.forEach(function(ps) {
+    var hasil = ps.hasil || {};
+    var jmlHasil = Object.keys(hasil).filter(function(k) { return hasil[k]; }).length;
+    if (jmlHasil > 0) { dilewati++; return; }
+    ps.tests = paketBaru.slice();
+    ps.hasil = {};
+    diupdate++;
+  });
+
+  savePeserta();
+  render();
+  toastMsg('✅ ' + diupdate + ' peserta diupdate, ' + dilewati + ' dilewati', 'ok');
+}
 function bukaKegiatan(kegiatanId) {
   var k = kegiatans.find(function(x) { return x.id === kegiatanId; });
   if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
