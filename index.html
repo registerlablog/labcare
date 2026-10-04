@@ -1454,6 +1454,7 @@ function hapusKegiatan(kegiatanId) {
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
     '<button class="btn btn-primary" onclick="modalJumlahBatch()">➕ Tambah Batch Peserta</button>' +
+'<button class="btn btn-secondary" onclick="bukaModalTambahPeserta()">➕ Tambah 1 Peserta</button>' +
     (listPeserta.length > 0 ? '<button class="btn btn-secondary" onclick="cetakSemuaPeserta()">🖨️ Cetak PDF</button>' : '') +
     '</div></div>' +
     listHtml;
@@ -1482,6 +1483,97 @@ function modalJumlahBatch() {
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
   setTimeout(function() { var el = document.getElementById('jmlBatch'); if (el) el.select(); }, 100);
+}
+  // --- FITUR TAMBAH/EDIT PESERTA ---
+
+function bukaModalTambahPeserta() {
+  document.getElementById('pesertaId').value = '';
+  document.getElementById('pesertaKegiatanId').value = window._currentKegiatanId;
+  document.getElementById('pesertaNama').value = '';
+  document.getElementById('pesertaUmur').value = '';
+  document.getElementById('pesertaJK').value = 'L';
+  document.getElementById('pesertaDiagnosa').value = '';
+  document.getElementById('pesertaNIK').value = '';
+  document.getElementById('pesertaBPJS').value = '';
+  
+  document.getElementById('modalPesertaTitle').innerText = 'Tambah Peserta';
+  document.getElementById('modalPeserta').style.display = 'flex';
+}
+
+function bukaModalEditPeserta(id) {
+  var p = pesertas.find(function(x) { return x.id === id; });
+  if (!p) return;
+  
+  document.getElementById('pesertaId').value = p.id;
+  document.getElementById('pesertaKegiatanId').value = p.kegiatan_id;
+  document.getElementById('pesertaNama').value = p.nama || '';
+  document.getElementById('pesertaUmur').value = p.umur || '';
+  document.getElementById('pesertaJK').value = p.jk || 'L';
+  document.getElementById('pesertaDiagnosa').value = p.diagnosa || '';
+  document.getElementById('pesertaNIK').value = p.nik || '';
+  document.getElementById('pesertaBPJS').value = p.no_bpjs || '';
+  
+  document.getElementById('modalPesertaTitle').innerText = 'Edit Peserta';
+  document.getElementById('modalPeserta').style.display = 'flex';
+}
+
+function tutupModalPeserta() {
+  document.getElementById('modalPeserta').style.display = 'none';
+}
+
+function simpanPeserta() {
+  var id = document.getElementById('pesertaId').value;
+  var kegId = document.getElementById('pesertaKegiatanId').value;
+  var nama = document.getElementById('pesertaNama').value.trim();
+  var umur = document.getElementById('pesertaUmur').value;
+  var jk = document.getElementById('pesertaJK').value;
+  var diagnosa = document.getElementById('pesertaDiagnosa').value.trim();
+  var nik = document.getElementById('pesertaNIK').value.trim();
+  var bpjs = document.getElementById('pesertaBPJS').value.trim();
+  
+  if (!nama) {
+    toastMsg('Nama peserta wajib diisi!');
+    return;
+  }
+  
+  if (id) {
+    var p = pesertas.find(function(x) { return x.id === id; });
+    if (p) {
+      p.nama = nama;
+      p.umur = umur;
+      p.jk = jk;
+      p.diagnosa = diagnosa;
+      p.nik = nik;
+      p.no_bpjs = bpjs;
+    }
+  } else {
+    var lastNo = 0;
+    pesertas.filter(function(p) { return p.kegiatan_id === kegId; }).forEach(function(p) {
+      var num = parseInt((p.no_sample || 'P-0').replace('P-', ''), 10);
+      if (num > lastNo) lastNo = num;
+    });
+    var newNoSample = 'P-' + String(lastNo + 1).padStart(3, '0');
+    
+    var newPeserta = {
+      id: 'ps_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      kegiatan_id: kegId,
+      no_sample: newNoSample,
+      nama: nama,
+      umur: umur,
+      jk: jk,
+      diagnosa: diagnosa,
+      nik: nik,
+      no_bpjs: bpjs,
+      tests: [],
+      hasil: {}
+    };
+    pesertas.push(newPeserta);
+  }
+  
+  savePesertas();
+  tutupModalPeserta();
+  render();
+  toastMsg(id ? 'Peserta berhasil diupdate' : 'Peserta berhasil ditambahkan');
 }
 
 function lanjutBatchInput() {
@@ -2582,5 +2674,40 @@ renderNav();
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
 </script>
+  <!-- Modal Tambah/Edit Peserta -->
+<div id="modalPeserta" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; max-height:90vh; overflow-y:auto;">
+    <h3 id="modalPesertaTitle" style="margin-top:0;">Tambah Peserta</h3>
+    
+    <input type="hidden" id="pesertaId">
+    <input type="hidden" id="pesertaKegiatanId">
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">Nama:</label>
+    <input type="text" id="pesertaNama" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">Umur:</label>
+    <input type="number" id="pesertaUmur" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">Jenis Kelamin (JK):</label>
+    <select id="pesertaJK" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+      <option value="L">Laki-laki (L)</option>
+      <option value="P">Perempuan (P)</option>
+    </select>
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">Diagnosa:</label>
+    <input type="text" id="pesertaDiagnosa" placeholder="Contoh: DM, Hipertensi" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">NIK:</label>
+    <input type="text" id="pesertaNIK" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+    
+    <label style="display:block; margin-top:10px; font-weight:bold;">No. BPJS:</label>
+    <input type="text" id="pesertaBPJS" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
+    
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="simpanPeserta()" style="flex:1;">💾 Simpan</button>
+      <button class="btn btn-secondary" onclick="tutupModalPeserta()" style="flex:1;">Batal</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
