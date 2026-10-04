@@ -1216,8 +1216,7 @@ function simpanHasilPesertaInline(id) {
   render();
   toastMsg('Hasil ' + (ps.nama || '') + ' tersimpan', 'ok');
 }
-  return '<div class="patient-grid">' + cardsHtml + '</div>';
-}function modalHasilPeserta(id) {
+function modalHasilPeserta(id) {
   var ps = pesertas.find(function(x) { return x.id === id; });
   if (!ps) return;
   var tests = ps.tests || [];
