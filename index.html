@@ -1439,7 +1439,7 @@ function hapusKegiatan(kegiatanId) {
           '<td style="font-size:11px;">' + esc(ps.nik || '-') + '</td>' +
           '<td style="font-size:11px;">' + esc(ps.no_bpjs || '-') + '</td>' +
           '<td style="text-align:right;white-space:nowrap;">' +
-            '<button class="btn-icon" onclick="bukamodalEditPeserta(\'' + ps.id + '\')" title="Edit">✏️</button> ' +
+            '<button class="btn-icon" onclick="bukaModalEditPeserta(\'' + ps.id + '\')" title="Edit">✏️</button> ' +
             '<button class="btn-icon danger" onclick="hapusPeserta(\'' + ps.id + '\')" title="Hapus">🗑️</button>' +
           '</td>' +
         '</tr>';
@@ -1570,10 +1570,31 @@ function simpanPeserta() {
     pesertas.push(newPeserta);
   }
   
-  savePesertas();
+  savePeserta();
   tutupModalPeserta();
   render();
   toastMsg(id ? 'Peserta berhasil diupdate' : 'Peserta berhasil ditambahkan');
+}
+function editBatchPeserta() {
+  var kegId = window._currentKegiatanId;
+  var list = pesertas.filter(function(p) { return p.kegiatan_id === kegId; });
+  if (list.length === 0) { toastMsg('Belum ada peserta'); return; }
+  window._batchMode = 'edit';
+  window._batchPeserta = list.map(function(p) {
+    return {
+      id: p.id,
+      no_sample: p.no_sample,
+      nama: p.nama || '',
+      umur: p.umur || '',
+      jk: p.jk || '',
+      diagnosa: p.diagnosa || '',
+      nik: p.nik || '',
+      no_bpjs: p.no_bpjs || ''
+    };
+  });
+  view = 'batch-input';
+  window.scrollTo(0, 0);
+  render();
 }
 
 function lanjutBatchInput() {
