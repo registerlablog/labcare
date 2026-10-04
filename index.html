@@ -716,6 +716,8 @@ function render() {
   else if (view === 'hasil')       app.innerHTML = viewHasil();
   else if (view === 'laporan')     app.innerHTML = viewLaporan();
   else if (view === 'program')     app.innerHTML = viewProgram();
+  else if (view === 'peserta-kegiatan') app.innerHTML = viewPesertaKegiatan();
+  else if (view === 'batch-input') app.innerHTML = viewBatchInput();
   else if (view === 'master')      app.innerHTML = viewMaster();
   window.scrollTo(0, 0);
 }
@@ -1397,13 +1399,204 @@ function hapusKegiatan(kegiatanId) {
   toastMsg('Kegiatan dihapus');
 }
 
+  function viewPesertaKegiatan() {
+  var kegId = window._currentKegiatanId;
+  var k = kegiatans.find(function(x) { return x.id === kegId; });
+  if (!k) {
+    return '<div class="empty-state"><span class="em">⚠️</span><p>Kegiatan tidak ditemukan.</p>' +
+      '<button class="btn btn-secondary" onclick="window._currentKegiatanId=null; view=\'program\'; render();">← Kembali</button></div>';
+  }
+  var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === kegId; });
+  var listHtml;
+  if (listPeserta.length === 0) {
+    listHtml = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">👥</span><p>Belum ada peserta di kegiatan ini.</p><p style="margin-top:8px;">Klik "➕ Tambah Batch Peserta" untuk mulai.</p></div>';
+  } else {
+    listHtml = '<div class="table-wrap"><table>' +
+      '<thead><tr><th>No. Sample</th><th>Nama</th><th>Umur</th><th>JK</th><th>Diagnosa</th><th>NIK</th><th>No. BPJS</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' +
+      listPeserta.map(function(ps) {
+        return '<tr>' +
+          '<td class="mono" style="font-weight:700;color:var(--primary);">' + esc(ps.no_sample) + '</td>' +
+          '<td style="font-weight:500;">' + esc(ps.nama || '-') + '</td>' +
+          '<td>' + esc(ps.umur || '-') + '</td>' +
+          '<td>' + esc(ps.jk || '-') + '</td>' +
+          '<td style="font-size:12px;">' + esc(ps.diagnosa || '-') + '</td>' +
+          '<td style="font-size:11px;">' + esc(ps.nik || '-') + '</td>' +
+          '<td style="font-size:11px;">' + esc(ps.no_bpjs || '-') + '</td>' +
+          '<td style="text-align:right;white-space:nowrap;">' +
+            '<button class="btn-icon" onclick="modalEditPeserta(\'' + ps.id + '\')" title="Edit">✏️</button> ' +
+            '<button class="btn-icon danger" onclick="hapusPeserta(\'' + ps.id + '\')" title="Hapus">🗑️</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  return '<div class="page-header-flex"><div>' +
+    '<button class="btn btn-secondary btn-sm" onclick="window._currentKegiatanId=null; view=\'program\'; render();" style="margin-bottom:8px;">← Kembali</button>' +
+    '<h2 style="margin-top:8px;">📋 ' + esc(k.nama || 'Kegiatan') + '</h2>' +
+    '<p>' + esc(k.tanggal || '-') + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
+    '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + listPeserta.length + ' peserta</p>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="modalJumlahBatch()">➕ Tambah Batch Peserta</button>' +
+    (listPeserta.length > 0 ? '<button class="btn btn-secondary" onclick="cetakSemuaPeserta()">🖨️ Cetak PDF</button>' : '') +
+    '</div></div>' +
+    listHtml;
+}
+
+function modalJumlahBatch() {
+  var kegId = window._currentKegiatanId;
+  var lastNo = 0;
+  pesertas.filter(function(p) { return p.kegiatan_id === kegId; }).forEach(function(p) {
+    var num = parseInt((p.no_sample || 'P-0').replace('P-', ''), 10);
+    if (num > lastNo) lastNo = num;
+  });
+  var nextSample = 'P-' + String(lastNo + 1).padStart(3, '0');
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>➕ Tambah Batch Peserta</h3>' +
+    '<p>Berapa peserta yang mau diinput?</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div><label class="lbl">Jumlah Peserta *</label>' +
+    '<input type="number" id="jmlBatch" class="inp" value="10" min="1" max="200" style="font-size:22px;font-weight:700;text-align:center;">' +
+    '<div class="info-box" style="margin-top:12px;"><span class="info-em">ℹ️</span><span>No. Sample mulai dari <b>' + nextSample + '</b></span></div>' +
+    '</div>' +
+    '<div class="btn-row" style="margin-top:20px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="lanjutBatchInput()">Lanjut →</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div>' +
+    '</div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('jmlBatch'); if (el) el.select(); }, 100);
+}
+
+function lanjutBatchInput() {
+  var jml = parseInt((document.getElementById('jmlBatch').value || '0'), 10);
+  if (!jml || jml < 1 || jml > 200) { alert('Jumlah harus 1-200'); return; }
+  window._batchCount = jml;
+  window._batchPeserta = [];
+  for (var i = 0; i < jml; i++) {
+    window._batchPeserta.push({ nama: '', umur: '', jk: '', diagnosa: '', nik: '', no_bpjs: '' });
+  }
+  closeModal();
+  view = 'batch-input';
+  window.scrollTo(0, 0);
+  render();
+}
+
+function viewBatchInput() {
+  var kegId = window._currentKegiatanId;
+  var k = kegiatans.find(function(x) { return x.id === kegId; });
+  if (!k) { toastMsg('Kegiatan tidak ditemukan'); return ''; }
+  var batch = window._batchPeserta || [];
+  if (batch.length === 0) {
+    setTimeout(function() { view = 'peserta-kegiatan'; render(); }, 50);
+    return '';
+  }
+  var lastNo = 0;
+  pesertas.filter(function(p) { return p.kegiatan_id === kegId; }).forEach(function(p) {
+    var num = parseInt((p.no_sample || 'P-0').replace('P-', ''), 10);
+    if (num > lastNo) lastNo = num;
+  });
+
+  var rowsHtml = batch.map(function(item, idx) {
+    var noSample = 'P-' + String(lastNo + idx + 1).padStart(3, '0');
+    return '<tr>' +
+      '<td class="mono" style="font-weight:700;color:var(--primary);text-align:center;">' + noSample + '</td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:13px;" value="' + esc(item.nama) + '" oninput="updateBatch(' + idx + ', \'nama\', this.value)" placeholder="Nama"></td>' +
+      '<td><input type="number" class="inp" style="padding:6px 8px;font-size:13px;width:70px;" value="' + esc(item.umur) + '" oninput="updateBatch(' + idx + ', \'umur\', this.value)" placeholder="Th"></td>' +
+      '<td><select class="inp-sel" style="padding:6px 8px;font-size:13px;width:60px;" onchange="updateBatch(' + idx + ', \'jk\', this.value)"><option value="">-</option><option value="L"' + (item.jk === 'L' ? ' selected' : '') + '>L</option><option value="P"' + (item.jk === 'P' ? ' selected' : '') + '>P</option></select></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:13px;" value="' + esc(item.diagnosa) + '" oninput="updateBatch(' + idx + ', \'diagnosa\', this.value)" placeholder="Diagnosa"></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;" value="' + esc(item.nik) + '" oninput="updateBatch(' + idx + ', \'nik\', this.value)" placeholder="NIK"></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;" value="' + esc(item.no_bpjs) + '" oninput="updateBatch(' + idx + ', \'no_bpjs\', this.value)" placeholder="No. BPJS"></td>' +
+      '</tr>';
+  }).join('');
+
+  return '<div class="page-header">' +
+    '<button class="btn btn-secondary btn-sm" onclick="window._batchPeserta=[]; view=\'peserta-kegiatan\'; render();" style="margin-bottom:8px;">← Batal</button>' +
+    '<h2 style="margin-top:8px;">📝 Input Batch Peserta</h2>' +
+    '<p>' + esc(k.nama || '-') + ' • ' + batch.length + ' peserta</p>' +
+    '</div>' +
+    '<div class="table-wrap"><table style="min-width:900px;">' +
+    '<thead><tr><th style="width:80px;text-align:center;">No. Sample</th><th>Nama</th><th style="width:70px;">Umur</th><th style="width:60px;">JK</th><th>Diagnosa</th><th>NIK</th><th>No. BPJS</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody></table></div>' +
+    '<div class="btn-row" style="margin-top:20px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="simpanBatch()">💾 Simpan Semua (' + batch.length + ')</button>' +
+    '<button class="btn btn-secondary" onclick="window._batchPeserta=[]; view=\'peserta-kegiatan\'; render();">Batal</button>' +
+    '</div>';
+}
+
+function updateBatch(idx, field, val) {
+  if (!window._batchPeserta[idx]) return;
+  window._batchPeserta[idx][field] = val;
+}
+
+function simpanBatch() {
+  var kegId = window._currentKegiatanId;
+  var k = kegiatans.find(function(x) { return x.id === kegId; });
+  if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
+  var batch = window._batchPeserta || [];
+  if (batch.length === 0) { toastMsg('Tidak ada peserta'); return; }
+
+  var lastNo = 0;
+  pesertas.filter(function(p) { return p.kegiatan_id === kegId; }).forEach(function(p) {
+    var num = parseInt((p.no_sample || 'P-0').replace('P-', ''), 10);
+    if (num > lastNo) lastNo = num;
+  });
+
+  var prog = programs.find(function(pp) { return pp.id === k.program_id; });
+  var paketTes = prog && prog.paket_tes ? prog.paket_tes : [];
+
+  batch.forEach(function(item, idx) {
+    var noSample = 'P-' + String(lastNo + idx + 1).padStart(3, '0');
+    pesertas.push({
+      id: 'PS-' + Date.now() + '-' + idx,
+      kegiatan_id: kegId,
+      no_sample: noSample,
+      nama: item.nama || '',
+      umur: item.umur || '',
+      jk: item.jk || '',
+      diagnosa: item.diagnosa || '',
+      nik: item.nik || '',
+      no_bpjs: item.no_bpjs || '',
+      tests: paketTes.slice(),
+      hasil: {},
+      status: 'menunggu',
+      tgl_daftar: new Date().toISOString(),
+      program_id: k.program_id || ''
+    });
+  });
+
+  savePeserta();
+  window._batchPeserta = [];
+  view = 'peserta-kegiatan';
+  window.scrollTo(0, 0);
+  render();
+  toastMsg(batch.length + ' peserta ditambahkan');
+}
+
+function modalEditPeserta(id) {
+  toastMsg('Edit peserta — segera hadir');
+}
+
+function hapusPeserta(id) {
+  if (!confirm('Hapus peserta ini?')) return;
+  pesertas = pesertas.filter(function(p) { return p.id !== id; });
+  savePeserta();
+  render();
+  toastMsg('Peserta dihapus');
+}
+
+function cetakSemuaPeserta() {
+  toastMsg('Cetak PDF — segera hadir (Step 5c-3)');
+}
+
 function bukaKegiatan(kegiatanId) {
   var k = kegiatans.find(function(x) { return x.id === kegiatanId; });
   if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
   window._currentKegiatanId = kegiatanId;
-  alert('Halaman peserta kegiatan:\n\n' + (k.nama || '-') + '\n' +
-    pesertas.filter(function(ps) { return ps.kegiatan_id === kegiatanId; }).length + ' peserta\n\n' +
-    '(Halaman batch input peserta akan dibuat di Step 5c)');
+  window._batchPeserta = [];
+  view = 'peserta-kegiatan';
+  window.scrollTo(0, 0);
+  render();
 }
 
 function hapusProgram(id) {
