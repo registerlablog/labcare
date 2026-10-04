@@ -1165,6 +1165,9 @@ function savePrograms() {
 }
 
 function viewProgram() {
+  if (window._currentProgramId) {
+  return viewProgramDetail(window._currentProgramId);
+}
   var listHtml = programs.map(function(p) {
     var jumlahTes = (p.paket_tes || []).length;
     return '<div class="patient-card">' +
@@ -1176,7 +1179,7 @@ function viewProgram() {
       '<p class="meta">' + esc(p.deskripsi || '-') + '</p>' +
       '<p class="meta" style="margin-top:6px;"><b>Paket Tes:</b> ' + jumlahTes + ' pemeriksaan</p>' +
       '<div class="patient-card-actions">' +
-        '<button class="btn btn-primary btn-sm" onclick="viewProgramDetail(\'' + p.id + '\')" style="flex:1;">Buka</button>' +
+        '<button class="btn btn-primary btn-sm" onclick="window._currentProgramId=\'' + p.id + '\'; render();" style="flex:1;">Buka</button>' +
         '<button class="btn-icon" onclick="modalProgram(\'' + p.id + '\')" title="Edit">✏️</button>' +
         '<button class="btn-icon danger" onclick="hapusProgram(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
       '</div>' +
@@ -1329,6 +1332,79 @@ function resetPrograms() {
   render();
   toastMsg('Program direset ke default');
 }
+function modalKegiatan(programId, kegiatanId) {
+  var isEdit = !!kegiatanId;
+  var k = isEdit ? kegiatans.find(function(x) { return x.id === kegiatanId; }) : null;
+  if (isEdit && !k) { toastMsg('Kegiatan tidak ditemukan'); return; }
+  var p = programs.find(function(x) { return x.id === programId; });
+  if (!p) { toastMsg('Program tidak ditemukan'); return; }
+
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? 'Edit Kegiatan' : 'Buat Kegiatan Baru') + '</h3>' +
+    '<p>Program: ' + esc(p.nama) + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Nama Kegiatan</label><input id="keg_nama" class="inp" value="' + (k ? esc(k.nama || '') : '') + '" placeholder="Contoh: Prolanis Curahdami"></div>' +
+    '<div><label class="lbl">Tanggal Kegiatan</label><input type="date" id="keg_tanggal" class="inp" value="' + (k ? esc(k.tanggal || '') : '') + '"></div>' +
+    '<div><label class="lbl">Pengirim</label><input id="keg_pengirim" class="inp" value="' + (k ? esc(k.pengirim || '') : '') + '" placeholder="Contoh: Pusk. Curahdami"></div>' +
+    '<div><label class="lbl">Alamat</label><input id="keg_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Panambangan, Curahdami"></div>' +
+    '<div><label class="lbl">Petugas</label><input id="keg_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatan(\'' + programId + '\', ' + (kegiatanId ? '\'' + kegiatanId + '\'' : 'null') + ')">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('keg_nama'); if (el) el.focus(); }, 100);
+}
+
+function simpanKegiatan(programId, kegiatanId) {
+  var nama = (document.getElementById('keg_nama').value || '').trim();
+  var tanggal = (document.getElementById('keg_tanggal').value || '').trim();
+  var pengirim = (document.getElementById('keg_pengirim').value || '').trim();
+  var alamat = (document.getElementById('keg_alamat').value || '').trim();
+  var petugas = (document.getElementById('keg_petugas').value || '').trim();
+
+  if (kegiatanId) {
+    var k = kegiatans.find(function(x) { return x.id === kegiatanId; });
+    if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
+    k.nama = nama; k.tanggal = tanggal; k.pengirim = pengirim; k.alamat = alamat; k.petugas = petugas;
+  } else {
+    kegiatans.push({
+      id: 'KEG' + Date.now(),
+      program_id: programId,
+      nama: nama, tanggal: tanggal, pengirim: pengirim, alamat: alamat, petugas: petugas
+    });
+  }
+  saveKegiatan();
+  closeModal();
+  render();
+  toastMsg(kegiatanId ? 'Kegiatan diperbarui' : 'Kegiatan dibuat');
+}
+
+function hapusKegiatan(kegiatanId) {
+  var k = kegiatans.find(function(x) { return x.id === kegiatanId; });
+  if (!k) return;
+  var jml = pesertas.filter(function(ps) { return ps.kegiatan_id === kegiatanId; }).length;
+  var msg = 'Hapus kegiatan "' + (k.nama || '-') + '"?';
+  if (jml > 0) msg += '\n\n⚠️ Ada ' + jml + ' peserta di kegiatan ini. Hapus juga?';
+  if (!confirm(msg)) return;
+  kegiatans = kegiatans.filter(function(x) { return x.id !== kegiatanId; });
+  pesertas = pesertas.filter(function(ps) { return ps.kegiatan_id !== kegiatanId; });
+  saveKegiatan();
+  savePeserta();
+  render();
+  toastMsg('Kegiatan dihapus');
+}
+
+function bukaKegiatan(kegiatanId) {
+  var k = kegiatans.find(function(x) { return x.id === kegiatanId; });
+  if (!k) { toastMsg('Kegiatan tidak ditemukan'); return; }
+  window._currentKegiatanId = kegiatanId;
+  alert('Halaman peserta kegiatan:\n\n' + (k.nama || '-') + '\n' +
+    pesertas.filter(function(ps) { return ps.kegiatan_id === kegiatanId; }).length + ' peserta\n\n' +
+    '(Halaman batch input peserta akan dibuat di Step 5c)');
+}
 
 function hapusProgram(id) {
   var p = programs.find(function(x) { return x.id === id; });
@@ -1342,8 +1418,38 @@ function hapusProgram(id) {
 function viewProgramDetail(id) {
   var p = programs.find(function(x) { return x.id === id; });
   if (!p) return;
-  alert('Program: ' + p.nama + '\n\nJumlah paket tes: ' + (p.paket_tes || []).length +
-    '\n\nDetail kegiatan & peserta akan dibuat di tahap berikutnya.');
+  var list = kegiatans.filter(function(k) { return k.program_id === id; });
+  var listHtml;
+  if (list.length === 0) {
+    listHtml = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">📅</span><p>Belum ada kegiatan untuk program ini.</p><p style="margin-top:8px;">Klik "➕ Buat Kegiatan" untuk mulai.</p></div>';
+  } else {
+    listHtml = list.map(function(k) {
+      var jml = pesertas.filter(function(ps) { return ps.kegiatan_id === k.id; }).length;
+      return '<div class="patient-card">' +
+        '<div class="patient-card-head">' +
+          '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">' + esc(k.nama || 'Kegiatan') + '</div>' +
+          '<div style="font-size:11px;color:var(--slate-400);">' + esc(k.tanggal || '-') + '</div></div>' +
+          '<span class="badge badge-proses">' + jml + ' peserta</span>' +
+        '</div>' +
+        '<p class="meta">🏥 Pengirim: ' + esc(k.pengirim || '-') + '</p>' +
+        '<p class="meta">📍 Alamat: ' + esc(k.alamat || '-') + '</p>' +
+        (k.petugas ? '<p class="meta">👤 Petugas: ' + esc(k.petugas) + '</p>' : '') +
+        '<div class="patient-card-actions">' +
+          '<button class="btn btn-primary btn-sm" onclick="bukaKegiatan(\'' + k.id + '\')" style="flex:1;">📋 Buka Peserta</button>' +
+          '<button class="btn-icon" onclick="modalKegiatan(\'' + p.id + '\', \'' + k.id + '\')" title="Edit">✏️</button>' +
+          '<button class="btn-icon danger" onclick="hapusKegiatan(\'' + k.id + '\')" title="Hapus">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  return '<div class="page-header-flex"><div>' +
+    '<button class="btn btn-secondary btn-sm" onclick="window._currentProgramId=null; render();" style="margin-bottom:8px;">← Kembali</button>' +
+    '<h2 style="margin-top:8px;">📅 ' + esc(p.nama) + '</h2>' +
+    '<p>Daftar kegiatan program ' + esc(p.nama) + '</p>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="modalKegiatan(\'' + p.id + '\', null)">➕ Buat Kegiatan</button></div>' +
+    '<div class="patient-grid">' + listHtml + '</div>';
 }
 
 function goToMaster(tab) {
