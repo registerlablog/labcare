@@ -80,7 +80,9 @@ async function testGetAll() {
     '- Pemeriksaan: ' + (r.pemeriksaan ? r.pemeriksaan.length : 0) + '\n' +
     '- Analis     : ' + (r.analis ? r.analis.length : 0) + '\n' +
     '- Dokter     : ' + (r.dokter ? r.dokter.length : 0) + '\n' +
-    '- Program    : ' + (r.program ? r.program.length : 'undefined'));
+    '- Program    : ' + (r.program ? r.program.length : 0) + '\n' +
+    '- Kegiatan   : ' + (r.kegiatan ? r.kegiatan.length : 'undefined') + '\n' +
+    '- Peserta    : ' + (r.peserta ? r.peserta.length : 'undefined');
 }
 
 async function testProgram() {
