@@ -488,6 +488,11 @@ window._programPickedTests = {};
 window._programEditId = null;
 window._programKatFilter = 'semua';
 window._programPickSearch = '';
+  var kegiatans = [];
+var pesertas = [];
+window._currentProgramId = null;
+window._currentKegiatanId = null;
+window._batchPeserta = [];
 
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -578,6 +583,20 @@ async function syncAllFromServer(silent) {
     return p;
   });
   try { localStorage.setItem('labcare_programs', JSON.stringify(programs)); } catch (e) {}
+}
+  if (Array.isArray(r.kegiatan)) {
+  kegiatans = r.kegiatan;
+  try { localStorage.setItem('labcare_kegiatan', JSON.stringify(kegiatans)); } catch (e) {}
+}
+if (Array.isArray(r.peserta)) {
+  pesertas = r.peserta.map(function(p) {
+    if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } }
+    if (typeof p.hasil === 'string') { try { p.hasil = JSON.parse(p.hasil || '{}'); } catch (e) { p.hasil = {}; } }
+    if (!p.tests) p.tests = [];
+    if (!p.hasil) p.hasil = {};
+    return p;
+  });
+  try { localStorage.setItem('labcare_peserta', JSON.stringify(pesertas)); } catch (e) {}
 }
   try {
     localStorage.setItem('labcare_patients', JSON.stringify(patients));
@@ -1103,6 +1122,30 @@ function loadPrograms() {
     ];
     savePrograms();
   }
+  // Load kegiatans & pesertas
+try {
+  var rawKeg = localStorage.getItem('labcare_kegiatan');
+  if (rawKeg) kegiatans = JSON.parse(rawKeg) || [];
+  var rawPes = localStorage.getItem('labcare_peserta');
+  if (rawPes) pesertas = JSON.parse(rawPes) || [];
+} catch (e) { kegiatans = []; pesertas = []; }
+}
+function saveKegiatan() {
+  try { localStorage.setItem('labcare_kegiatan', JSON.stringify(kegiatans)); } catch (e) {}
+  apiCall('saveMaster', { jenis: 'kegiatan', list: kegiatans });
+}
+
+function savePeserta() {
+  try { localStorage.setItem('labcare_peserta', JSON.stringify(pesertas)); } catch (e) {}
+  var listKirim = pesertas.map(function(p) {
+    var x = {};
+    for (var k in p) {
+      if (k === 'tests' || k === 'hasil') x[k] = JSON.stringify(p[k]);
+      else x[k] = p[k];
+    }
+    return x;
+  });
+  apiCall('saveMaster', { jenis: 'peserta', list: listKirim });
 }
 
 function savePrograms() {
