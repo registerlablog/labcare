@@ -1113,26 +1113,46 @@ function buildHasilKegiatanContent() {
     return '<div class="empty-state"><span class="em">📋</span><p>Belum ada peserta kegiatan.</p></div>';
   }
   var selected = window._hasilKegSelected || null;
-  // LEVEL 2: daftar peserta satu kegiatan
+  // LEVEL 2: kartu peserta inline input
   if (selected) {
     var k = kegiatans.find(function(x) { return x.id === selected; });
     var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === selected; });
     listPeserta = listPeserta.slice().sort(function(a, b) {
       return (a.no_sample || '').localeCompare(b.no_sample || '');
     });
-    var rowsHtml = listPeserta.map(function(ps) {
+    var infoKeg = k ? (esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-')) : '-';
+    var cardsHtml = listPeserta.map(function(ps) {
       var tests = ps.tests || [];
       var hasil = ps.hasil || {};
       var filled = tests.filter(function(t) { return hasil[t]; }).length;
       var done = tests.length > 0 && filled === tests.length;
-      return '<tr>' +
-        '<td class="mono" style="font-weight:700;color:var(--primary);">' + esc(ps.no_sample) + '</td>' +
-        '<td style="font-weight:500;">' + esc(ps.nama || '-') + '</td>' +
-        '<td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td>' +
-        '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasilPeserta(\'' + ps.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td>' +
-        '</tr>';
+      var cls = done ? 'selesai' : (filled > 0 ? 'proses' : 'menunggu');
+      var rowsTes = tests.map(function(kode) {
+        var t = findTest(kode) || { nama: kode, rujukan: '-', satuan: '' };
+        var val = hasil[kode] || '';
+        var inputId = 'hinline_' + ps.id + '_' + kode;
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--slate-100);">' +
+          '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:500;color:var(--slate-800);">' + esc(t.nama) + '</div>' +
+          '<div style="font-size:10px;color:var(--slate-400);">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' ' + esc(t.satuan) : '') + '</div>' +
+          '</div>' +
+          '<input id="' + inputId + '" class="inp" style="width:110px;padding:6px 8px;font-size:13px;" value="' + esc(val) + '" placeholder="Hasil">' +
+          '</div>';
+      }).join('');
+      return '<div class="patient-card ' + cls + '" style="margin-bottom:14px;">' +
+        '<div class="patient-card-head">' +
+        '<div><div class="antrian">' + esc(ps.no_sample) + '</div>' +
+        '<div class="rm">' + esc(ps.jk || '-') + (ps.umur ? ' • ' + esc(fmtTglLahir(ps.umur)) : '') + '</div></div>' +
+        '<span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Menunggu')) + '</span>' +
+        '</div>' +
+        '<h4 style="margin-bottom:4px;">' + esc(ps.nama || '-') + '</h4>' +
+        (ps.diagnosa ? '<p class="meta" style="margin-bottom:8px;">🩺 Diagnosa: ' + esc(ps.diagnosa) + '</p>' : '') +
+        '<div style="margin-top:10px;">' + rowsTes + '</div>' +
+        '<div class="patient-card-actions" style="margin-top:12px;">' +
+        '<button class="btn btn-primary btn-sm" style="flex:1;" onclick="simpanHasilPesertaInline(\'' + ps.id + '\')">💾 Simpan Hasil</button>' +
+        '</div>' +
+        '</div>';
     }).join('');
-    var infoKeg = k ? (esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-')) : '-';
     return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilKegSelected=null; render();">← Kembali ke Daftar Kegiatan</button>' +
       '<div class="card" style="margin-bottom:16px;padding:16px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
@@ -1142,15 +1162,12 @@ function buildHasilKegiatanContent() {
       '</div>' +
       '<span class="badge badge-proses">' + listPeserta.length + ' peserta</span>' +
       '</div>' +
-      '<div class="table-wrap" style="box-shadow:none;">' +
-      '<table style="min-width:auto;">' +
-      '<thead><tr><th style="width:90px;">No. Sample</th><th>Nama</th><th>Pemeriksaan</th><th style="text-align:right;width:100px;">Aksi</th></tr></thead>' +
-      '<tbody>' + rowsHtml + '</tbody></table></div>' +
+      '<div>' + cardsHtml + '</div>' +
       '</div>';
   }
-  // LEVEL 1: daftar judul kegiatan
+  // LEVEL 1: kartu judul kegiatan
   var kegiatanIds = Array.from(new Set(pesertas.map(function(p) { return p.kegiatan_id; })));
-  var cardsHtml = kegiatanIds.map(function(kid) {
+  var cardsKegHtml = kegiatanIds.map(function(kid) {
     var k = kegiatans.find(function(x) { return x.id === kid; });
     var listPeserta = pesertas.filter(function(p) { return p.kegiatan_id === kid; });
     if (listPeserta.length === 0) return '';
@@ -1177,9 +1194,28 @@ function buildHasilKegiatanContent() {
       '</div>' +
       '</div>';
   }).join('');
-  if (cardsHtml === '') {
+  if (cardsKegHtml === '') {
     return '<div class="empty-state"><span class="em">📋</span><p>Belum ada peserta kegiatan.</p></div>';
   }
+  return '<div class="patient-grid">' + cardsKegHtml + '</div>';
+}
+
+function simpanHasilPesertaInline(id) {
+  var ps = pesertas.find(function(x) { return x.id === id; });
+  if (!ps) return;
+  if (!ps.hasil) ps.hasil = {};
+  (ps.tests || []).forEach(function(kode) {
+    var el = document.getElementById('hinline_' + id + '_' + kode);
+    if (el) {
+      var v = el.value.trim();
+      if (v) ps.hasil[kode] = v;
+      else delete ps.hasil[kode];
+    }
+  });
+  savePeserta();
+  render();
+  toastMsg('Hasil ' + (ps.nama || '') + ' tersimpan', 'ok');
+}
   return '<div class="patient-grid">' + cardsHtml + '</div>';
 }function modalHasilPeserta(id) {
   var ps = pesertas.find(function(x) { return x.id === id; });
