@@ -2548,6 +2548,15 @@ function modalHasil(id) {
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
 }
+function inputHasilPasien(id) {
+  closeModal();
+  view = 'hasil';
+  window._hasilTab = 'umum';
+  renderNav();
+  render();
+  setTimeout(function() { modalHasil(id); }, 150);
+}
+  
 function simpanHasil(id) {
   var p = patients.find(function(x) { return x.id === id; });
   if (!p) return;
@@ -2931,7 +2940,10 @@ var p = {
     '<div class="modal-success"><div class="big-em">✅</div>' +
     '<h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p>' +
     '<div class="success-number-box"><p>Nomber-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Lihat Antrian</button></div>';
+    '<div style="display:flex;gap:8px;">' +
+'<button class="btn btn-secondary" style="flex:1;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">📋 Antrian</button>' +
+'<button class="btn btn-primary" style="flex:1;" onclick="inputHasilPasien(\'' + p.id + '\')">🔬 Input Hasil</button>' +
+'</div></div>';
   document.getElementById('modal').classList.add('open');
 });
 
