@@ -1067,6 +1067,7 @@ function viewAntrian() {
 (p.spesimen !== 'ada' && p.status === 'menunggu'
   ? '<button class="btn-icon" onclick="panggilPasien(\'' + p.id + '\')" title="Panggil ke Sampling" style="background:#fef3c7;color:#b45309;font-weight:bold;">🔊</button>'
   : '') +
+        '<button class="btn-icon" onclick="modalEditPasien(\'' + p.id + '\')" title="Edit Data Pasien" style="background:#f3e8ff;color:#7e22ce;">👤</button>' +
         '<button class="btn-icon" onclick="modalEditPemeriksaan(\'' + p.id + '\')" title="Edit Pemeriksaan" style="background:#dbeafe;color:#1d4ed8;">✏️</button>' +
 '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
 '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
@@ -2239,7 +2240,80 @@ function modalEditPemeriksaan(id) {
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
 }
+function modalEditPasien(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var dokterField;
+  if (dokterList.length > 0) {
+    dokterField = '<select id="ep_dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' +
+      dokterList.map(function(d) {
+        return '<option value="' + esc(d.nama) + '"' + (d.nama === p.dokter ? ' selected' : '') + '>' + esc(d.nama) + '</option>';
+      }).join('') + '</select>';
+  } else {
+    dokterField = '<input id="ep_dokter" class="inp" value="' + esc(p.dokter || '') + '" placeholder="Nama dokter">';
+  }
+  var analisField;
+  if (analisList.length > 0) {
+    analisField = '<select id="ep_analis" class="inp-sel"><option value="">— Pilih Analis —</option>' +
+      analisList.map(function(a) {
+        return '<option value="' + esc(a.nama) + '"' + (a.nama === p.analis ? ' selected' : '') + '>' + esc(a.nama) + '</option>';
+      }).join('') + '</select>';
+  } else {
+    analisField = '<input id="ep_analis" class="inp" value="' + esc(p.analis || '') + '" placeholder="Nama analis">';
+  }
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>Edit Data Pasien</h3>' +
+    '<p>' + esc(p.noRM) + ' • ' + esc(p.noAntrian) + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Nama Lengkap *</label><input id="ep_nama" class="inp" value="' + esc(p.nama || '') + '"></div>' +
+    '<div><label class="lbl">Tanggal Lahir *</label><input type="date" id="ep_tglLahir" class="inp" value="' + esc((p.tglLahir || '').slice(0, 10)) + '"></div>' +
+    '<div><label class="lbl">Jenis Kelamin</label><select id="ep_jk" class="inp-sel">' +
+    '<option value="L"' + (p.jk === 'L' ? ' selected' : '') + '>Laki-laki</option>' +
+    '<option value="P"' + (p.jk === 'P' ? ' selected' : '') + '>Perempuan</option>' +
+    '</select></div>' +
+    '<div><label class="lbl">No. Telepon</label><input id="ep_telepon" class="inp" value="' + esc(p.telepon || '') + '" placeholder="08xxxxxxxxxx"></div>' +
+    '<div><label class="lbl">Pengirim</label><input id="ep_pengirim" class="inp" value="' + esc(p.pengirim || '') + '"></div>' +
+    '<div><label class="lbl">Dokter Penanggung Jawab</label>' + dokterField + '</div>' +
+    '<div><label class="lbl">Nama Analis</label>' + analisField + '</div>' +
+    '<div><label class="lbl">Status Spesimen</label><select id="ep_spesimen" class="inp-sel">' +
+    '<option value="belum"' + (p.spesimen === 'belum' ? ' selected' : '') + '>📦 Belum Ada</option>' +
+    '<option value="ada"' + (p.spesimen === 'ada' ? ' selected' : '') + '>📦 Sudah Ada</option>' +
+    '</select></div>' +
+    '<div><label class="lbl">Alamat</label><textarea id="ep_alamat" class="inp-ta" rows="2">' + esc(p.alamat || '') + '</textarea></div>' +
+    '<div><label class="lbl">Catatan Klinis</label><textarea id="ep_catatan" class="inp-ta" rows="2">' + esc(p.catatan || '') + '</textarea></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPasien(\'' + p.id + '\')">💾 Simpan Perubahan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('ep_nama'); if (el) el.focus(); }, 100);
+}
 
+function simpanEditPasien(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) return;
+  var nama = (document.getElementById('ep_nama').value || '').trim();
+  if (!nama) { alert('Nama wajib diisi.'); return; }
+  p.nama = nama;
+  p.tglLahir = document.getElementById('ep_tglLahir').value;
+  p.jk = document.getElementById('ep_jk').value;
+  p.telepon = document.getElementById('ep_telepon').value.trim();
+  p.pengirim = document.getElementById('ep_pengirim').value.trim();
+  p.dokter = document.getElementById('ep_dokter').value.trim();
+  p.analis = document.getElementById('ep_analis').value.trim();
+  p.alamat = document.getElementById('ep_alamat').value.trim();
+  p.catatan = document.getElementById('ep_catatan').value.trim();
+  var spBaru = document.getElementById('ep_spesimen').value;
+  if (spBaru !== p.spesimen) {
+    p.spesimen = spBaru;
+    if (spBaru === 'ada' && p.status === 'menunggu') p.status = 'proses';
+  }
+  save(); apiCall('savePasien', p);
+  closeModal();
+  render();
+  toastMsg('Data pasien diperbarui', 'ok');
+}
 function renderEditTestPicker() {
   var categories = ['semua'].concat(Array.from(new Set(TESTS.map(function(t) { return t.kategori; }))).sort());
   var katOptions = categories.map(function(k) {
