@@ -2571,8 +2571,27 @@ function simpanHasil(id) {
   p.kesimpulan = kes ? kes.value.trim() : '';
   var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
   if (filled === (p.tests || []).length && p.status !== 'selesai') p.status = 'selesai';
-  save(); apiCall('savePasien', p); closeModal(); render();
-  toastMsg('Hasil disimpan');
+  save(); apiCall('savePasien', p);
+  var sisa = (p.tests || []).length - filled;
+  document.getElementById('modalContent').innerHTML =
+    '<div class="modal-success">' +
+    '<div class="big-em">✅</div>' +
+    '<h3>Hasil Tersimpan</h3>' +
+    '<p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p>' +
+    '<div class="success-number-box">' +
+    '<p>Pemeriksaan</p>' +
+    '<div class="big-no">' + filled + '/' + (p.tests || []).length + '</div>' +
+    '<p style="margin-top:8px;font-size:12px;color:' + (sisa > 0 ? 'var(--warning)' : 'var(--success)') + ';font-weight:600;">' +
+    (sisa > 0 ? sisa + ' tes belum diisi' : '✓ Lengkap') +
+    '</p>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); cetakHasil(\'' + p.id + '\');">🖨️ Cetak Hasil Sekarang</button>' +
+    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); render();">✏️ Edit Lagi</button>' +
+    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">📋 Selesai</button>' +
+    '</div>' +
+    '</div>';
+  document.getElementById('modal').classList.add('open');
 }
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
