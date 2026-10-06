@@ -1689,6 +1689,7 @@ function bukaModalTambahPeserta() {
   document.getElementById('pesertaDiagnosa').value = '';
   document.getElementById('pesertaNIK').value = '';
   document.getElementById('pesertaBPJS').value = '';
+  document.getElementById('pesertaAlamat').value = '';
   
   document.getElementById('modalPesertaTitle').innerText = 'Tambah Peserta';
   document.getElementById('modalPeserta').style.display = 'flex';
@@ -1706,6 +1707,7 @@ function bukaModalEditPeserta(id) {
   document.getElementById('pesertaDiagnosa').value = p.diagnosa || '';
   document.getElementById('pesertaNIK').value = p.nik || '';
   document.getElementById('pesertaBPJS').value = p.no_bpjs || '';
+  document.getElementById('pesertaAlamat').value = p.alamat || '';
   
   document.getElementById('modalPesertaTitle').innerText = 'Edit Peserta';
   document.getElementById('modalPeserta').style.display = 'flex';
@@ -1724,6 +1726,7 @@ function simpanPeserta() {
   var diagnosa = document.getElementById('pesertaDiagnosa').value.trim();
   var nik = document.getElementById('pesertaNIK').value.trim();
   var bpjs = document.getElementById('pesertaBPJS').value.trim();
+  var alamat = document.getElementById('pesertaAlamat').value.trim();
   
   if (!nama) {
     toastMsg('Nama peserta wajib diisi!');
@@ -1739,6 +1742,7 @@ function simpanPeserta() {
       p.diagnosa = diagnosa;
       p.nik = nik;
       p.no_bpjs = bpjs;
+      p.alamat = alamat;
     }
   } else {
     var lastNo = 0;
@@ -1758,6 +1762,7 @@ function simpanPeserta() {
       diagnosa: diagnosa,
       nik: nik,
       no_bpjs: bpjs,
+      alamat: alamat,
       tests: [],
       hasil: {}
     };
@@ -1783,7 +1788,8 @@ function editBatchPeserta() {
       jk: p.jk || '',
       diagnosa: p.diagnosa || '',
       nik: p.nik || '',
-      no_bpjs: p.no_bpjs || ''
+      no_bpjs: p.no_bpjs || '',
+      alamat: p.alamat || ''
     };
   });
   view = 'batch-input';
@@ -1831,6 +1837,7 @@ function viewBatchInput() {
       '<td><select class="inp-sel" style="padding:6px 8px;font-size:13px;" onchange="updateBatch(' + idx + ', \'diagnosa\', this.value)"><option value="">-</option><option value="DM"' + (item.diagnosa === 'DM' ? ' selected' : '') + '>DM</option><option value="HT"' + (item.diagnosa === 'HT' ? ' selected' : '') + '>HT</option><option value="DM + HT"' + (item.diagnosa === 'DM + HT' ? ' selected' : '') + '>DM + HT</option></select></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;" value="' + esc(item.nik) + '" oninput="updateBatch(' + idx + ', \'nik\', this.value)" placeholder="NIK"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;" value="' + esc(item.no_bpjs) + '" oninput="updateBatch(' + idx + ', \'no_bpjs\', this.value)" placeholder="No. BPJS"></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;" value="' + esc(item.alamat || '') + '" oninput="updateBatch(' + idx + ', \'alamat\', this.value)" placeholder="Alamat"></td>' +
       '</tr>';
   }).join('');
 
@@ -1840,7 +1847,7 @@ function viewBatchInput() {
     '<p>' + esc(k.nama || '-') + ' • ' + batch.length + ' peserta</p>' +
     '</div>' +
     '<div class="table-wrap"><table style="min-width:900px;">' +
-    '<thead><tr><th style="width:80px;text-align:center;">No. Sample</th><th>Nama</th><th style="width:130px;">Tgl Lahir</th><th style="width:60px;">JK</th><th>Diagnosa</th><th>NIK</th><th>No. BPJS</th></tr></thead>' +
+    '</th><th style="width:130px;">Tgl Lahir</th><th style="width:60px;">JK</th><th>Diagnosa</th><th>NIK</th><th>No. BPJS</th><th>Alamat</th></tr></thead>' +
     '<tbody>' + rowsHtml + '</tbody></table></div>' +
     '<div class="btn-row" style="margin-top:20px;">' +
     '<button class="btn btn-primary" style="flex:1;" onclick="simpanBatch()">💾 Simpan Semua (' + batch.length + ')</button>' +
@@ -1869,6 +1876,7 @@ function simpanBatch() {
       p.diagnosa = item.diagnosa || '';
       p.nik = item.nik || '';
       p.no_bpjs = item.no_bpjs || '';
+      p.alamat = item.alamat || '';
     }
   });
   savePeserta();
@@ -1902,6 +1910,7 @@ function simpanBatch() {
       diagnosa: item.diagnosa || '',
       nik: item.nik || '',
       no_bpjs: item.no_bpjs || '',
+      alamat: item.alamat || '',
       tests: paketTes.slice(),
       hasil: {},
       status: 'menunggu',
@@ -3084,7 +3093,8 @@ if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
   <option value="HT">HT (Hipertensi)</option>
   <option value="DM + HT">DM + HT</option>
 </select>
-    
+<label style="display:block; margin-top:10px; font-weight:bold;">Alamat:</label>
+<textarea id="pesertaAlamat" rows="2" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;" placeholder="Alamat lengkap"></textarea>    
     <label style="display:block; margin-top:10px; font-weight:bold;">NIK:</label>
     <input type="text" id="pesertaNIK" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;">
     
