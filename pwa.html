@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>LabCare — Input Hasil</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
+  --success: #16a34a; --success-light: #dcfce7;
+  --warning: #f59e0b; --warning-light: #fef3c7;
+  --purple: #9333ea; --purple-light: #f3e8ff;
+  --danger: #dc2626;
+  --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+  --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --radius: 14px;
+}
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--slate-100); color: var(--slate-800);
+  line-height: 1.5; -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom);
+}
+.header {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  color: #fff; padding: 16px 16px 20px;
+  position: sticky; top: 0; z-index: 30;
+  box-shadow: 0 4px 12px rgba(37,99,235,.25);
+}
+.header h1 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.header p { font-size: 12px; opacity: .9; margin-top: 2px; }
+.sync-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.2); margin-top: 6px;
+}
+.sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+.sync-badge.syncing .dot { background: #fbbf24; animation: pulse 1s infinite; }
+.sync-badge.offline .dot { background: #f87171; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.container { padding: 16px; max-width: 700px; margin: 0 auto; }
+.search-box {
+  position: relative; margin-bottom: 14px;
+}
+.search-box input {
+  width: 100%; padding: 14px 16px 14px 44px;
+  border: none; border-radius: 12px; font-size: 15px;
+  background: #fff; box-shadow: 0 2px 6px rgba(15,23,42,.06);
+  outline: none; font-family: inherit;
+}
+.search-box::before {
+  content: '🔍'; position: absolute; left: 16px; top: 50%;
+  transform: translateY(-50%); font-size: 16px;
+}
+.tab-row {
+  display: flex; gap: 6px; margin-bottom: 14px;
+  overflow-x: auto; padding-bottom: 4px;
+}
+.tab-row::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 8px 14px; border-radius: 999px; border: none;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  background: #fff; color: var(--slate-600); cursor: pointer;
+  white-space: nowrap; transition: .15s;
+}
+.tab.active { background: var(--primary); color: #fff; }
+.tab .count { opacity: .7; margin-left: 2px; }
+.patient-list { display: flex; flex-direction: column; gap: 10px; }
+.patient-card {
+  background: #fff; border-radius: var(--radius); padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(15,23,42,.06);
+  border-left: 4px solid var(--slate-300);
+  cursor: pointer; transition: .12s;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.patient-card:active { transform: scale(.98); }
+.patient-card.menunggu { border-left-color: var(--warning); }
+.patient-card.proses { border-left-color: var(--purple); }
+.patient-card.selesai { border-left-color: var(--success); }
+.pc-left { flex: 1; min-width: 0; }
+.pc-antrian {
+  font-size: 20px; font-weight: 800; font-family: ui-monospace, monospace;
+  color: var(--slate-800); line-height: 1.1;
+}
+.pc-name { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.pc-meta { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
+.pc-progress {
+  background: var(--slate-100); height: 6px; border-radius: 999px;
+  margin-top: 8px; overflow: hidden;
+}
+.pc-progress-bar { background: var(--primary); height: 100%; transition: .3s; }
+.pc-right { flex-shrink: 0; text-align: right; }
+.pc-pct { font-size: 11px; font-weight: 700; color: var(--slate-500); margin-top: 4px; }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 10px; font-weight: 700;
+}
+.badge-menunggu { background: var(--warning-light); color: #b45309; }
+.badge-proses { background: var(--purple-light); color: #7e22ce; }
+.badge-selesai { background: var(--success-light); color: #15803d; }
+.form-page { display: none; }
+.form-page.active { display: block; }
+.list-page { display: block; }
+.list-page.hidden { display: none; }
+.form-header {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  color: #fff; padding: 14px 16px;
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 4px 12px rgba(37,99,235,.25);
+}
+.btn-back {
+  background: rgba(255,255,255,.2); border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 10px;
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.form-header-info { flex: 1; min-width: 0; }
+.form-header-info h2 { font-size: 16px; font-weight: 800; }
+.form-header-info p { font-size: 11px; opacity: .9; }
+.form-body { padding: 16px; max-width: 700px; margin: 0 auto; }
+.kategori-title {
+  font-size: 13px; font-weight: 800; color: var(--slate-700);
+  text-transform: uppercase; letter-spacing: .5px;
+  padding: 10px 0 8px; margin-top: 6px;
+  border-bottom: 2px solid var(--slate-200);
+}
+.test-item {
+  background: #fff; border-radius: 12px; padding: 14px;
+  margin-top: 8px; box-shadow: 0 1px 4px rgba(15,23,42,.05);
+}
+.test-item.kalibrasi { background: #f0f7ff; border: 1px solid #bfdbfe; }
+.test-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 10px; margin-bottom: 8px;
+}
+.test-name { font-size: 14px; font-weight: 600; color: var(--slate-800); }
+.test-ref { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
+.kal-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 999px; background: var(--primary-light);
+  color: var(--primary); flex-shrink: 0;
+}
+.test-inputs { display: flex; gap: 10px; align-items: flex-end; }
+.test-inputs .field { flex: 1; }
+.test-inputs label {
+  font-size: 10px; font-weight: 700; color: var(--slate-500);
+  display: block; margin-bottom: 4px; text-transform: uppercase;
+}
+.test-inputs input {
+  width: 100%; padding: 12px 14px; font-size: 16px;
+  border: 2px solid var(--slate-200); border-radius: 10px;
+  outline: none; font-family: inherit; background: #fff;
+  transition: .15s; font-weight: 600;
+}
+.test-inputs input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+.test-inputs input.hasil { color: var(--primary); }
+.kal-hint {
+  font-size: 10px; color: var(--slate-400); margin-top: 6px;
+  font-style: italic;
+}
+.form-actions {
+  display: flex; gap: 10px; margin-top: 20px; margin-bottom: 20px;
+}
+.btn {
+  padding: 14px 20px; border-radius: 12px; border: none;
+  font-size: 15px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: .15s;
+}
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,.3); flex: 1; }
+.btn-primary:active { transform: scale(.98); }
+.btn-secondary { background: var(--slate-200); color: var(--slate-700); }
+.btn-ghost { background: rgba(255,255,255,.2); color: #fff; padding: 8px 14px; font-size: 13px; }
+.empty-state {
+  background: #fff; border-radius: var(--radius); padding: 40px 20px;
+  text-align: center; color: var(--slate-400); box-shadow: 0 2px 8px rgba(15,23,42,.06);
+}
+.empty-state .em { font-size: 48px; display: block; margin-bottom: 10px; opacity: .4; }
+.empty-state p { font-size: 14px; }
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--slate-900); color: #fff; padding: 12px 20px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 10px 25px rgba(0,0,0,.3); max-width: 90vw; text-align: center;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.err { background: var(--danger); }
+.toast.ok { background: var(--success); }
+.loading {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,.5); z-index: 9999;
+  align-items: center; justify-content: center;
+}
+.loading.show { display: flex; }
+.loading .spinner {
+  width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media print { body * { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="spinner"></div></div>
+
+<!-- LIST PAGE -->
+<div class="list-page" id="listPage">
+  <div class="header">
+    <h1>🧪 LabCare — Input Hasil</h1>
+    <p>PWA Khusus Input Hasil Pemeriksaan</p>
+    <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">Memuat...</span></span>
+  </div>
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Cari nama / No. RM / antrian..." oninput="renderList()">
+    </div>
+    <div class="tab-row" id="tabRow"></div>
+    <div class="patient-list" id="patientList"></div>
+  </div>
+</div>
+
+<!-- FORM PAGE -->
+<div class="form-page" id="formPage">
+  <div class="form-header">
+    <button class="btn-back" onclick="tutupForm()">←</button>
+    <div class="form-header-info">
+      <h2 id="formNama">—</h2>
+      <p id="formMeta">—</p>
+    </div>
+    <button class="btn-ghost" onclick="cetakHasilCurrent()">🖨️</button>
+  </div>
+  <div class="form-body" id="formBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== KONFIGURASI ===== */
+var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+var SYNC_ENABLED = /^https?:\/\//.test(API_URL);
+
+var STATUS = {
+  menunggu: { label: 'Menunggu', cls: 'badge-menunggu' },
+  proses:   { label: 'Diproses', cls: 'badge-proses' },
+  selesai:  { label: 'Selesai',  cls: 'badge-selesai' }
+};
+
+var TESTS = [];
+var patients = [];
+var currentPatient = null;
+var currentFilter = 'belum';
+var syncState = 'idle';
+
+/* ===== UTILITY ===== */
+function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
+
+var _toastTimer;
+function toastMsg(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { t.className = 'toast'; }, 2400);
+}
+
+function setSync(state, text) {
+  syncState = state;
+  var badge = document.getElementById('syncBadge');
+  var txt = document.getElementById('syncText');
+  var labels = { idle: 'Offline (lokal)', syncing: 'Menyinkron...', online: 'Tersinkron', offline: 'Gagal sinkron' };
+  badge.className = 'sync-badge ' + state;
+  txt.textContent = text || labels[state] || state;
+}
+
+function showLoading(show) {
+  document.getElementById('loading').className = show ? 'loading show' : 'loading';
+}
+
+/* ===== API ===== */
+async function apiCall(action, data) {
+  if (!SYNC_ENABLED) return null;
+  setSync('syncing');
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, data: data || {} }),
+      redirect: 'follow'
+    });
+    var json = await res.json();
+    setSync(json && json.ok ? 'online' : 'offline');
+    return json;
+  } catch (e) {
+    setSync('offline');
+    return null;
+  }
+}
+
+/* ===== LOAD DATA ===== */
+async function loadFromServer(silent) {
+  if (!SYNC_ENABLED) { setSync('idle'); loadLocal(); return; }
+  showLoading(true);
+  var r = await apiCall('getAll');
+  showLoading(false);
+  if (!r || !r.ok) {
+    if (!silent) toastMsg('Gagal sinkron', 'err');
+    loadLocal();
+    return;
+  }
+  if (Array.isArray(r.pasien)) patients = r.pasien.map(normalizePasien);
+  if (Array.isArray(r.pemeriksaan) && r.pemeriksaan.length) TESTS = r.pemeriksaan;
+  saveLocal();
+  renderList();
+  renderTabs();
+  if (!silent) toastMsg('✅ Tersinkron', 'ok');
+}
+
+function normalizePasien(p) {
+  if (!p) return p;
+  if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } }
+  if (typeof p.hasil === 'string') { try { p.hasil = JSON.parse(p.hasil || '{}'); } catch (e) { p.hasil = {}; } }
+  if (!p.tests) p.tests = [];
+  if (!p.hasil) p.hasil = {};
+  if (!p.status) p.status = 'menunggu';
+  return p;
+}
+
+function saveLocal() {
+  try {
+    localStorage.setItem('labcare_pwa_patients', JSON.stringify(patients));
+    localStorage.setItem('labcare_pwa_tests', JSON.stringify(TESTS));
+  } catch (e) {}
+}
+function loadLocal() {
+  try {
+    var p = localStorage.getItem('labcare_pwa_patients');
+    var t = localStorage.getItem('labcare_pwa_tests');
+    if (p) patients = (JSON.parse(p) || []).map(normalizePasien);
+    if (t) TESTS = JSON.parse(t) || [];
+  } catch (e) {}
+  renderList();
+  renderTabs();
+}
+
+/* ===== RENDER LIST ===== */
+function renderTabs() {
+  var counts = {
+    belum: patients.filter(function(p) { return p.status === 'menunggu'; }).length,
+    proses: patients.filter(function(p) { return p.status === 'proses'; }).length,
+    selesai: patients.filter(function(p) { return p.status === 'selesai'; }).length,
+    semua: patients.length
+  };
+  var tabs = [
+    { id: 'belum', label: '🔬 Belum Diinput', n: counts.belum },
+    { id: 'proses', label: '✏️ Sedang Proses', n: counts.proses },
+    { id: 'selesai', label: '✅ Selesai', n: counts.selesai },
+    { id: 'semua', label: '📋 Semua', n: counts.semua }
+  ];
+  document.getElementById('tabRow').innerHTML = tabs.map(function(t) {
+    return '<button class="tab' + (currentFilter === t.id ? ' active' : '') + '" onclick="setFilter(\'' + t.id + '\')">' +
+      t.label + ' <span class="count">(' + t.n + ')</span></button>';
+  }).join('');
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  renderTabs();
+  renderList();
+}
+
+function renderList() {
+  var search = (document.getElementById('searchInput').value || '').toLowerCase();
+  var list = patients.slice();
+  // Filter
+  if (currentFilter === 'belum') list = list.filter(function(p) { return p.status !== 'selesai'; });
+  else if (currentFilter === 'proses') list = list.filter(function(p) { return p.status === 'proses'; });
+  else if (currentFilter === 'selesai') list = list.filter(function(p) { return p.status === 'selesai'; });
+  // Search
+  if (search) {
+    list = list.filter(function(p) {
+      return (p.nama || '').toLowerCase().indexOf(search) >= 0 ||
+             (p.noRM || '').toLowerCase().indexOf(search) >= 0 ||
+             (p.noAntrian || '').toLowerCase().indexOf(search) >= 0;
+    });
+  }
+  // Sort by tanggal terbaru
+  list.sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
+
+  var html;
+  if (list.length === 0) {
+    html = '<div class="empty-state"><span class="em">🔬</span><p>Belum ada pasien yang perlu diinput hasil.</p></div>';
+  } else {
+    html = list.map(function(p) {
+      var tests = p.tests || [];
+      var hasil = p.hasil || {};
+      var filled = tests.filter(function(k) { return hasil[k]; }).length;
+      var pct = tests.length > 0 ? Math.round(filled / tests.length * 100) : 0;
+      var cls = p.status === 'selesai' ? 'selesai' : (p.status === 'proses' ? 'proses' : 'menunggu');
+      var badgeCls = p.status === 'selesai' ? 'badge-selesai' : (p.status === 'proses' ? 'badge-proses' : 'badge-menunggu');
+      return '<div class="patient-card ' + cls + '" onclick="bukaForm(\'' + p.id + '\')">' +
+        '<div class="pc-left">' +
+        '<div class="pc-antrian">' + esc(p.noAntrian) + '</div>' +
+        '<div class="pc-name">' + esc(p.nama) + '</div>' +
+        '<div class="pc-meta">' + esc(p.noRM) + ' • ' + tests.length + ' tes • ' + filled + '/' + tests.length + ' terisi</div>' +
+        '<div class="pc-progress"><div class="pc-progress-bar" style="width:' + pct + '%;"></div></div>' +
+        '</div>' +
+        '<div class="pc-right">' +
+        '<span class="badge ' + badgeCls + '">' + STATUS[p.status].label + '</span>' +
+        '<div class="pc-pct">' + pct + '%</div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  }
+  document.getElementById('patientList').innerHTML = html;
+}
+
+/* ===== FORM INPUT ===== */
+function bukaForm(id) {
+  currentPatient = patients.find(function(p) { return p.id === id; });
+  if (!currentPatient) return;
+  document.getElementById('listPage').className = 'list-page hidden';
+  document.getElementById('formPage').className = 'form-page active';
+  document.getElementById('formNama').textContent = currentPatient.nama || '-';
+  document.getElementById('formMeta').textContent = (currentPatient.noAntrian || '') + ' • ' + (currentPatient.noRM || '') + ' • ' + (currentPatient.jk === 'L' ? 'Laki-laki' : 'Perempuan');
+  renderForm();
+  window.scrollTo(0, 0);
+}
+
+function tutupForm() {
+  currentPatient = null;
+  document.getElementById('listPage').className = 'list-page';
+  document.getElementById('formPage').className = 'form-page';
+  renderList();
+  renderTabs();
+}
+
+function renderForm() {
+  if (!currentPatient) return;
+  var tests = currentPatient.tests || [];
+  var hasil = currentPatient.hasil || {};
+  // Group by kategori
+  var grouped = {};
+  tests.forEach(function(kode) {
+    var t = findTest(kode) || { nama: kode, kategori: 'Lainnya', rujukan: '-', satuan: '' };
+    var kat = t.kategori || 'Lainnya';
+    if (!grouped[kat]) grouped[kat] = [];
+    grouped[kat].push({ kode: kode, t: t });
+  });
+  var html = '';
+  Object.keys(grouped).sort().forEach(function(kat) {
+    html += '<div class="kategori-title">' + esc(kat) + '</div>';
+    grouped[kat].forEach(function(item) {
+      var kode = item.kode;
+      var t = item.t;
+      var val = hasil[kode] || '';
+      if (t.kal_aktif) {
+        html += '<div class="test-item kalibrasi">' +
+          '<div class="test-head">' +
+          '<div><div class="test-name">' + esc(t.nama) + '</div>' +
+          '<div class="test-ref">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
+          '<span class="kal-badge">⚡ Kalibrasi</span>' +
+          '</div>' +
+          '<div class="test-inputs">' +
+          '<div class="field"><label>Bacaan</label>' +
+          '<input type="number" step="any" id="raw_' + kode + '" placeholder="Input" oninput="hitungKalibrasi(\'' + kode + '\')"></div>' +
+          '<div class="field"><label>Hasil</label>' +
+          '<input type="number" step="any" id="h_' + kode + '" class="hasil" value="' + esc(val) + '" placeholder="Auto"></div>' +
+          '</div>' +
+          '<div class="kal-hint">⚡ Auto-hitung: Bacaan ' + (t.kal_operator || '*') + ' ' + (t.kal_faktor || 1) + '</div>' +
+          '</div>';
+      } else {
+        html += '<div class="test-item">' +
+          '<div class="test-head">' +
+          '<div><div class="test-name">' + esc(t.nama) + '</div>' +
+          '<div class="test-ref">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
+          '</div>' +
+          '<div class="test-inputs">' +
+          '<div class="field"><input type="text" id="h_' + kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
+          '</div>' +
+          '</div>';
+      }
+    });
+  });
+  html += '<div class="form-actions">' +
+    '<button class="btn btn-primary" onclick="simpanHasilForm()">💾 Simpan Hasil</button>' +
+    '<button class="btn btn-secondary" onclick="tutupForm()">Batal</button>' +
+    '</div>';
+  document.getElementById('formBody').innerHTML = html;
+}
+
+function hitungKalibrasi(kode) {
+  var t = findTest(kode);
+  if (!t || !t.kal_aktif) return;
+  var rawEl = document.getElementById('raw_' + kode);
+  var outEl = document.getElementById('h_' + kode);
+  if (!rawEl || !outEl) return;
+  var raw = parseFloat(rawEl.value);
+  if (isNaN(raw)) { outEl.value = ''; return; }
+  var faktor = parseFloat(t.kal_faktor) || 1;
+  var result = raw;
+  switch (t.kal_operator) {
+    case '*': result = raw * faktor; break;
+    case '/': result = faktor ? raw / faktor : raw; break;
+    case '+': result = raw + faktor; break;
+    case '-': result = raw - faktor; break;
+  }
+  result = Math.round(result * 100) / 100;
+  outEl.value = result;
+}
+
+async function simpanHasilForm() {
+  if (!currentPatient) return;
+  var p = currentPatient;
+  if (!p.hasil) p.hasil = {};
+  (p.tests || []).forEach(function(kode) {
+    var el = document.getElementById('h_' + kode);
+    if (el && el.value.trim()) p.hasil[kode] = el.value.trim();
+    else delete p.hasil[kode];
+  });
+  // Update status
+  var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
+  if (filled === (p.tests || []).length && p.tests.length > 0) p.status = 'selesai';
+  else if (filled > 0) p.status = 'proses';
+  else p.status = 'menunggu';
+
+  // Save lokal
+  var idx = patients.findIndex(function(x) { return x.id === p.id; });
+  if (idx >= 0) patients[idx] = p;
+  saveLocal();
+
+  // Sync server
+  showLoading(true);
+  await apiCall('savePasien', p);
+  showLoading(false);
+
+  toastMsg('✅ Hasil tersimpan', 'ok');
+  setTimeout(function() {
+    tutupForm();
+  }, 600);
+}
+
+function cetakHasilCurrent() {
+  if (!currentPatient) return;
+  toastMsg('🖨️ Fitur cetak akan datang');
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  loadLocal();
+  loadFromServer(true);
+  // Auto refresh setiap 30 detik
+  setInterval(function() { loadFromServer(true); }, 30000);
+});
+</script>
+</body>
+</html>
