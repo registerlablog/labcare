@@ -207,6 +207,43 @@ body {
   border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+  .modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,.6); z-index: 100;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 700px; max-height: 90vh;
+  display: flex; flex-direction: column;
+  animation: slideUp .3s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header {
+  padding: 16px; border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; }
+.modal-header p { font-size: 12px; color: #64748b; margin-top: 2px; }
+.kal-item {
+  border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 8px; background: #fff;
+  transition: .15s;
+}
+.kal-item.aktif { background: #eff6ff; border-color: #2563eb; }
+.kal-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.kal-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #2563eb; flex-shrink: 0; }
+.kal-item-name { flex: 1; min-width: 0; }
+.kal-item-name b { font-size: 14px; font-weight: 600; display: block; }
+.kal-item-name small { font-size: 11px; color: #94a3b8; }
+.kal-params { display: flex; gap: 8px; margin-top: 10px; }
+.kal-params > div { flex: 1; }
+.kal-params label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.kal-params select, .kal-params input {
+  width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1;
+  border-radius: 8px; font-size: 13px; font-family: inherit; background: #fff;
+}
 @media print { body * { display: none; } }
 </style>
 </head>
@@ -219,8 +256,10 @@ body {
   <div class="header">
     <h1>🧪 LabCare — Input Hasil</h1>
     <p>PWA Khusus Input Hasil Pemeriksaan</p>
-    <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">Memuat...</span></span>
-  </div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:10px;">
+  <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncText">Memuat...</span></span>
+  <button onclick="bukaKalibrasi()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">🧮 Kalibrasi</button>
+</div>  </div>
   <div class="container">
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Cari nama / No. RM / antrian..." oninput="renderList()">
@@ -243,6 +282,25 @@ body {
   <div class="form-body" id="formBody"></div>
 </div>
 
+<div class="modal-overlay" id="kalModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <h3>🧮 Atur Kalibrasi</h3>
+        <p>Centang tes yang butuh kalibrasi + atur faktornya</p>
+      </div>
+      <button onclick="tutupKalibrasi()" style="font-size:28px;border:none;background:none;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:12px 16px 0;">
+      <input type="text" id="kalSearch" placeholder="🔍 Cari nama / kode tes..." oninput="renderKalibrasiList()" style="width:100%;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+    </div>
+    <div id="kalList" style="padding:12px 16px;max-height:55vh;overflow-y:auto;flex:1;"></div>
+    <div style="padding:12px 16px 16px;display:flex;gap:8px;border-top:1px solid #e2e8f0;">
+      <button onclick="simpanKalibrasi()" style="flex:1;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">💾 Simpan</button>
+      <button onclick="tutupKalibrasi()" style="padding:14px 20px;background:#e2e8f0;color:#334155;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Batal</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -555,7 +613,95 @@ function cetakHasilCurrent() {
   if (!currentPatient) return;
   toastMsg('🖨️ Fitur cetak akan datang');
 }
+/* ===== KALIBRASI ===== */
+var _kalTemp = {};
 
+function bukaKalibrasi() {
+  _kalTemp = {};
+  TESTS.forEach(function(t) {
+    _kalTemp[t.kode] = {
+      aktif: !!t.kal_aktif,
+      operator: t.kal_operator || '*',
+      faktor: parseFloat(t.kal_faktor) || 1
+    };
+  });
+  document.getElementById('kalSearch').value = '';
+  document.getElementById('kalModal').classList.add('show');
+  renderKalibrasiList();
+}
+
+function tutupKalibrasi() {
+  document.getElementById('kalModal').classList.remove('show');
+}
+
+function renderKalibrasiList() {
+  var search = (document.getElementById('kalSearch').value || '').toLowerCase();
+  var filtered = TESTS.filter(function(t) {
+    if (!search) return true;
+    return (t.kode || '').toLowerCase().indexOf(search) >= 0 || (t.nama || '').toLowerCase().indexOf(search) >= 0;
+  });
+  filtered.sort(function(a, b) {
+    var aAktif = (_kalTemp[a.kode] && _kalTemp[a.kode].aktif) ? 0 : 1;
+    var bAktif = (_kalTemp[b.kode] && _kalTemp[b.kode].aktif) ? 0 : 1;
+    if (aAktif !== bAktif) return aAktif - bAktif;
+    return (a.nama || '').localeCompare(b.nama || '');
+  });
+  var html = filtered.map(function(t) {
+    var kal = _kalTemp[t.kode] || { aktif: false, operator: '*', faktor: 1 };
+    var cls = kal.aktif ? 'kal-item aktif' : 'kal-item';
+    var out = '<div class="' + cls + '">' +
+      '<label>' +
+      '<input type="checkbox" ' + (kal.aktif ? 'checked' : '') + ' onchange="toggleKal(\'' + t.kode + '\', this.checked)">' +
+      '<div class="kal-item-name">' +
+      '<b>' + esc(t.nama) + '</b>' +
+      '<small>' + esc(t.kode) + ' • ' + esc(t.kategori || '') + '</small>' +
+      '</div></label>';
+    if (kal.aktif) {
+      out += '<div class="kal-params">' +
+        '<div><label>Operator</label>' +
+        '<select onchange="_kalTemp[\'' + t.kode + '\'].operator=this.value">' +
+        '<option value="*"' + (kal.operator === '*' ? ' selected' : '') + '>× Kali</option>' +
+        '<option value="/"' + (kal.operator === '/' ? ' selected' : '') + '>÷ Bagi</option>' +
+        '<option value="+"' + (kal.operator === '+' ? ' selected' : '') + '>+ Tambah</option>' +
+        '<option value="-"' + (kal.operator === '-' ? ' selected' : '') + '>− Kurang</option>' +
+        '</select></div>' +
+        '<div><label>Faktor</label>' +
+        '<input type="number" step="any" value="' + kal.faktor + '" oninput="_kalTemp[\'' + t.kode + '\'].faktor=parseFloat(this.value)||1"></div>' +
+        '</div>';
+    }
+    out += '</div>';
+    return out;
+  }).join('');
+  if (filtered.length === 0) {
+    html = '<div style="text-align:center;padding:30px;color:#94a3b8;font-size:13px;">Tidak ada tes yang cocok.</div>';
+  }
+  document.getElementById('kalList').innerHTML = html;
+}
+
+function toggleKal(kode, checked) {
+  if (!_kalTemp[kode]) _kalTemp[kode] = { aktif: false, operator: '*', faktor: 1 };
+  _kalTemp[kode].aktif = checked;
+  renderKalibrasiList();
+}
+
+async function simpanKalibrasi() {
+  TESTS.forEach(function(t) {
+    var kal = _kalTemp[t.kode];
+    if (!kal) return;
+    t.kal_aktif = kal.aktif;
+    t.kal_operator = kal.operator;
+    t.kal_faktor = kal.faktor;
+  });
+  saveLocal();
+  showLoading(true);
+  await apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS });
+  showLoading(false);
+  tutupKalibrasi();
+  toastMsg('✅ Kalibrasi tersimpan', 'ok');
+  if (currentPatient) renderForm();
+}
+
+/* ===== INIT ===== */
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', function() {
   loadLocal();
