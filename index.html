@@ -506,11 +506,22 @@ function viewMasterPemeriksaan() {
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Pemeriksaan</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar pemeriksaan, kategori, satuan, nilai rujukan.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-primary" onclick="modalTest(null)">➕ Tambah Pemeriksaan</button><button class="btn btn-secondary" onclick="resetTests()">🔄 Reset</button></div></div>' +
     '<div class="master-toolbar"><div class="search-box"><input id="testSearch" placeholder="Cari kode atau nama..." value="' + esc(window._testSearch || '') + '" oninput="filterTestTable()"></div><span id="testCount" style="font-size:13px;color:var(--slate-500);font-weight:600;">' + filtered.length + ' pemeriksaan</span></div>' +
     '<div class="pill-row">' + pillsHtml + '</div>' +
-    '<div class="table-wrap"><table><thead><tr><th style="width:80px;">Kode</th><th>Nama Pemeriksaan</th><th>Kategori</th><th>Satuan</th><th>Nilai Rujukan</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead><tbody id="testTableBody">' + buildTestRows(filtered) + '</tbody></table></div>';
+    '<div class="table-wrap"><table><thead><tr><th style="width:80px;">Kode</th><th>Nama Pemeriksaan</th><th>Kategori</th><th>Satuan</th><th>Nilai Rujukan</th><th>Kalibrasi</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead><tbody id="testTableBody">' + buildTestRows(filtered) + '</tbody></table></div>';
 }
 function buildTestRows(list) {
-  if (list.length === 0) return '<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada pemeriksaan yang cocok.</td></tr>';
-  return list.map(function(t) { return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(t.kode) + '</td><td style="font-weight:500;">' + esc(t.nama) + '</td><td><span class="test-chip">' + esc(t.kategori) + '</span></td><td style="font-size:12px;">' + esc(t.satuan || '-') + '</td><td style="font-size:12px;color:var(--slate-500);">' + esc(t.rujukan) + '</td><td style="text-align:right;white-space:nowrap;"><button class="btn-icon" onclick="modalTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Edit">✏️</button> <button class="btn-icon danger" onclick="hapusTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Hapus">🗑️</button></td></tr>'; }).join('');
+  if (list.length === 0) return '<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada pemeriksaan yang cocok.</td></tr>';
+  return list.map(function(t) {
+    return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(t.kode) + '</td>' +
+      '<td style="font-weight:500;">' + esc(t.nama) + '</td>' +
+      '<td><span class="test-chip">' + esc(t.kategori) + '</span></td>' +
+      '<td style="font-size:12px;">' + esc(t.satuan || '-') + '</td>' +
+      '<td style="font-size:12px;color:var(--slate-500);">' + esc(t.rujukan) + '</td>' +
+      '<td>' + (t.kal_aktif ? '<span class="badge badge-selesai" style="font-size:10px;">⚡ ' + (t.kal_operator || '*') + ' ' + (t.kal_faktor || 1) + '</span>' : '<span style="color:var(--slate-400);font-size:12px;">-</span>') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap;">' +
+      '<button class="btn-icon" onclick="modalTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Edit">✏️</button> ' +
+      '<button class="btn-icon danger" onclick="hapusTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Hapus">🗑️</button>' +
+      '</td></tr>';
+  }).join('');
 }
 function filterTestTable() { var search = (document.getElementById('testSearch').value || '').toLowerCase(); var filter = window._testFilter || 'semua'; window._testSearch = document.getElementById('testSearch').value; var filtered = TESTS.filter(function(t) { var matchCat = filter === 'semua' || t.kategori === filter; var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0; return matchCat && matchSearch; }); var tbody = document.getElementById('testTableBody'); if (tbody) tbody.innerHTML = buildTestRows(filtered); var counter = document.getElementById('testCount'); if (counter) counter.textContent = filtered.length + ' pemeriksaan'; }
 function viewMasterAnalis() {
@@ -589,6 +600,21 @@ function modalTest(kode) {
     '<div><label class="lbl">Kategori *</label><input id="t_kat" class="inp" list="katList" value="' + (t ? esc(t.kategori) : '') + '" placeholder="Contoh: Kimia"><datalist id="katList">' + kategoriList.map(function(k) { return '<option value="' + esc(k) + '"></option>'; }).join('') + '</datalist></div>' +
     '<div><label class="lbl">Satuan</label><input id="t_sat" class="inp" value="' + (t ? esc(t.satuan) : '') + '" placeholder="Contoh: mg/dL"></div>' +
     '<div><label class="lbl">Nilai Rujukan *</label><input id="t_ruj" class="inp" value="' + (t ? esc(t.rujukan) : '') + '" placeholder="Contoh: 70 - 110"></div>' +
+    '<h3 class="section-title">⚡ Kalibrasi (Opsional)</h3>' +
+'<div style="background:var(--slate-50);padding:12px;border-radius:10px;border:1px solid var(--slate-200);">' +
+'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px;">' +
+'<input type="checkbox" id="t_kal_aktif"' + (t && t.kal_aktif ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--primary);">' +
+'Aktifkan kalibrasi untuk tes ini' +
+'</label>' +
+'<div class="form-row" style="grid-template-columns:1fr 1fr;margin-top:10px;">' +
+'<div><label class="lbl">Operator</label><select id="t_kal_op" class="inp-sel">' +
+'<option value="*"' + (t && t.kal_operator === '*' ? ' selected' : '') + '>× Kali</option>' +
+'<option value="/"' + (t && t.kal_operator === '/' ? ' selected' : '') + '>÷ Bagi</option>' +
+'<option value="+"' + (t && t.kal_operator === '+' ? ' selected' : '') + '>+ Tambah</option>' +
+'<option value="-"' + (t && t.kal_operator === '-' ? ' selected' : '') + '>− Kurang</option>' +
+'</select></div>' +
+'<div><label class="lbl">Faktor</label><input type="number" step="any" id="t_kal_faktor" class="inp" value="' + (t && t.kal_faktor ? t.kal_faktor : '1') + '" placeholder="Contoh: 0.5"></div>' +
+'</div></div>' +
     '</div>' + (isEdit ? '<div class="info-box"><span class="info-em">ℹ️</span><span>Kode tidak bisa diubah.</span></div>' : '') +
     '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanTest()">💾 Simpan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
@@ -600,9 +626,46 @@ function simpanTest() {
   var kategori = (document.getElementById('t_kat').value || '').trim();
   var satuan = (document.getElementById('t_sat').value || '').trim();
   var rujukan = (document.getElementById('t_ruj').value || '').trim();
-  if (!kode || !nama || !kategori || !rujukan) { alert('Semua kolom bertanda * harus diisi.'); return; }
-  if (editKode) { var t = findTest(editKode); if (!t) return; t.nama = nama; t.kategori = kategori; t.satuan = satuan; t.rujukan = rujukan; saveTests(); closeModal(); render(); toastMsg('Pemeriksaan diperbarui'); }
-  else { if (findTest(kode)) { alert('Kode "' + kode + '" sudah digunakan.'); return; } TESTS.push({ kode: kode, nama: nama, kategori: kategori, satuan: satuan, rujukan: rujukan }); saveTests(); closeModal(); render(); toastMsg('Pemeriksaan ditambahkan'); }
+  var kalAktif = document.getElementById('t_kal_aktif').checked;
+  var kalOp = document.getElementById('t_kal_op').value;
+  var kalFaktor = parseFloat(document.getElementById('t_kal_faktor').value) || 1;
+  
+  if (!kode || !nama || !kategori || !rujukan) {
+    alert('Semua kolom bertanda * harus diisi.');
+    return;
+  }
+  
+  if (editKode) {
+    var t = findTest(editKode);
+    if (!t) { toastMsg('Pemeriksaan tidak ditemukan'); return; }
+    t.nama = nama;
+    t.kategori = kategori;
+    t.satuan = satuan;
+    t.rujukan = rujukan;
+    t.kal_aktif = kalAktif;
+    t.kal_operator = kalOp;
+    t.kal_faktor = kalFaktor;
+    saveTests();
+    closeModal();
+    render();
+    toastMsg('Pemeriksaan diperbarui');
+  } else {
+    if (findTest(kode)) { alert('Kode "' + kode + '" sudah digunakan.'); return; }
+    TESTS.push({
+      kode: kode,
+      nama: nama,
+      kategori: kategori,
+      satuan: satuan,
+      rujukan: rujukan,
+      kal_aktif: kalAktif,
+      kal_operator: kalOp,
+      kal_faktor: kalFaktor
+    });
+    saveTests();
+    closeModal();
+    render();
+    toastMsg('Pemeriksaan ditambahkan');
+  }
 }
 function hapusTest(kode) { var t = findTest(kode); if (!t) return; var usedCount = patients.filter(function(p) { return p.tests && p.tests.indexOf(kode) >= 0; }).length; var msg = 'Hapus pemeriksaan "' + t.nama + '" (' + kode + ')?'; if (usedCount > 0) msg += '\n\n⚠️ Sudah dipakai di ' + usedCount + ' data pasien.'; if (!confirm(msg)) return; TESTS = TESTS.filter(function(x) { return x.kode !== kode; }); delete window._pickedTests[kode]; saveTests(); render(); toastMsg('Pemeriksaan dihapus'); }
 function modalKaryawan(jenis, id) {
@@ -646,10 +709,36 @@ function modalHasil(id) {
   var p = patients.find(function(x) { return x.id === id; }); if (!p) return;
   var tests = p.tests || []; var hasil = p.hasil || {};
   var fieldsHtml = tests.map(function(k) {
-    var t = findTest(k);
-    if (!t) { return '<div class="result-item" style="opacity:.7;"><div><div class="ri-name">' + esc(k) + '</div><div class="ri-ref">Rujukan: -</div></div><input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil"><div class="ri-unit">-</div></div>'; }
-    return '<div class="result-item"><div><div class="ri-name">' + esc(t.nama) + '</div><div class="ri-ref">Rujukan: ' + esc(t.rujukan) + '</div></div><input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil"><div class="ri-unit">' + esc(t.satuan || '-') + '</div></div>';
-  }).join('');
+  var t = findTest(k);
+  if (!t) {
+    return '<div class="result-item" style="opacity:.7;"><div><div class="ri-name">' + esc(k) + '</div><div class="ri-ref">Rujukan: -</div></div>' +
+      '<input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil"><div class="ri-unit">-</div></div>';
+  }
+  if (t.kal_aktif) {
+    return '<div style="background:var(--slate-50);border-radius:10px;padding:12px;margin-bottom:6px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '<div class="ri-name" style="font-size:14px;font-weight:600;">' + esc(t.nama) + '</div>' +
+      '<span style="font-size:10px;background:var(--primary-light);color:var(--primary);padding:2px 8px;border-radius:999px;font-weight:700;">⚡ Kalibrasi</span>' +
+      '</div>' +
+      '<div class="ri-ref" style="font-size:11px;color:var(--slate-400);margin-bottom:8px;">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div>' +
+      '<div style="display:flex;gap:10px;align-items:flex-end;">' +
+      '<div style="flex:1;">' +
+      '<label style="font-size:11px;color:var(--slate-500);font-weight:600;display:block;margin-bottom:2px;">Bacaan:</label>' +
+      '<input id="raw_' + k + '" type="number" step="any" class="inp" value="" placeholder="Input" oninput="hitungKalibrasi(\'' + k + '\')" style="padding:8px 10px;font-size:14px;">' +
+      '</div>' +
+      '<div style="flex:1;">' +
+      '<label style="font-size:11px;color:var(--slate-500);font-weight:600;display:block;margin-bottom:2px;">Hasil:</label>' +
+      '<input id="h_' + k + '" type="number" step="any" class="inp" value="' + esc(hasil[k] || '') + '" placeholder="Auto" style="padding:8px 10px;font-size:14px;font-weight:700;color:var(--primary);">' +
+      '</div>' +
+      '</div>' +
+      '<div style="font-size:10px;color:var(--slate-400);margin-top:6px;font-style:italic;">⚡ Auto-hitung: Bacaan ' + (t.kal_operator || '*') + ' ' + (t.kal_faktor || 1) + '</div>' +
+      '</div>';
+  }
+  return '<div class="result-item"><div><div class="ri-name">' + esc(t.nama) + '</div>' +
+    '<div class="ri-ref">Rujukan: ' + esc(t.rujukan) + '</div></div>' +
+    '<input id="h_' + k + '" value="' + esc(hasil[k] || '') + '" placeholder="Hasil">' +
+    '<div class="ri-unit">' + esc(t.satuan || '-') + '</div></div>';
+}).join('');
   var analisField;
   if (analisList.length > 0) { var currentAnalis = p.analis || ''; var options = '<option value="">— Pilih Analis —</option>' + analisList.map(function(a) { return '<option value="' + esc(a.nama) + '"' + (a.nama === currentAnalis ? ' selected' : '') + '>' + esc(a.nama) + (a.kode ? ' (' + esc(a.kode) + ')' : '') + '</option>'; }).join(''); analisField = '<select id="analisEdit" class="inp-sel">' + options + '</select>'; }
   else { analisField = '<input id="analisEdit" class="inp" value="' + esc(p.analis || '') + '" placeholder="Nama analis">'; }
@@ -659,6 +748,25 @@ function modalHasil(id) {
     '<div style="margin-top:16px;"><label class="lbl">Kesimpulan / Catatan Petugas</label><textarea id="kesimpulan" rows="2" class="inp-ta">' + esc(p.kesimpulan || '') + '</textarea></div>' +
     '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasil(\'' + p.id + '\')">💾 Simpan Hasil</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
+}
+  function hitungKalibrasi(kode) {
+  var t = findTest(kode);
+  if (!t || !t.kal_aktif) return;
+  var rawEl = document.getElementById('raw_' + kode);
+  var outEl = document.getElementById('h_' + kode);
+  if (!rawEl || !outEl) return;
+  var raw = parseFloat(rawEl.value);
+  if (isNaN(raw)) { outEl.value = ''; return; }
+  var faktor = parseFloat(t.kal_faktor) || 1;
+  var result = raw;
+  switch (t.kal_operator) {
+    case '*': result = raw * faktor; break;
+    case '/': result = faktor ? raw / faktor : raw; break;
+    case '+': result = raw + faktor; break;
+    case '-': result = raw - faktor; break;
+  }
+  result = Math.round(result * 100) / 100;
+  outEl.value = result;
 }
 function inputHasilPasien(id) { closeModal(); view = 'hasil'; renderNav(); render(); setTimeout(function() { modalHasil(id); }, 150); }
 function simpanHasil(id) {
