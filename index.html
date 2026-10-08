@@ -295,6 +295,32 @@ function umur(tglLahir) { if (!tglLahir) return '-'; var d = new Date(tglLahir),
 function nextRM() { return 'RM-' + String(patients.length + 1).padStart(4, '0'); }
 function nextQueueNo() { var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }); return t.length + 1; }
 function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function fmtTanggalKeg(tgl) {
+  if (!tgl) return '-';
+  var s = String(tgl);
+  if (s.indexOf('T') > 0) {
+    try { return new Date(s).toISOString().slice(0, 10); } catch (e) { return s; }
+  }
+  return s;
+}
+function fmtTglLahir(v) {
+  if (!v) return '-';
+  var s = String(v);
+  if (s.indexOf('T') > 0) {
+    try {
+      var d = new Date(s);
+      var dd = String(d.getDate()).padStart(2, '0');
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var yyyy = d.getFullYear();
+      return dd + '/' + mm + '/' + yyyy;
+    } catch (e) { return s.slice(0, 10); }
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    var parts = s.split('-');
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+  return s;
+}
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
 var _toastTimer;
 function toastMsg(msg, type) { var t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : ''); clearTimeout(_toastTimer); _toastTimer = setTimeout(function() { t.className = 'toast'; }, 2400); }
