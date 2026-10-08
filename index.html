@@ -272,6 +272,7 @@ var NAV_ITEMS = [
   { view: 'antrian',     label: '⏳ Antrian & Status' },
   { view: 'hasil',       label: '🔬 Input Hasil' },
   { view: 'laporan',     label: '📄 Laporan' },
+  { view: 'prolanis',    label: '📋 Kegiatan Prolanis' },
   { view: 'master',      label: '🧬 Master Lab' }
 ];
 var patients = []; var view = 'dashboard'; var mobileNavOpen = false; var editKode = null; var editKaryawanId = null; var stempelUrl = '';
@@ -283,6 +284,9 @@ window._editPickedTests = window._editPickedTests || {};
 window._editPatientId = null;
 window._editKatFilter = 'semua';
 window._editPickSearch = '';
+window._prolanisList = window._prolanisList || [];
+window._prolanisDetail = window._prolanisDetail || null;
+window._prolanisMode = window._prolanisMode || 'list';
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -313,6 +317,16 @@ async function syncAllFromServer(silent) {
   if (Array.isArray(r.pemeriksaan) && r.pemeriksaan.length) TESTS = r.pemeriksaan;
   if (Array.isArray(r.analis)) analisList = r.analis;
   if (Array.isArray(r.dokter)) dokterList = r.dokter;
+  if (Array.isArray(r.prolanis_kegiatan)) {
+  var kegList = r.prolanis_kegiatan || [];
+  var pesList = r.prolanis_peserta || [];
+  // Gabungkan peserta ke kegiatan masing-masing
+  kegList.forEach(function(keg) {
+    keg.peserta = pesList.filter(function(p) { return String(p.id_kegiatan) === String(keg.id_kegiatan); });
+    keg.peserta_count = keg.peserta.length;
+  });
+  window._prolanisList = kegList;
+}
   try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); localStorage.setItem('labcare_analis', JSON.stringify(analisList)); localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {}
   try { var sr = await apiCall('getStempel'); if (sr && sr.ok && sr.url) { stempelUrl = sr.url; try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {} } } catch (e) {}
   renderNav(); render();
@@ -345,6 +359,8 @@ function render() {
   else if (view === 'antrian')     app.innerHTML = viewAntrian();
   else if (view === 'hasil')       app.innerHTML = viewHasil();
   else if (view === 'laporan')     app.innerHTML = viewLaporan();
+  else if (view === 'prolanis')         app.innerHTML = viewKegiatanProlanis();
+  else if (view === 'prolanis-detail')  app.innerHTML = viewDetailKegiatan();
   else if (view === 'master')      app.innerHTML = viewMaster();
   window.scrollTo(0, 0);
 }
@@ -519,6 +535,209 @@ function simpanKalibrasiHariIni() {
   closeModal();
   render();
   toastMsg('✅ Kalibrasi diperbarui', 'ok');
+}
+  function viewKegiatanProlanis() {
+  var list = window._prolanisList || [];
+  var cards = list.map(function(k) {
+    var jumlah = (k.peserta_count || 0);
+    return '<div class="patient-card" style="cursor:pointer;margin-bottom:14px;" onclick="bukaKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')">' +
+      '<div class="patient-card-head">' +
+      '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
+      '<div style="font-size:11px;color:var(--slate-400);">' + esc(k.tanggal || '-') + '</div></div>' +
+      '<span class="badge badge-proses">' + jumlah + ' peserta</span>' +
+      '</div>' +
+      '<p class="meta">🏥 Pengirim: ' + esc(k.pengirim || '-') + '</p>' +
+      '<p class="meta">📍 Alamat: ' + esc(k.alamat || '-') + '</p>' +
+      (k.petugas ? '<p class="meta">👤 Petugas: ' + esc(k.petugas) + '</p>' : '') +
+      '<div class="patient-card-actions" style="margin-top:10px;">' +
+      '<span style="flex:1;font-size:12px;font-weight:600;color:var(--primary);padding:6px 0;">Klik untuk buka →</span>' +
+      '<button class="btn-icon danger" onclick="event.stopPropagation();hapusKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\',\'' + esc(k.nama_kegiatan) + '\')" title="Hapus">🗑️</button>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+  if (list.length === 0) {
+    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p><p style="margin-top:8px;">Klik "➕ Buat Kegiatan" untuk mulai.</p></div>';
+  }
+  return '<div class="page-header-flex"><div><h2>📋 Kegiatan Prolanis</h2><p>Kelola kegiatan pemeriksaan Prolanis</p></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="modalKegiatanProlanis()">➕ Buat Kegiatan</button>' +
+    '<button class="btn btn-secondary" onclick="syncAllFromServer(false)">🔄 Refresh</button>' +
+    '</div></div>' +
+    '<div class="patient-grid">' + cards + '</div>';
+}
+  function viewDetailKegiatan() {
+  var k = window._prolanisDetail;
+  if (!k) { view = 'prolanis'; return viewKegiatanProlanis(); }
+  var pesertaList = (k.peserta || []);
+  var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  var colLabel = { chol:'CHOL', trig:'TRIG', hdl:'HDL', ldl:'LDL', creatin:'CREA', ureum:'UREA', hba1c:'HbA1c', mikro:'MIKRO' };
+  var rowsHtml = pesertaList.map(function(p, idx) {
+    var inputs = cols.map(function(c) {
+      return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(p[c] || '') + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
+    }).join('');
+    return '<tr>' +
+      '<td style="text-align:center;font-size:12px;font-weight:700;">' + (idx + 1) + '</td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:150px;" value="' + esc(p.nik || '') + '" oninput="updatePesertaField(' + idx + ',\'nik\',this.value)"></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.nama || '') + '" oninput="updatePesertaField(' + idx + ',\'nama\',this.value)"></td>' +
+      '<td><input class="inp" type="date" style="padding:6px 8px;font-size:12px;width:130px;" value="' + esc((p.tgl_lahir || '').slice(0,10)) + '" oninput="updatePesertaField(' + idx + ',\'tgl_lahir\',this.value)"></td>' +
+      '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.alamat || '') + '" oninput="updatePesertaField(' + idx + ',\'alamat\',this.value)"></td>' +
+      inputs +
+      '<td style="text-align:center;"><button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus">🗑️</button></td>' +
+      '</tr>';
+  }).join('');
+  var headerCols = cols.map(function(c) { return '<th style="text-align:center;">' + colLabel[c] + '</th>'; }).join('');
+  return '<div class="page-header-flex"><div>' +
+    '<button class="btn btn-secondary btn-sm" onclick="window._prolanisDetail=null;view=\'prolanis\';render();" style="margin-bottom:8px;">← Kembali</button>' +
+    '<h2 style="margin-top:8px;">📋 ' + esc(k.nama_kegiatan || '-') + '</h2>' +
+    '<p>' + esc(k.tanggal || '-') + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
+    '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah Baris</button>' +
+    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📥 Paste Excel</button>' +
+    '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
+    '</div></div>' +
+    '<div class="table-wrap"><table style="min-width:1400px;">' +
+    '<thead><tr><th style="width:40px;text-align:center;">No</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Alamat</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
+    '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
+    '</table></div>';
+}
+  function modalKegiatanProlanis() {
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>➕ Buat Kegiatan Prolanis</h3><p>Isi data kegiatan</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="form-row" style="grid-template-columns:1fr;">' +
+    '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" placeholder="Contoh: Maesan, Penanggungan"></div>' +
+    '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp"></div>' +
+    '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" placeholder="Contoh: Pusk. Maesan"></div>' +
+    '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" placeholder="Contoh: Maesan, Penanggungan"></div>' +
+    '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" placeholder="Contoh: Tim A"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis()">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('pk_nama'); if (el) el.focus(); }, 100);
+}
+
+function simpanKegiatanProlanis() {
+  var nama = (document.getElementById('pk_nama').value || '').trim();
+  var tanggal = (document.getElementById('pk_tanggal').value || '').trim();
+  var pengirim = (document.getElementById('pk_pengirim').value || '').trim();
+  var alamat = (document.getElementById('pk_alamat').value || '').trim();
+  var petugas = (document.getElementById('pk_petugas').value || '').trim();
+  if (!nama || !tanggal) { alert('Nama dan tanggal wajib diisi.'); return; }
+  var id = 'PKG' + Date.now();
+  var newKeg = {
+    id_kegiatan: id,
+    nama_kegiatan: nama,
+    tanggal: tanggal,
+    pengirim: pengirim,
+    alamat: alamat,
+    petugas: petugas
+  };
+  window._prolanisList = window._prolanisList || [];
+  window._prolanisList.push(newKeg);
+  // Sync ke server
+  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function() {
+    toastMsg('✅ Kegiatan dibuat', 'ok');
+  });
+  closeModal();
+  render();
+}
+  function bukaKegiatanProlanis(id) {
+  var k = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(id); });
+  if (!k) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+  window._prolanisDetail = JSON.parse(JSON.stringify(k));
+  window._prolanisDetail.peserta = window._prolanisDetail.peserta || [];
+  view = 'prolanis-detail';
+  render();
+}
+
+function tambahPesertaProlanis() {
+  if (!window._prolanisDetail) return;
+  window._prolanisDetail.peserta = window._prolanisDetail.peserta || [];
+  window._prolanisDetail.peserta.push({ nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+  render();
+}
+
+function updatePesertaField(idx, field, val) {
+  if (!window._prolanisDetail || !window._prolanisDetail.peserta) return;
+  if (!window._prolanisDetail.peserta[idx]) return;
+  window._prolanisDetail.peserta[idx][field] = val;
+}
+
+function hapusPesertaProlanis(idx) {
+  if (!window._prolanisDetail || !window._prolanisDetail.peserta) return;
+  if (!confirm('Hapus baris ini?')) return;
+  window._prolanisDetail.peserta.splice(idx, 1);
+  render();
+}
+
+function pasteExcelProlanis() {
+  var text = prompt('Paste dari Excel (kolom: NIK, Nama, TglLahir, Alamat, Chol, Trig, HDL, LDL, Crea, Ureum, HbA1c, Mikro)\nPisah antar kolom dengan TAB, antar baris dengan ENTER.\n\nKosongkan dan klik OK untuk batal:');
+  if (!text) return;
+  var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+  if (lines.length === 0) return;
+  if (!window._prolanisDetail.peserta) window._prolanisDetail.peserta = [];
+  var tambah = 0;
+  lines.forEach(function(line) {
+    var c = line.split('\t');
+    var row = {
+      nik: (c[0] || '').trim(),
+      nama: (c[1] || '').trim(),
+      tgl_lahir: (c[2] || '').trim(),
+      alamat: (c[3] || '').trim(),
+      chol: (c[4] || '').trim(),
+      trig: (c[5] || '').trim(),
+      hdl: (c[6] || '').trim(),
+      ldl: (c[7] || '').trim(),
+      creatin: (c[8] || '').trim(),
+      ureum: (c[9] || '').trim(),
+      hba1c: (c[10] || '').trim(),
+      mikro: (c[11] || '').trim()
+    };
+    if (row.nama || row.nik) { window._prolanisDetail.peserta.push(row); tambah++; }
+  });
+  render();
+  toastMsg('✅ ' + tambah + ' baris ditambahkan', 'ok');
+}
+
+function simpanDetailKegiatan() {
+  if (!window._prolanisDetail) return;
+  var k = window._prolanisDetail;
+  // Update list
+  var idx = (window._prolanisList || []).findIndex(function(x) { return String(x.id_kegiatan) === String(k.id_kegiatan); });
+  if (idx >= 0) window._prolanisList[idx] = k;
+  else window._prolanisList.push(k);
+  // Save kegiatan + peserta ke server
+  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function() {
+    toastMsg('✅ Kegiatan tersimpan', 'ok');
+  });
+  // Save peserta (flatten dengan id_kegiatan)
+  var allPeserta = [];
+  (window._prolanisList || []).forEach(function(keg) {
+    (keg.peserta || []).forEach(function(p, i) {
+      var ps = JSON.parse(JSON.stringify(p));
+      ps.id = keg.id_kegiatan + '-' + (i + 1);
+      ps.id_kegiatan = keg.id_kegiatan;
+      ps.no = i + 1;
+      ps.status = 'selesai';
+      ps.tgl_input = new Date().toISOString();
+      allPeserta.push(ps);
+    });
+  });
+  apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
+  render();
+}
+
+function hapusKegiatanProlanis(id, nama) {
+  if (!confirm('Hapus kegiatan "' + nama + '"? Semua peserta di dalamnya akan hilang.')) return;
+  window._prolanisList = (window._prolanisList || []).filter(function(x) { return String(x.id_kegiatan) !== String(id); });
+  apiCall('deleteProlanisKegiatan', { id: id }).then(function() {
+    toastMsg('Kegiatan dihapus', 'ok');
+  });
+  render();
 }
 function viewLaporan() {
   var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
