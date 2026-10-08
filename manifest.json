@@ -1,0 +1,19 @@
+{
+  "name": "LabCare — Input Hasil",
+  "short_name": "LabCare",
+  "description": "PWA Input Hasil Pemeriksaan Laboratorium",
+  "start_url": "/labcare/pwa.html",
+  "scope": "/labcare/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
