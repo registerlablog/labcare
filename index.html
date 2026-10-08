@@ -543,7 +543,7 @@ function simpanKalibrasiHariIni() {
     return '<div class="patient-card" style="cursor:pointer;margin-bottom:14px;" onclick="bukaKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
       '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
-      '<div style="font-size:11px;color:var(--slate-400);">' + esc(k.tanggal || '-') + '</div></div>' +
+      '<div style="font-size:11px;color:var(--slate-400);">' + esc(fmtTanggalKeg(k.tanggal)) + '</div></div>' +
       '<span class="badge badge-proses">' + jumlah + ' peserta</span>' +
       '</div>' +
       '<p class="meta">🏥 Pengirim: ' + esc(k.pengirim || '-') + '</p>' +
@@ -590,7 +590,7 @@ function simpanKalibrasiHariIni() {
   return '<div class="page-header-flex"><div>' +
     '<button class="btn btn-secondary btn-sm" onclick="window._prolanisDetail=null;view=\'prolanis\';render();" style="margin-bottom:8px;">← Kembali</button>' +
     '<h2 style="margin-top:8px;">📋 ' + esc(k.nama_kegiatan || '-') + '</h2>' +
-    '<p>' + esc(k.tanggal || '-') + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
+    '<p>' + esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
@@ -612,7 +612,7 @@ function simpanKalibrasiHariIni() {
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="form-row" style="grid-template-columns:1fr;">' +
     '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" value="' + (k ? esc(k.nama_kegiatan) : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
-    '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc(k.tanggal || '') : '') + '"></div>' +
+    '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc((k.tanggal || '').slice(0, 10)) : '') + '"></div>' +
     '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" value="' + (k ? esc(k.pengirim || '') : '') + '" placeholder="Contoh: Pusk. Maesan"></div>' +
     '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
     '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
