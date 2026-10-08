@@ -577,7 +577,7 @@ function simpanKalibrasiHariIni() {
       return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(p[c] || '') + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
     }).join('');
     return '<tr>' +
-      '<td style="text-align:center;"><input class="inp" style="padding:6px 8px;font-size:12px;width:80px;text-align:center;font-weight:700;color:var(--primary);" value="' + esc(p.no || '') + '" oninput="updatePesertaField(' + idx + ',\'no\',this.value)"></td>' +
+      '<td style="text-align:center;"><input class="inp" readonly style="padding:6px 8px;font-size:12px;width:80px;text-align:center;font-weight:700;color:var(--primary);background:var(--slate-100);cursor:not-allowed;" value="' + esc(p.no || '') + '"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:150px;" value="' + esc(p.nik || '') + '" oninput="updatePesertaField(' + idx + ',\'nik\',this.value)"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.nama || '') + '" oninput="updatePesertaField(' + idx + ',\'nama\',this.value)"></td>' +
       '<td><input class="inp" type="date" style="padding:6px 8px;font-size:12px;width:130px;" value="' + esc((p.tgl_lahir || '').slice(0,10)) + '" oninput="updatePesertaField(' + idx + ',\'tgl_lahir\',this.value)"></td>' +
