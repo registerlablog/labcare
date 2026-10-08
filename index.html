@@ -577,7 +577,7 @@ function simpanKalibrasiHariIni() {
       return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(p[c] || '') + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
     }).join('');
     return '<tr>' +
-      '<td style="text-align:center;font-size:12px;font-weight:700;">' + (idx + 1) + '</td>' +
+      '<td style="text-align:center;"><input class="inp" style="padding:6px 8px;font-size:12px;width:80px;text-align:center;font-weight:700;color:var(--primary);" value="' + esc(p.no || '') + '" oninput="updatePesertaField(' + idx + ',\'no\',this.value)"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:150px;" value="' + esc(p.nik || '') + '" oninput="updatePesertaField(' + idx + ',\'nik\',this.value)"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.nama || '') + '" oninput="updatePesertaField(' + idx + ',\'nama\',this.value)"></td>' +
       '<td><input class="inp" type="date" style="padding:6px 8px;font-size:12px;width:130px;" value="' + esc((p.tgl_lahir || '').slice(0,10)) + '" oninput="updatePesertaField(' + idx + ',\'tgl_lahir\',this.value)"></td>' +
@@ -599,7 +599,7 @@ function simpanKalibrasiHariIni() {
     '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
     '</div></div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
-    '<thead><tr><th style="width:40px;text-align:center;">No</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Alamat</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
+    '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Alamat</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
     '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
     '</table></div>';
 }
@@ -668,14 +668,27 @@ function simpanKegiatanProlanis(editId) {
   view = 'prolanis-detail';
   render();
 }
+function getNextProlanisNo(keg) {
+  var list = (keg && keg.peserta) || [];
+  var max = 0;
+  list.forEach(function(p) {
+    var n = parseInt(String(p.no || '').replace(/\D/g, ''), 10);
+    if (n > max) max = n;
+  });
+  return 'P-' + String(max + 1).padStart(3, '0');
+}
 
 function tambahPesertaProlanis() {
   if (!window._prolanisDetail) return;
   window._prolanisDetail.peserta = window._prolanisDetail.peserta || [];
-  window._prolanisDetail.peserta.push({ nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+  var nextNo = getNextProlanisNo(window._prolanisDetail);
+  window._prolanisDetail.peserta.push({ 
+    no: nextNo,
+    nik:'', nama:'', tgl_lahir:'', alamat:'', 
+    chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' 
+  });
   render();
 }
-
 function updatePesertaField(idx, field, val) {
   if (!window._prolanisDetail || !window._prolanisDetail.peserta) return;
   if (!window._prolanisDetail.peserta[idx]) return;
@@ -695,10 +708,12 @@ function pasteExcelProlanis() {
   var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
   if (lines.length === 0) return;
   if (!window._prolanisDetail.peserta) window._prolanisDetail.peserta = [];
+  var nextNum = parseInt(getNextProlanisNo(window._prolanisDetail).replace(/\D/g, ''), 10);
   var tambah = 0;
   lines.forEach(function(line) {
     var c = line.split('\t');
     var row = {
+      no: 'P-' + String(nextNum + tambah).padStart(3, '0'),
       nik: (c[0] || '').trim(),
       nama: (c[1] || '').trim(),
       tgl_lahir: (c[2] || '').trim(),
@@ -717,7 +732,6 @@ function pasteExcelProlanis() {
   render();
   toastMsg('✅ ' + tambah + ' baris ditambahkan', 'ok');
 }
-
 function simpanDetailKegiatan() {
   if (!window._prolanisDetail) return;
   var k = window._prolanisDetail;
@@ -736,7 +750,6 @@ function simpanDetailKegiatan() {
       var ps = JSON.parse(JSON.stringify(p));
       ps.id = keg.id_kegiatan + '-' + (i + 1);
       ps.id_kegiatan = keg.id_kegiatan;
-      ps.no = i + 1;
       ps.status = 'selesai';
       ps.tgl_input = new Date().toISOString();
       allPeserta.push(ps);
