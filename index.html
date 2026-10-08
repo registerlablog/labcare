@@ -299,7 +299,7 @@ function fmtTanggalKeg(tgl) {
   if (!tgl) return '-';
   var s = String(tgl);
   if (s.indexOf('T') > 0) {
-    try { return new Date(s).toISOString().slice(0, 10); } catch (e) { return s; }
+    s = s.split('T')[0];
   }
   return s;
 }
