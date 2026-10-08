@@ -552,6 +552,7 @@ function simpanKalibrasiHariIni() {
       '<div class="patient-card-actions" style="margin-top:10px;">' +
       '<span style="flex:1;font-size:12px;font-weight:600;color:var(--primary);padding:6px 0;">Klik untuk buka →</span>' +
       '<button class="btn-icon danger" onclick="event.stopPropagation();hapusKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\',\'' + esc(k.nama_kegiatan) + '\')" title="Hapus">🗑️</button>' +
+      '<button class="btn-icon" onclick="event.stopPropagation();modalKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')" title="Edit" style="background:#f3e8ff;color:#7e22ce;">✏️</button>' +
       '</div>' +
       '</div>';
   }).join('');
@@ -602,45 +603,59 @@ function simpanKalibrasiHariIni() {
     '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
     '</table></div>';
 }
-  function modalKegiatanProlanis() {
+  function modalKegiatanProlanis(id) {
+  var isEdit = !!id;
+  var k = isEdit ? (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(id); }) : null;
+  if (isEdit && !k) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
   var html = '<div class="modal-body">' +
-    '<div class="modal-head"><div><h3>➕ Buat Kegiatan Prolanis</h3><p>Isi data kegiatan</p></div>' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? '✏️ Edit Kegiatan Prolanis' : '➕ Buat Kegiatan Prolanis') + '</h3><p>Isi data kegiatan</p></div>' +
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="form-row" style="grid-template-columns:1fr;">' +
-    '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" placeholder="Contoh: Maesan, Penanggungan"></div>' +
-    '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp"></div>' +
-    '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" placeholder="Contoh: Pusk. Maesan"></div>' +
-    '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" placeholder="Contoh: Maesan, Penanggungan"></div>' +
-    '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" placeholder="Contoh: Tim A"></div>' +
+    '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" value="' + (k ? esc(k.nama_kegiatan) : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
+    '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc(k.tanggal || '') : '') + '"></div>' +
+    '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" value="' + (k ? esc(k.pengirim || '') : '') + '" placeholder="Contoh: Pusk. Maesan"></div>' +
+    '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
+    '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
     '</div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis()">💾 Simpan</button>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis(\'' + (isEdit ? esc(id) : '') + '\')">💾 Simpan</button>' +
     '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
   setTimeout(function() { var el = document.getElementById('pk_nama'); if (el) el.focus(); }, 100);
 }
 
-function simpanKegiatanProlanis() {
+function simpanKegiatanProlanis(editId) {
   var nama = (document.getElementById('pk_nama').value || '').trim();
   var tanggal = (document.getElementById('pk_tanggal').value || '').trim();
   var pengirim = (document.getElementById('pk_pengirim').value || '').trim();
   var alamat = (document.getElementById('pk_alamat').value || '').trim();
   var petugas = (document.getElementById('pk_petugas').value || '').trim();
   if (!nama || !tanggal) { alert('Nama dan tanggal wajib diisi.'); return; }
-  var id = 'PKG' + Date.now();
-  var newKeg = {
-    id_kegiatan: id,
-    nama_kegiatan: nama,
-    tanggal: tanggal,
-    pengirim: pengirim,
-    alamat: alamat,
-    petugas: petugas
-  };
   window._prolanisList = window._prolanisList || [];
-  window._prolanisList.push(newKeg);
-  // Sync ke server
+  
+  if (editId) {
+    var k = window._prolanisList.find(function(x) { return String(x.id_kegiatan) === String(editId); });
+    if (!k) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+    k.nama_kegiatan = nama;
+    k.tanggal = tanggal;
+    k.pengirim = pengirim;
+    k.alamat = alamat;
+    k.petugas = petugas;
+  } else {
+    var id = 'PKG' + Date.now();
+    window._prolanisList.push({
+      id_kegiatan: id,
+      nama_kegiatan: nama,
+      tanggal: tanggal,
+      pengirim: pengirim,
+      alamat: alamat,
+      petugas: petugas,
+      peserta: []
+    });
+  }
+  
   apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function() {
-    toastMsg('✅ Kegiatan dibuat', 'ok');
+    toastMsg(editId ? '✅ Kegiatan diperbarui' : '✅ Kegiatan dibuat', 'ok');
   });
   closeModal();
   render();
