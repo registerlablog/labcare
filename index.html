@@ -641,6 +641,7 @@ function simpanKalibrasiHariIni() {
     '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc((k.tanggal || '').slice(0, 10)) : '') + '"></div>' +
     '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" value="' + (k ? esc(k.pengirim || '') : '') + '" placeholder="Contoh: Pusk. Maesan"></div>' +
     '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
+    '<div><label class="lbl">Jumlah Peserta</label><input type="number" id="pk_jumlah" class="inp" value="0" min="0" max="500"><div style="font-size:11px;color:var(--slate-400);margin-top:4px;">Isi jumlah peserta → otomatis buat baris kosong</div></div>' +
     '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
     '</div>' +
     '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis(\'' + (isEdit ? esc(id) : '') + '\')">💾 Simpan</button>' +
@@ -656,7 +657,10 @@ function simpanKegiatanProlanis(editId) {
   var pengirim = (document.getElementById('pk_pengirim').value || '').trim();
   var alamat = (document.getElementById('pk_alamat').value || '').trim();
   var petugas = (document.getElementById('pk_petugas').value || '').trim();
+  var jumlah = parseInt(document.getElementById('pk_jumlah').value || '0', 10) || 0;
   if (!nama || !tanggal) { alert('Nama dan tanggal wajib diisi.'); return; }
+  if (jumlah < 0) jumlah = 0;
+  if (jumlah > 500) jumlah = 500;
   window._prolanisList = window._prolanisList || [];
   
   if (editId) {
@@ -667,8 +671,19 @@ function simpanKegiatanProlanis(editId) {
     k.pengirim = pengirim;
     k.alamat = alamat;
     k.petugas = petugas;
+    if (jumlah > 0) {
+      k.peserta = k.peserta || [];
+      for (var i = 0; i < jumlah; i++) {
+        var noBaru = getNextProlanisNo(k);
+        k.peserta.push({ no: noBaru, nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+      }
+    }
   } else {
     var id = 'PKG' + Date.now();
+    var peserta = [];
+    for (var j = 0; j < jumlah; j++) {
+      peserta.push({ no: 'P-' + String(j + 1).padStart(3, '0'), nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+    }
     window._prolanisList.push({
       id_kegiatan: id,
       nama_kegiatan: nama,
@@ -676,7 +691,7 @@ function simpanKegiatanProlanis(editId) {
       pengirim: pengirim,
       alamat: alamat,
       petugas: petugas,
-      peserta: []
+      peserta: peserta
     });
   }
   
