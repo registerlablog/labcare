@@ -50,9 +50,7 @@ body {
 .sync-badge.offline .dot { background: #f87171; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 .container { padding: 16px; max-width: 700px; margin: 0 auto; }
-.search-box {
-  position: relative; margin-bottom: 14px;
-}
+.search-box { position: relative; margin-bottom: 14px; }
 .search-box input {
   width: 100%; padding: 14px 16px 14px 44px;
   border: none; border-radius: 12px; font-size: 15px;
@@ -63,10 +61,7 @@ body {
   content: '🔍'; position: absolute; left: 16px; top: 50%;
   transform: translateY(-50%); font-size: 16px;
 }
-.tab-row {
-  display: flex; gap: 6px; margin-bottom: 14px;
-  overflow-x: auto; padding-bottom: 4px;
-}
+.tab-row { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
 .tab-row::-webkit-scrollbar { display: none; }
 .tab {
   padding: 8px 14px; border-radius: 999px; border: none;
@@ -210,7 +205,7 @@ body {
   border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-  .modal-overlay {
+.modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(15,23,42,.6); z-index: 100;
   align-items: flex-end; justify-content: center;
@@ -323,6 +318,14 @@ var currentPatient = null;
 var currentFilter = 'belum';
 var syncState = 'idle';
 
+/* ===== STEP 1: PROLANIS STATE ===== */
+var PROLANIS_TYPES = {
+  dm:   { label: 'DM',    full: 'Diabetes Melitus', warna: '#dc2626' },
+  ht:   { label: 'HT',    full: 'Hipertensi',       warna: '#9333ea' },
+  dmht: { label: 'DM+HT', full: 'DM + Hipertensi',  warna: '#f59e0b' }
+};
+var PROLANIS_FIELDS = ['tekananDarah', 'beratBadan', 'tinggiBadan', 'lingkarPerut', 'imt'];
+
 /* ===== UTILITY ===== */
 function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
@@ -392,8 +395,10 @@ function normalizePasien(p) {
   if (!p) return p;
   if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } }
   if (typeof p.hasil === 'string') { try { p.hasil = JSON.parse(p.hasil || '{}'); } catch (e) { p.hasil = {}; } }
+  if (typeof p.prolanisData === 'string') { try { p.prolanisData = JSON.parse(p.prolanisData || '{}'); } catch (e) { p.prolanisData = {}; } }
   if (!p.tests) p.tests = [];
   if (!p.hasil) p.hasil = {};
+  if (!p.prolanisData) p.prolanisData = {};
   if (!p.status) p.status = 'menunggu';
   return p;
 }
@@ -416,17 +421,20 @@ function loadLocal() {
 }
 
 /* ===== RENDER LIST ===== */
+/* STEP 2: Tab Prolanis */
 function renderTabs() {
   var counts = {
     belum: patients.filter(function(p) { return p.status === 'menunggu'; }).length,
     proses: patients.filter(function(p) { return p.status === 'proses'; }).length,
     selesai: patients.filter(function(p) { return p.status === 'selesai'; }).length,
+    prolanis: patients.filter(function(p) { return !!p.prolanis; }).length,
     semua: patients.length
   };
   var tabs = [
     { id: 'belum', label: '🔬 Belum Diinput', n: counts.belum },
     { id: 'proses', label: '✏️ Sedang Proses', n: counts.proses },
     { id: 'selesai', label: '✅ Selesai', n: counts.selesai },
+    { id: 'prolanis', label: '💊 Prolanis', n: counts.prolanis },
     { id: 'semua', label: '📋 Semua', n: counts.semua }
   ];
   document.getElementById('tabRow').innerHTML = tabs.map(function(t) {
@@ -441,13 +449,15 @@ function setFilter(f) {
   renderList();
 }
 
+/* STEP 3: Update renderList() */
 function renderList() {
   var search = (document.getElementById('searchInput').value || '').toLowerCase();
   var list = patients.slice();
   // Filter
-  if (currentFilter === 'belum') list = list.filter(function(p) { return p.status !== 'selesai'; });
+  if (currentFilter === 'belum') list = list.filter(function(p) { return p.status === 'menunggu'; });
   else if (currentFilter === 'proses') list = list.filter(function(p) { return p.status === 'proses'; });
   else if (currentFilter === 'selesai') list = list.filter(function(p) { return p.status === 'selesai'; });
+  else if (currentFilter === 'prolanis') list = list.filter(function(p) { return !!p.prolanis; });
   // Search
   if (search) {
     list = list.filter(function(p) {
@@ -470,10 +480,12 @@ function renderList() {
       var pct = tests.length > 0 ? Math.round(filled / tests.length * 100) : 0;
       var cls = p.status === 'selesai' ? 'selesai' : (p.status === 'proses' ? 'proses' : 'menunggu');
       var badgeCls = p.status === 'selesai' ? 'badge-selesai' : (p.status === 'proses' ? 'badge-proses' : 'badge-menunggu');
+      var pt = p.prolanis ? PROLANIS_TYPES[p.prolanis] : null;
+      var prolBadge = pt ? '<span style="background:' + pt.warna + ';color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;margin-left:6px;">' + esc(pt.label) + '</span>' : '';
       return '<div class="patient-card ' + cls + '" onclick="bukaForm(\'' + p.id + '\')">' +
         '<div class="pc-left">' +
         '<div class="pc-antrian">' + esc(p.noAntrian) + '</div>' +
-        '<div class="pc-name">' + esc(p.nama) + '</div>' +
+        '<div class="pc-name">' + esc(p.nama) + prolBadge + '</div>' +
         '<div class="pc-meta">' + esc(p.noRM) + ' • ' + tests.length + ' tes • ' + filled + '/' + tests.length + ' terisi</div>' +
         '<div class="pc-progress"><div class="pc-progress-bar" style="width:' + pct + '%;"></div></div>' +
         '</div>' +
@@ -507,6 +519,55 @@ function tutupForm() {
   renderTabs();
 }
 
+/* STEP 4: Fungsi renderProlanisFields() */
+function renderProlanisFields(p) {
+  var data = p.prolanisData || {};
+  var jenis = p.prolanis || 'dm';
+  var info = PROLANIS_TYPES[jenis] || PROLANIS_TYPES.dm;
+
+  var html = '<div style="background:#fff7ed;border:2px dashed #fed7aa;border-radius:12px;padding:14px;margin-top:10px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+    '<div style="font-size:13px;font-weight:800;color:#9a3412;">💊 Prolanis — ' + esc(info.full) + '</div>' +
+    '<span style="background:' + info.warna + ';color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">' + esc(info.label) + '</span>' +
+    '</div>';
+
+  // Baris 1: Tekanan Darah + Lingkar Perut
+  html += '<div class="test-inputs" style="margin-bottom:8px;">' +
+    '<div class="field"><label>Tekanan Darah (mmHg)</label>' +
+    '<input type="text" id="prol_tekananDarah" value="' + esc(data.tekananDarah || '') + '" placeholder="120/80"></div>' +
+    '<div class="field"><label>Lingkar Perut (cm)</label>' +
+    '<input type="number" step="any" id="prol_lingkarPerut" value="' + esc(data.lingkarPerut || '') + '" placeholder="85"></div>' +
+    '</div>';
+
+  // Baris 2: BB, TB, IMT
+  html += '<div class="test-inputs">' +
+    '<div class="field"><label>Berat (kg)</label>' +
+    '<input type="number" step="any" id="prol_beratBadan" value="' + esc(data.beratBadan || '') + '" oninput="hitungIMT()" placeholder="60"></div>' +
+    '<div class="field"><label>Tinggi (cm)</label>' +
+    '<input type="number" step="any" id="prol_tinggiBadan" value="' + esc(data.tinggiBadan || '') + '" oninput="hitungIMT()" placeholder="165"></div>' +
+    '<div class="field"><label>IMT (kg/m²)</label>' +
+    '<input type="number" step="any" id="prol_imt" value="' + esc(data.imt || '') + '" readonly style="background:#f1f5f9;color:#0f172a;"></div>' +
+    '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+/* STEP 5: Fungsi hitungIMT() */
+function hitungIMT() {
+  var bbEl = document.getElementById('prol_beratBadan');
+  var tbEl = document.getElementById('prol_tinggiBadan');
+  var imtEl = document.getElementById('prol_imt');
+  if (!bbEl || !tbEl || !imtEl) return;
+  var bb = parseFloat(bbEl.value);
+  var tb = parseFloat(tbEl.value);
+  if (isNaN(bb) || isNaN(tb) || tb <= 0) { imtEl.value = ''; return; }
+  var tbM = tb / 100;
+  var imt = bb / (tbM * tbM);
+  imtEl.value = Math.round(imt * 10) / 10;
+}
+
+/* STEP 6a: Integrasi ke renderForm() */
 function renderForm() {
   if (!currentPatient) return;
   var tests = currentPatient.tests || [];
@@ -520,6 +581,9 @@ function renderForm() {
     grouped[kat].push({ kode: kode, t: t });
   });
   var html = '';
+  if (currentPatient.prolanis) {
+    html += renderProlanisFields(currentPatient);
+  }
   Object.keys(grouped).sort().forEach(function(kat) {
     html += '<div class="kategori-title">' + esc(kat) + '</div>';
     grouped[kat].forEach(function(item) {
@@ -581,10 +645,20 @@ function hitungKalibrasi(kode) {
   outEl.value = result;
 }
 
+/* STEP 6b: Simpan prolanisData di simpanHasilForm() */
 async function simpanHasilForm() {
   if (!currentPatient) return;
   var p = currentPatient;
   if (!p.hasil) p.hasil = {};
+  // Ambil data antropometri Prolanis
+  if (p.prolanis) {
+    var pd = {};
+    PROLANIS_FIELDS.forEach(function(f) {
+      var el = document.getElementById('prol_' + f);
+      if (el && el.value.trim()) pd[f] = el.value.trim();
+    });
+    p.prolanisData = pd;
+  }
   (p.tests || []).forEach(function(kode) {
     var el = document.getElementById('h_' + kode);
     if (el && el.value.trim()) p.hasil[kode] = el.value.trim();
