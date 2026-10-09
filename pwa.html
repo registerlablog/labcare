@@ -797,24 +797,30 @@ function renderFormPeserta() {
   if (!currentPeserta) return;
   var p = currentPeserta;
   var diag = (p.diagnosa || '').toUpperCase();
+var diagBadge = '';
+if (diag === 'DM') {
+  diagBadge = '<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:12px;font-weight:800;">DM</span>';
+} else if (diag === 'HT') {
+  diagBadge = '<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:800;">HT</span>';
+} else if (diag === 'DM+HT' || diag === 'DMHT') {
+  diagBadge = '<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:800;">DM + HT</span>';
+} else {
+  diagBadge = '<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;font-style:italic;">Belum ditetapkan dokter</span>';
+}
 
-  var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:12px;padding:12px 14px;margin-bottom:12px;">' +
-    '<div style="font-size:12px;font-weight:800;color:#9a3412;margin-bottom:8px;">📋 Data Peserta</div>' +
-    '<div style="font-size:12px;color:#475569;line-height:1.6;">' +
-    '<b>NIK:</b> ' + esc(p.nik || '-') + '<br>' +
-    '<b>Tgl Lahir:</b> ' + esc(p.tgl_lahir || '-') + '<br>' +
-    '<b>Alamat:</b> ' + esc(p.alamat || '-') +
-    '</div>' +
-    '<div style="margin-top:10px;">' +
-    '<label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;">Diagnosa</label>' +
-    '<select id="pes_diagnosa" style="width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;font-weight:600;">' +
-    '<option value=""' + (!diag ? ' selected' : '') + '>— Pilih —</option>' +
-    '<option value="DM"' + (diag === 'DM' ? ' selected' : '') + '>DM (Diabetes Melitus)</option>' +
-    '<option value="HT"' + (diag === 'HT' ? ' selected' : '') + '>HT (Hipertensi)</option>' +
-    '</select>' +
-    '</div>' +
-    '</div>';
-
+var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:12px;padding:12px 14px;margin-bottom:12px;">' +
+  '<div style="font-size:12px;font-weight:800;color:#9a3412;margin-bottom:8px;">📋 Data Peserta</div>' +
+  '<div style="font-size:12px;color:#475569;line-height:1.6;">' +
+  '<b>NIK:</b> ' + esc(p.nik || '-') + '<br>' +
+  '<b>Tgl Lahir:</b> ' + esc(p.tgl_lahir || '-') + '<br>' +
+  '<b>Alamat:</b> ' + esc(p.alamat || '-') +
+  '</div>' +
+  '<div style="margin-top:10px;">' +
+  '<label style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;">Diagnosa (dari dokter)</label>' +
+  '<div>' + diagBadge + '</div>' +
+  '<div style="font-size:10px;color:#94a3b8;margin-top:6px;font-style:italic;">🔒 Hanya dokter/PPK yang berhak menetapkan diagnosa</div>' +
+  '</div>' +
+  '</div>';
   // Daftar tes lab Prolanis
   html += '<div class="kategori-title">🧪 Hasil Laboratorium Prolanis</div>';
   PROLANIS_TESTS.forEach(function(t) {
@@ -895,8 +901,6 @@ async function simpanPesertaForm() {
     if (v) { p[t.kode] = v; filled++; }
     else p[t.kode] = '';
   });
-  var diagEl = document.getElementById('pes_diagnosa');
-  p.diagnosa = diagEl ? diagEl.value : (p.diagnosa || '');
   if (filled === PROLANIS_TESTS.length) p.status = 'selesai';
   else if (filled > 0) p.status = 'proses';
   else p.status = 'menunggu';
