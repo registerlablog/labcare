@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LabCare — Sistem Pelayanan Pasien Laboratorium</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -747,6 +748,7 @@ function simpanKalibrasiHariIni() {
       (k.petugas ? '<p class="meta">👤 Petugas: ' + esc(k.petugas) + '</p>' : '') +
       '<div class="patient-card-actions" style="margin-top:10px;">' +
       '<span style="flex:1;font-size:12px;font-weight:600;color:var(--primary);padding:6px 0;">Klik untuk buka →</span>' +
+      '<button class="btn-icon" onclick="event.stopPropagation();exportProlanisXLSX(\'' + esc(k.id_kegiatan) + '\')" title="Unduh Excel" style="background:#dcfce7;color:#16a34a;font-weight:bold;">📥</button>' +
       '<button class="btn-icon danger" onclick="event.stopPropagation();hapusKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\',\'' + esc(k.nama_kegiatan) + '\')" title="Hapus">🗑️</button>' +
       '<button class="btn-icon" onclick="event.stopPropagation();modalKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')" title="Edit" style="background:#f3e8ff;color:#7e22ce;">✏️</button>' +
       '</div>' +
@@ -971,6 +973,84 @@ function simpanDetailKegiatan() {
   });
   apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
   render();
+}
+/* ===== EXPORT PROLANIS KE EXCEL ===== */
+function exportProlanisXLSX(kegId) {
+  var keg = (window._prolanisList || []).find(function(x) {
+    return String(x.id_kegiatan) === String(kegId);
+  });
+  if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+  
+  var peserta = keg.peserta || [];
+  if (peserta.length === 0) {
+    toastMsg('Belum ada peserta di kegiatan ini', 'err');
+    return;
+  }
+  
+  if (typeof XLSX === 'undefined') {
+    toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err');
+    return;
+  }
+  
+  var aoa = [];
+  aoa.push(['LAPORAN HASIL PEMERIKSAAN PROLANIS']);
+  aoa.push(['Nama Kegiatan:', keg.nama_kegiatan || '-']);
+  aoa.push(['Tanggal:', fmtTanggalKeg(keg.tanggal)]);
+  aoa.push(['Pengirim:', keg.pengirim || '-']);
+  aoa.push(['Alamat:', keg.alamat || '-']);
+  aoa.push(['Petugas:', keg.petugas || '-']);
+  aoa.push([]);
+  
+  var header = [
+    'No', 'Nama', 'NIK', 'Tgl Lahir', 'Alamat', 'Diagnosa',
+    'Chol', 'Trig', 'HDL', 'LDL', 'Creatinin', 'Ureum', 'HbA1c', 'Mikro',
+    'Kesimpulan'
+  ];
+  aoa.push(header);
+  
+  peserta.forEach(function(p, i) {
+    aoa.push([
+      i + 1,
+      p.nama || '',
+      p.nik || '',
+      fmtTglLahir(p.tgl_lahir) || '',
+      p.alamat || '',
+      p.diagnosa || '',
+      p.chol || '',
+      p.trig || '',
+      p.hdl || '',
+      p.ldl || '',
+      p.creatin || '',
+      p.ureum || '',
+      p.hba1c || '',
+      p.mikro || '',
+      p.kesimpulan || ''
+    ]);
+  });
+  
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }
+  ];
+  
+  ws['!cols'] = [
+    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 30 },
+    { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
+    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 35 }
+  ];
+  
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
+  
+  var namaSafe = (keg.nama_kegiatan || 'kegiatan')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  var tglSafe = String(keg.tanggal || today()).replace(/[^0-9]/g, '-');
+  var namaFile = 'Prolanis_' + namaSafe + '_' + tglSafe + '.xlsx';
+  
+  XLSX.writeFile(wb, namaFile);
+  toastMsg('📥 File Excel ter-download', 'ok');
 }
 
 function hapusKegiatanProlanis(id, nama) {
