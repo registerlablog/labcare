@@ -607,7 +607,7 @@ function simpanKalibrasiHariIni() {
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:150px;" value="' + esc(p.nik || '') + '" oninput="updatePesertaField(' + idx + ',\'nik\',this.value)"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.nama || '') + '" oninput="updatePesertaField(' + idx + ',\'nama\',this.value)"></td>' +
       '<td><input class="inp" type="date" style="padding:6px 8px;font-size:12px;width:130px;" value="' + esc((p.tgl_lahir || '').slice(0,10)) + '" oninput="updatePesertaField(' + idx + ',\'tgl_lahir\',this.value)"></td>' +
-      '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.alamat || '') + '" oninput="updatePesertaField(' + idx + ',\'alamat\',this.value)"></td>' +
+      '<td><select class="inp-sel" style="padding:6px 8px;font-size:12px;width:100px;" onchange="updatePesertaField(' + idx + ',\'diagnosa\',this.value)"><option value="">-</option><option value="DM"' + (p.diagnosa === 'DM' ? ' selected' : '') + '>DM</option><option value="HT"' + (p.diagnosa === 'HT' ? ' selected' : '') + '>HT</option><option value="DM + HT"' + (p.diagnosa === 'DM + HT' ? ' selected' : '') + '>DM + HT</option></select></td>' +
       inputs +
       '<td style="text-align:center;"><button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus">🗑️</button></td>' +
       '</tr>';
@@ -625,7 +625,7 @@ function simpanKalibrasiHariIni() {
     '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
     '</div></div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
-    '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Alamat</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
+    '...<th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th ...>Aksi</th></tr></thead>' +
     '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
     '</table></div>';
 }
@@ -675,14 +675,14 @@ function simpanKegiatanProlanis(editId) {
       k.peserta = k.peserta || [];
       for (var i = 0; i < jumlah; i++) {
         var noBaru = getNextProlanisNo(k);
-        k.peserta.push({ no: noBaru, nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+        k.peserta.push({ no: noBaru, nik:'', nama:'', tgl_lahir:'', alamat: k.alamat || '', diagnosa:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
       }
     }
   } else {
     var id = 'PKG' + Date.now();
     var peserta = [];
     for (var j = 0; j < jumlah; j++) {
-      peserta.push({ no: 'P-' + String(j + 1).padStart(3, '0'), nik:'', nama:'', tgl_lahir:'', alamat:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
+      peserta.push({ no: 'P-' + String(j + 1).padStart(3, '0'), nik:'', nama:'', tgl_lahir:'', alamat: alamat, diagnosa:'', chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' });
     }
     window._prolanisList.push({
       id_kegiatan: id,
@@ -723,9 +723,12 @@ function tambahPesertaProlanis() {
   if (!window._prolanisDetail) return;
   window._prolanisDetail.peserta = window._prolanisDetail.peserta || [];
   var nextNo = getNextProlanisNo(window._prolanisDetail);
+  var alamatKeg = window._prolanisDetail.alamat || '';
   window._prolanisDetail.peserta.push({ 
     no: nextNo,
-    nik:'', nama:'', tgl_lahir:'', alamat:'', 
+    nik:'', nama:'', tgl_lahir:'', 
+    alamat: alamatKeg,
+    diagnosa:'',
     chol:'', trig:'', hdl:'', ldl:'', creatin:'', ureum:'', hba1c:'', mikro:'' 
   });
   render();
