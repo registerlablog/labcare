@@ -565,7 +565,7 @@ function simpanKalibrasiHariIni() {
   function viewKegiatanProlanis() {
   var list = window._prolanisList || [];
   var cards = list.map(function(k) {
-    var jumlah = (k.peserta_count || 0);
+    var jumlah = ((k.peserta || []).length || k.peserta_count || 0);
     return '<div class="patient-card" style="cursor:pointer;margin-bottom:14px;" onclick="bukaKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
       '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
