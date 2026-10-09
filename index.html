@@ -527,6 +527,13 @@ function viewHasilUmum() {
   }).join('');
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Daftar pasien umum.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="table-wrap"><table><thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
 }
+function getColsProlanis(diagnosa) {
+  var allCols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  var d = String(diagnosa || '').toUpperCase();
+  if (d === 'HT') return allCols.filter(function(c) { return c !== 'hba1c'; });
+  return allCols;
+}
+
   function viewHasilProlanis() {
   var kegId = window._hasilProlanisKegId || null;
   if (kegId) return viewHasilProlanisDetail(kegId);
@@ -538,10 +545,12 @@ function viewHasilUmum() {
   var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
   var cards = list.map(function(keg) {
     var pesertaList = keg.peserta || [];
-    var totalFilled = 0, totalAll = pesertaList.length * 8;
-    pesertaList.forEach(function(p) {
-      cols.forEach(function(c) { if (p[c]) totalFilled++; });
-    });
+    var totalFilled = 0, totalAll = 0;
+pesertaList.forEach(function(p) {
+  var colsP = getColsProlanis(p.diagnosa);
+  totalAll += colsP.length;
+  colsP.forEach(function(c) { if (p[c]) totalFilled++; });
+});
     var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
     return '<div class="patient-card" style="cursor:pointer;" onclick="bukaHasilProlanisKeg(\'' + esc(keg.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
@@ -571,8 +580,10 @@ function viewHasilProlanisDetail(kegId) {
   var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
   var pesertaList = keg.peserta || [];
   var cardsHtml = pesertaList.map(function(p, idx) {
-    var filled = cols.filter(function(c) { return p[c]; }).length;
-    var done = filled === 8;
+    var colsP = getColsProlanis(p.diagnosa);
+var totalP = colsP.length;
+var filled = colsP.filter(function(c) { return p[c]; }).length;
+var done = filled === totalP;
     var cls = done ? 'selesai' : (filled > 0 ? 'proses' : 'menunggu');
     return '<div class="patient-card ' + cls + '" style="cursor:pointer;" onclick="modalHasilProlanis(\'' + esc(kegId) + '\', ' + idx + ')">' +
       '<div class="patient-card-head">' +
@@ -582,8 +593,8 @@ function viewHasilProlanisDetail(kegId) {
       '</div>' +
       '<h4 style="margin-bottom:4px;">' + esc(p.nama || '-') + '</h4>' +
       '<div style="margin-top:8px;background:var(--slate-100);border-radius:6px;height:6px;overflow:hidden;">' +
-      '<div style="background:var(--primary);height:100%;width:' + (filled/8*100) + '%;"></div></div>' +
-      '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Hasil: <b>' + filled + '/8</b> • Klik untuk input →</div>' +
+      '<div style="background:var(--primary);height:100%;width:' + (filled/totalP*100) + '%;"></div></div>' +
+'<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Hasil: <b>' + filled + '/' + totalP + '</b> • Klik untuk input →</div>' +
       '</div>';
   }).join('');
   return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilProlanisKegId=null; render();">← Kembali ke Daftar Kegiatan</button>' +
