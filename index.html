@@ -528,43 +528,72 @@ function viewHasilUmum() {
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Daftar pasien umum.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="table-wrap"><table><thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
 }
   function viewHasilProlanis() {
+  var kegId = window._hasilProlanisKegId || null;
+  if (kegId) return viewHasilProlanisDetail(kegId);
+  // Level 1: Daftar Kegiatan
   var list = window._prolanisList || [];
   if (list.length === 0) {
     return '<div class="empty-state"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p></div>';
   }
   var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
-  var html = '';
-  list.forEach(function(keg) {
+  var cards = list.map(function(keg) {
     var pesertaList = keg.peserta || [];
-    var totalFilled = 0;
-    var totalAll = pesertaList.length * 8;
+    var totalFilled = 0, totalAll = pesertaList.length * 8;
     pesertaList.forEach(function(p) {
       cols.forEach(function(c) { if (p[c]) totalFilled++; });
     });
     var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
-    var rowsHtml = pesertaList.map(function(p, idx) {
-      var filled = cols.filter(function(c) { return p[c]; }).length;
-      var done = filled === 8;
-      return '<tr>' +
-        '<td style="font-weight:700;color:var(--primary);">' + esc(p.no || '-') + '</td>' +
-        '<td>' + esc(p.nama || '-') + '</td>' +
-        '<td>' + esc(p.diagnosa || '-') + '</td>' +
-        '<td style="font-size:12px;">' + filled + '/8</td>' +
-        '<td><span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Belum')) + '</span></td>' +
-        '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasilProlanis(\'' + esc(keg.id_kegiatan) + '\', ' + idx + ')">🔬 Input</button></td>' +
-        '</tr>';
-    }).join('');
-    html += '<div class="card" style="margin-bottom:16px;padding:16px;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
-      '<div><div style="font-size:16px;font-weight:700;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
-      '<div style="font-size:12px;color:var(--slate-500);">' + esc(fmtTanggalKeg(keg.tanggal)) + ' • ' + esc(keg.alamat || '-') + '</div></div>' +
-      '<div><span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
-      '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;text-align:right;">' + totalFilled + '/' + totalAll + ' (' + persen + '%)</div></div></div>' +
-      '<div class="table-wrap" style="box-shadow:none;"><table style="min-width:auto;">' +
-      '<thead><tr><th style="width:90px;">No. Sample</th><th>Nama</th><th style="width:80px;">Diagnosa</th><th style="width:70px;">Hasil</th><th style="width:80px;">Status</th><th style="text-align:right;width:100px;">Aksi</th></tr></thead>' +
-      '<tbody>' + (rowsHtml || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody></table></div></div>';
-  });
-  return html;
+    return '<div class="patient-card" style="cursor:pointer;" onclick="bukaHasilProlanisKeg(\'' + esc(keg.id_kegiatan) + '\')">' +
+      '<div class="patient-card-head">' +
+      '<div><div style="font-size:15px;font-weight:800;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
+      '<div style="font-size:11px;color:var(--slate-400);">' + esc(fmtTanggalKeg(keg.tanggal)) + '</div></div>' +
+      '<span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
+      '</div>' +
+      (keg.alamat ? '<p class="meta">📍 ' + esc(keg.alamat) + '</p>' : '') +
+      '<div style="margin-top:8px;background:var(--slate-100);border-radius:6px;height:6px;overflow:hidden;">' +
+      '<div style="background:var(--primary);height:100%;width:' + persen + '%;"></div></div>' +
+      '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Terisi: <b>' + totalFilled + '/' + totalAll + '</b> (' + persen + '%)</div>' +
+      '<div class="patient-card-actions" style="margin-top:10px;">' +
+      '<span style="flex:1;font-size:12px;font-weight:600;color:var(--primary);padding:6px 0;">Klik untuk buka →</span>' +
+      '</div></div>';
+  }).join('');
+  return '<div class="patient-grid">' + cards + '</div>';
+}
+
+function bukaHasilProlanisKeg(kegId) {
+  window._hasilProlanisKegId = kegId;
+  render();
+}
+
+function viewHasilProlanisDetail(kegId) {
+  var keg = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(kegId); });
+  if (!keg) { window._hasilProlanisKegId = null; return viewHasilProlanis(); }
+  var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  var pesertaList = keg.peserta || [];
+  var cardsHtml = pesertaList.map(function(p, idx) {
+    var filled = cols.filter(function(c) { return p[c]; }).length;
+    var done = filled === 8;
+    var cls = done ? 'selesai' : (filled > 0 ? 'proses' : 'menunggu');
+    return '<div class="patient-card ' + cls + '" style="cursor:pointer;" onclick="modalHasilProlanis(\'' + esc(kegId) + '\', ' + idx + ')">' +
+      '<div class="patient-card-head">' +
+      '<div><div class="antrian" style="font-size:16px;">' + esc(p.no || '-') + '</div>' +
+      '<div class="rm">' + esc(p.diagnosa || '-') + '</div></div>' +
+      '<span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Belum')) + '</span>' +
+      '</div>' +
+      '<h4 style="margin-bottom:4px;">' + esc(p.nama || '-') + '</h4>' +
+      '<div style="margin-top:8px;background:var(--slate-100);border-radius:6px;height:6px;overflow:hidden;">' +
+      '<div style="background:var(--primary);height:100%;width:' + (filled/8*100) + '%;"></div></div>' +
+      '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;">Hasil: <b>' + filled + '/8</b> • Klik untuk input →</div>' +
+      '</div>';
+  }).join('');
+  return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilProlanisKegId=null; render();">← Kembali ke Daftar Kegiatan</button>' +
+    '<div class="card" style="margin-bottom:16px;padding:16px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
+    '<div><div style="font-size:16px;font-weight:700;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
+    '<div style="font-size:12px;color:var(--slate-500);">' + esc(fmtTanggalKeg(keg.tanggal)) + ' • ' + esc(keg.alamat || '-') + '</div></div>' +
+    '<span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
+    '</div>' +
+    '<div class="patient-grid">' + (cardsHtml || '<div class="empty-state" style="grid-column:1/-1;"><span class="em">👥</span><p>Belum ada peserta.</p></div>') + '</div></div>';
 }
 
 function modalHasilProlanis(kegId, idx) {
