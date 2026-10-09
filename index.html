@@ -287,6 +287,7 @@ window._editPickSearch = '';
 window._prolanisList = window._prolanisList || [];
 window._prolanisDetail = window._prolanisDetail || null;
 window._prolanisMode = window._prolanisMode || 'list';
+window._hasilTab = window._hasilTab || 'umum';
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -505,17 +506,142 @@ function viewAntrian() {
     }).join('') + '</div>';
   }
   return '<div class="page-header"><h2>Antrian & Status</h2><p>Kelola alur status pasien dari pendaftaran hingga selesai.</p></div><div class="pill-row">' + dateTabsHtml + '</div><div class="pill-row">' + tabsHtml + '</div>' + content;
+}function viewHasil() {
+  var tab = window._hasilTab || 'umum';
+  var tabsHtml = 
+    '<button class="pill' + (tab === 'umum' ? ' active' : '') + '" onclick="window._hasilTab=\'umum\'; render();">👤 Pasien Umum</button>' +
+    '<button class="pill' + (tab === 'prolanis' ? ' active' : '') + '" onclick="window._hasilTab=\'prolanis\'; render();">📋 Peserta Prolanis</button>';
+  var content = tab === 'prolanis' ? viewHasilProlanis() : viewHasilUmum();
+  return '<div class="page-header"><h2>Input Hasil Pemeriksaan</h2><p>Masukkan hasil laboratorium.</p></div>' +
+    '<div class="pill-row">' + tabsHtml + '</div>' + content;
 }
-function viewHasil() {
+
+function viewHasilUmum() {
   var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
-  if (list.length === 0) { return '<div class="page-header-flex"><div><h2>Input Hasil Pemeriksaan</h2><p>Masukkan hasil laboratorium.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="empty-state"><span class="em">🔬</span><p>Belum ada pasien terdaftar.</p></div>'; }
+  if (list.length === 0) { return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Belum ada pasien terdaftar.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="empty-state"><span class="em">🔬</span><p>Belum ada pasien terdaftar.</p></div>'; }
   var rowsHtml = list.map(function(p) {
     var tests = p.tests || []; var hasil = p.hasil || {};
     var filled = tests.filter(function(k) { return hasil[k]; }).length;
     var done = tests.length > 0 && filled === tests.length;
     return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(p.noAntrian) + '</td><td><div style="font-weight:500;">' + esc(p.nama) + '</div><div class="mono" style="font-size:11px;color:var(--slate-400);">' + esc(p.noRM) + '</div></td><td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td><td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td><td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasil(\'' + p.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td></tr>';
   }).join('');
-  return '<div class="page-header-flex"><div><h2>Input Hasil Pemeriksaan</h2><p>Masukkan hasil laboratorium.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="table-wrap"><table><thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Daftar pasien umum.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="table-wrap"><table><thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+}
+  function viewHasilProlanis() {
+  var list = window._prolanisList || [];
+  if (list.length === 0) {
+    return '<div class="empty-state"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p></div>';
+  }
+  var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  var html = '';
+  list.forEach(function(keg) {
+    var pesertaList = keg.peserta || [];
+    var totalFilled = 0;
+    var totalAll = pesertaList.length * 8;
+    pesertaList.forEach(function(p) {
+      cols.forEach(function(c) { if (p[c]) totalFilled++; });
+    });
+    var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
+    var rowsHtml = pesertaList.map(function(p, idx) {
+      var filled = cols.filter(function(c) { return p[c]; }).length;
+      var done = filled === 8;
+      return '<tr>' +
+        '<td style="font-weight:700;color:var(--primary);">' + esc(p.no || '-') + '</td>' +
+        '<td>' + esc(p.nama || '-') + '</td>' +
+        '<td>' + esc(p.diagnosa || '-') + '</td>' +
+        '<td style="font-size:12px;">' + filled + '/8</td>' +
+        '<td><span class="badge ' + (done ? 'badge-selesai' : (filled > 0 ? 'badge-proses' : 'badge-menunggu')) + '">' + (done ? 'Selesai' : (filled > 0 ? 'Proses' : 'Belum')) + '</span></td>' +
+        '<td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasilProlanis(\'' + esc(keg.id_kegiatan) + '\', ' + idx + ')">🔬 Input</button></td>' +
+        '</tr>';
+    }).join('');
+    html += '<div class="card" style="margin-bottom:16px;padding:16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
+      '<div><div style="font-size:16px;font-weight:700;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
+      '<div style="font-size:12px;color:var(--slate-500);">' + esc(fmtTanggalKeg(keg.tanggal)) + ' • ' + esc(keg.alamat || '-') + '</div></div>' +
+      '<div><span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
+      '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;text-align:right;">' + totalFilled + '/' + totalAll + ' (' + persen + '%)</div></div></div>' +
+      '<div class="table-wrap" style="box-shadow:none;"><table style="min-width:auto;">' +
+      '<thead><tr><th style="width:90px;">No. Sample</th><th>Nama</th><th style="width:80px;">Diagnosa</th><th style="width:70px;">Hasil</th><th style="width:80px;">Status</th><th style="text-align:right;width:100px;">Aksi</th></tr></thead>' +
+      '<tbody>' + (rowsHtml || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody></table></div></div>';
+  });
+  return html;
+}
+
+function modalHasilProlanis(kegId, idx) {
+  var keg = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(kegId); });
+  if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+  var p = (keg.peserta || [])[idx];
+  if (!p) { toastMsg('Peserta tidak ditemukan', 'err'); return; }
+  var cols = [
+    { key: 'chol', label: 'CHOL', satuan: 'mg/dL', rujukan: '< 200' },
+    { key: 'trig', label: 'TRIG', satuan: 'mg/dL', rujukan: '< 150' },
+    { key: 'hdl', label: 'HDL', satuan: 'mg/dL', rujukan: '> 40' },
+    { key: 'ldl', label: 'LDL', satuan: 'mg/dL', rujukan: '< 130' },
+    { key: 'creatin', label: 'CREA', satuan: 'mg/dL', rujukan: '0.6-1.3' },
+    { key: 'ureum', label: 'UREA', satuan: 'mg/dL', rujukan: '15-45' },
+    { key: 'hba1c', label: 'HbA1c', satuan: '%', rujukan: '4.0-6.0' },
+    { key: 'mikro', label: 'MIKRO', satuan: 'mg/L', rujukan: '< 20' }
+  ];
+  var isHT = (p.diagnosa || '').toUpperCase() === 'HT';
+  var fieldsHtml = cols.map(function(c) {
+    var isHba1c = c.key === 'hba1c';
+    var disabled = isHba1c && isHT;
+    var val = disabled ? '' : (p[c.key] || '');
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--slate-100);' + (disabled ? 'opacity:0.5;' : '') + '">' +
+      '<div style="flex:1;min-width:0;">' +
+      '<div style="font-size:14px;font-weight:600;">' + c.label + (disabled ? ' <span style="font-size:10px;color:var(--slate-400);">(tidak untuk HT)</span>' : '') + '</div>' +
+      '<div style="font-size:11px;color:var(--slate-400);">Rujukan: ' + c.rujukan + ' ' + c.satuan + '</div></div>' +
+      '<input id="ph_' + c.key + '" type="text" class="inp" style="width:110px;padding:8px 10px;font-size:14px;" value="' + esc(val) + '" placeholder="' + (disabled ? 'N/A' : '-') + '"' + (disabled ? ' disabled' : '') + '>' +
+      '</div>';
+  }).join('');
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>Input Hasil Prolanis</h3><p>' + esc(p.nama || '-') + ' • ' + esc(p.no || '-') + '</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="info-box info-blue" style="margin-bottom:12px;"><span class="info-em">ℹ️</span><span>Diagnosa: <b>' + esc(p.diagnosa || '-') + '</b>' + (isHT ? ' • HbA1c tidak diperlukan untuk Hipertensi' : '') + '</span></div>' +
+    '<div class="result-list" style="max-height:none;">' + fieldsHtml + '</div>' +
+    '<div style="margin-top:16px;"><label class="lbl">Kesimpulan / Catatan</label>' +
+    '<textarea id="pk_kesimpulan" rows="2" class="inp-ta">' + esc(p.kesimpulan || '') + '</textarea></div>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasilProlanis(\'' + esc(kegId) + '\', ' + idx + ')">💾 Simpan</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function simpanHasilProlanis(kegId, idx) {
+  var keg = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(kegId); });
+  if (!keg) return;
+  var p = (keg.peserta || [])[idx];
+  if (!p) return;
+  var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  cols.forEach(function(c) {
+    var el = document.getElementById('ph_' + c);
+    if (el) {
+      var v = el.value.trim();
+      if (v) p[c] = v;
+      else delete p[c];
+    }
+  });
+  var kes = document.getElementById('pk_kesimpulan');
+  p.kesimpulan = kes ? kes.value.trim() : '';
+  window._prolanisList.forEach(function(k) { k.peserta_count = (k.peserta || []).length; });
+  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function() {
+    var allPeserta = [];
+    (window._prolanisList || []).forEach(function(k) {
+      (k.peserta || []).forEach(function(ps, i) {
+        var copy = JSON.parse(JSON.stringify(ps));
+        copy.id = k.id_kegiatan + '-' + (i + 1);
+        copy.id_kegiatan = k.id_kegiatan;
+        copy.no = ps.no || ('P-' + String(i + 1).padStart(3, '0'));
+        copy.status = 'selesai';
+        copy.tgl_input = new Date().toISOString();
+        allPeserta.push(copy);
+      });
+    });
+    apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
+    toastMsg('✅ Hasil tersimpan', 'ok');
+    closeModal();
+    render();
+  });
 }
   function modalKalibrasi() {
   var kandidat = TESTS.filter(function(t) { return t.kal_aktif; });
