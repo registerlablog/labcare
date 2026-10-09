@@ -625,7 +625,7 @@ function simpanKalibrasiHariIni() {
     '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
     '</div></div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
-    '...<th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th ...>Aksi</th></tr></thead>' +
+    '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
     '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
     '</table></div>';
 }
