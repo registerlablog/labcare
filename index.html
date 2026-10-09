@@ -614,27 +614,30 @@ function modalHasilProlanis(kegId, idx) {
   var p = (keg.peserta || [])[idx];
   if (!p) { toastMsg('Peserta tidak ditemukan', 'err'); return; }
   var cols = [
-    { key: 'chol', label: 'CHOL', satuan: 'mg/dL', rujukan: '< 200' },
-    { key: 'trig', label: 'TRIG', satuan: 'mg/dL', rujukan: '< 150' },
-    { key: 'hdl', label: 'HDL', satuan: 'mg/dL', rujukan: '> 40' },
-    { key: 'ldl', label: 'LDL', satuan: 'mg/dL', rujukan: '< 130' },
-    { key: 'creatin', label: 'CREA', satuan: 'mg/dL', rujukan: '0.6-1.3' },
-    { key: 'ureum', label: 'UREA', satuan: 'mg/dL', rujukan: '15-45' },
-    { key: 'hba1c', label: 'HbA1c', satuan: '%', rujukan: '4.0-6.0' },
-    { key: 'mikro', label: 'MIKRO', satuan: 'mg/L', rujukan: '< 20' }
-  ];
+  { key: 'chol',    kode: 'LAB-014', label: 'CHOL',  fbSatuan: 'mg/dL', fbRujukan: '< 200' },
+  { key: 'trig',    kode: 'LAB-015', label: 'TRIG',  fbSatuan: 'mg/dL', fbRujukan: '< 150' },
+  { key: 'hdl',     kode: 'LAB-016', label: 'HDL',   fbSatuan: 'mg/dL', fbRujukan: '> 40' },
+  { key: 'ldl',     kode: 'LAB-017', label: 'LDL',   fbSatuan: 'mg/dL', fbRujukan: '< 130' },
+  { key: 'creatin', kode: 'LAB-018', label: 'CREA',  fbSatuan: 'mg/dL', fbRujukan: '0.6-1.3' },
+  { key: 'ureum',   kode: 'LAB-019', label: 'UREA',  fbSatuan: 'mg/dL', fbRujukan: '15-45' },
+  { key: 'hba1c',   kode: 'LAB-061', label: 'HbA1c', fbSatuan: '%',     fbRujukan: '4.0-6.0' },
+  { key: 'mikro',   kode: 'LAB-062', label: 'MIKRO', fbSatuan: 'mg/L',  fbRujukan: '< 20' }
+];
   var isHT = (p.diagnosa || '').toUpperCase() === 'HT';
   var fieldsHtml = cols.map(function(c) {
-    var isHba1c = c.key === 'hba1c';
-    var disabled = isHba1c && isHT;
-    var val = disabled ? '' : (p[c.key] || '');
-    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--slate-100);' + (disabled ? 'opacity:0.5;' : '') + '">' +
-      '<div style="flex:1;min-width:0;">' +
-      '<div style="font-size:14px;font-weight:600;">' + c.label + (disabled ? ' <span style="font-size:10px;color:var(--slate-400);">(tidak untuk HT)</span>' : '') + '</div>' +
-      '<div style="font-size:11px;color:var(--slate-400);">Rujukan: ' + c.rujukan + ' ' + c.satuan + '</div></div>' +
-      '<input id="ph_' + c.key + '" type="text" class="inp" style="width:110px;padding:8px 10px;font-size:14px;" value="' + esc(val) + '" placeholder="' + (disabled ? 'N/A' : '-') + '"' + (disabled ? ' disabled' : '') + '>' +
-      '</div>';
-  }).join('');
+  var master = findTest(c.kode);
+  var satuan = (master && master.satuan) ? master.satuan : c.fbSatuan;
+  var rujukan = (master && master.rujukan) ? master.rujukan : c.fbRujukan;
+  var isHba1c = c.key === 'hba1c';
+  var disabled = isHba1c && isHT;
+  var val = disabled ? '' : (p[c.key] || '');
+  return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--slate-100);' + (disabled ? 'opacity:0.5;' : '') + '">' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-size:14px;font-weight:600;">' + c.label + (disabled ? ' <span style="font-size:10px;color:var(--slate-400);">(tidak untuk HT)</span>' : '') + '</div>' +
+    '<div style="font-size:11px;color:var(--slate-400);">Rujukan: ' + rujukan + ' ' + satuan + '</div></div>' +
+    '<input id="ph_' + c.key + '" type="text" class="inp" style="width:110px;padding:8px 10px;font-size:14px;" value="' + esc(val) + '" placeholder="' + (disabled ? 'N/A' : '-') + '"' + (disabled ? ' disabled' : '') + '>' +
+    '</div>';
+}).join('');
   var html = '<div class="modal-body">' +
     '<div class="modal-head"><div><h3>Input Hasil Prolanis</h3><p>' + esc(p.nama || '-') + ' • ' + esc(p.no || '-') + '</p></div>' +
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
