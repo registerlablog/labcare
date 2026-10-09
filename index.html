@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LabCare — Sistem Pelayanan Pasien Laboratorium</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -974,7 +974,7 @@ function simpanDetailKegiatan() {
   apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
   render();
 }
-/* ===== EXPORT PROLANIS KE EXCEL ===== */
+  /* ===== EXPORT PROLANIS KE EXCEL (STYLED) ===== */
 function exportProlanisXLSX(kegId) {
   var keg = (window._prolanisList || []).find(function(x) {
     return String(x.id_kegiatan) === String(kegId);
@@ -986,28 +986,26 @@ function exportProlanisXLSX(kegId) {
     toastMsg('Belum ada peserta di kegiatan ini', 'err');
     return;
   }
-  
   if (typeof XLSX === 'undefined') {
     toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err');
     return;
   }
   
+  // === 1. Susun data mentah ===
   var aoa = [];
-  aoa.push(['LAPORAN HASIL PEMERIKSAAN PROLANIS']);
-  aoa.push(['Nama Kegiatan:', keg.nama_kegiatan || '-']);
-  aoa.push(['Tanggal:', fmtTanggalKeg(keg.tanggal)]);
-  aoa.push(['Pengirim:', keg.pengirim || '-']);
-  aoa.push(['Alamat:', keg.alamat || '-']);
-  aoa.push(['Petugas:', keg.petugas || '-']);
+  aoa.push(['LAPORAN HASIL PEMERIKSAAN PROLANIS', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  aoa.push([]);
+  aoa.push(['Nama Kegiatan', keg.nama_kegiatan || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  aoa.push(['Tanggal', fmtTanggalKeg(keg.tanggal), '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  aoa.push(['Pengirim', keg.pengirim || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  aoa.push(['Alamat', keg.alamat || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+  aoa.push(['Petugas', keg.petugas || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
   aoa.push([]);
   
-  var header = [
-    'No', 'Nama', 'NIK', 'Tgl Lahir', 'Alamat', 'Diagnosa',
-    'Chol', 'Trig', 'HDL', 'LDL', 'Creatinin', 'Ureum', 'HbA1c', 'Mikro',
-    'Kesimpulan'
-  ];
+  var header = ['No','Nama','NIK','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro','Kesimpulan'];
   aoa.push(header);
   
+  var dataStartRow = aoa.length;
   peserta.forEach(function(p, i) {
     aoa.push([
       i + 1,
@@ -1030,19 +1028,138 @@ function exportProlanisXLSX(kegId) {
   
   var ws = XLSX.utils.aoa_to_sheet(aoa);
   
+  // === 2. Styling warna & font ===
+  var C = {
+    biruTua:  '1E40AF',
+    biruMuda: 'EFF6FF',
+    abuMuda:  'F1F5F9',
+    abuTua:   '334155',
+    putih:    'FFFFFF',
+    hitam:    '000000',
+    merah:    'DC2626',
+    ungu:     '7E22CE'
+  };
+  
+  // Border standar
+  var B = {
+    top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+    bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+    left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+    right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
+  };
+  
+  // Helper: apply style ke cell
+  function setStyle(r, c, s) {
+    var addr = XLSX.utils.encode_cell({ r: r, c: c });
+    if (!ws[addr]) ws[addr] = { v: '', t: 's' };
+    ws[addr].s = s;
+  }
+  
+  // --- Judul besar (row 0) ---
+  setStyle(0, 0, {
+    font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: C.putih } },
+    fill: { fgColor: { rgb: C.biruTua } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: B
+  });
+  for (var i = 1; i < 15; i++) setStyle(0, i, {
+    fill: { fgColor: { rgb: C.biruTua } },
+    border: B
+  });
+  
+  // --- Info kegiatan (row 2-6) ---
+  for (var r = 2; r <= 6; r++) {
+    setStyle(r, 0, {
+      font: { sz: 11, bold: true, color: { rgb: C.abuTua } },
+      fill: { fgColor: { rgb: C.abuMuda } },
+      alignment: { horizontal: 'left', vertical: 'center' },
+      border: B
+    });
+    setStyle(r, 1, {
+      font: { sz: 11, color: { rgb: C.hitam } },
+      alignment: { horizontal: 'left', vertical: 'center' },
+      border: B
+    });
+    // Sisa kolom biar border rapih
+    for (var j = 2; j < 15; j++) setStyle(r, j, { border: B });
+  }
+  
+  // --- Header tabel (baris dataStartRow - 1) ---
+  var headerRow = dataStartRow - 1;
+  for (var c = 0; c < 15; c++) {
+    setStyle(headerRow, c, {
+      font: { sz: 11, bold: true, color: { rgb: C.putih } },
+      fill: { fgColor: { rgb: C.biruTua } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      border: B
+    });
+  }
+  
+  // --- Data rows (selang-seling) ---
+  for (var r2 = dataStartRow; r2 < dataStartRow + peserta.length; r2++) {
+    var isEven = (r2 - dataStartRow) % 2 === 0;
+    for (var c2 = 0; c2 < 15; c2++) {
+      var style = {
+        font: { sz: 10, color: { rgb: C.hitam } },
+        fill: { fgColor: { rgb: isEven ? C.putih : C.biruMuda } },
+        alignment: { horizontal: c2 === 0 ? 'center' : 'left', vertical: 'center', wrapText: false },
+        border: B
+      };
+      // Diagnosa: warna khusus
+      if (c2 === 5) {
+        var diag = String(ws[XLSX.utils.encode_cell({ r: r2, c: 5 })]?.v || '').toUpperCase();
+        if (diag === 'DM') {
+          style.font = { sz: 10, bold: true, color: { rgb: C.merah } };
+        } else if (diag === 'HT') {
+          style.font = { sz: 10, bold: true, color: { rgb: C.ungu } };
+        } else {
+          style.alignment = { horizontal: 'center', vertical: 'center' };
+        }
+      }
+      // Kolom angka: rata kanan
+      if (c2 >= 6 && c2 <= 13) {
+        style.alignment = { horizontal: 'center', vertical: 'center' };
+      }
+      setStyle(r2, c2, style);
+    }
+  }
+  
+  // === 3. Merge cells ===
   ws['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }
+    { s: { r: 0, c: 0 },  e: { r: 0, c: 14 } }, // Judul
+    { s: { r: 2, c: 1 },  e: { r: 2, c: 14 } }, // Nama Kegiatan value
+    { s: { r: 3, c: 1 },  e: { r: 3, c: 14 } }, // Tanggal value
+    { s: { r: 4, c: 1 },  e: { r: 4, c: 14 } }, // Pengirim value
+    { s: { r: 5, c: 1 },  e: { r: 5, c: 14 } }, // Alamat value
+    { s: { r: 6, c: 1 },  e: { r: 6, c: 14 } }  // Petugas value
   ];
   
+  // === 4. Lebar kolom ===
   ws['!cols'] = [
-    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 30 },
-    { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
-    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 35 }
+    { wch: 5 },   // No
+    { wch: 24 },  // Nama
+    { wch: 18 },  // NIK
+    { wch: 11 },  // Tgl Lahir
+    { wch: 26 },  // Alamat
+    { wch: 9 },   // Diagnosa
+    { wch: 7 },   // Chol
+    { wch: 7 },   // Trig
+    { wch: 7 },   // HDL
+    { wch: 7 },   // LDL
+    { wch: 9 },   // Creatinin
+    { wch: 7 },   // Ureum
+    { wch: 7 },   // HbA1c
+    { wch: 7 },   // Mikro
+    { wch: 30 }   // Kesimpulan
   ];
+  
+  // === 5. Tinggi baris ===
+  ws['!rows'] = [{ hpt: 32 }]; // Judul lebih tinggi
   
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
   
+  // === 6. Nama file ===
   var namaSafe = (keg.nama_kegiatan || 'kegiatan')
     .replace(/[^a-zA-Z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
