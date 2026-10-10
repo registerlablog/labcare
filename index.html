@@ -1425,14 +1425,14 @@ function getTanggalKode(t) {
 
 function getProlanisPrintCols(diagnosa) {
   var all = [
-    { key:'chol',    label:'Kolesterol',  satuan:'mg/dL', rujukan:'< 200' },
-    { key:'trig',    label:'Trigliserida', satuan:'mg/dL', rujukan:'< 150' },
-    { key:'hdl',     label:'HDL',         satuan:'mg/dL', rujukan:'> 40' },
-    { key:'ldl',     label:'LDL',         satuan:'mg/dL', rujukan:'< 130' },
-    { key:'creatin', label:'Kreatinin',   satuan:'mg/dL', rujukan:'0.6-1.3' },
-    { key:'ureum',   label:'Ureum',       satuan:'mg/dL', rujukan:'15-45' },
-    { key:'hba1c',   label:'HbA1c',       satuan:'%',     rujukan:'4.0-6.0' },
-    { key:'mikro',   label:'Mikroalbumin',satuan:'mg/L',  rujukan:'< 20' }
+    { key:'chol',    label:'Cholesterol',  satuan:'mg/dL', rujukan:'< 200',    kategori:'LEMAK LENGKAP' },
+    { key:'trig',    label:'Trigliserida', satuan:'mg/dL', rujukan:'< 150',    kategori:'LEMAK LENGKAP' },
+    { key:'hdl',     label:'HDL',          satuan:'mg/dL', rujukan:'> 40',     kategori:'LEMAK LENGKAP' },
+    { key:'ldl',     label:'LDL',          satuan:'mg/dL', rujukan:'< 130',    kategori:'LEMAK LENGKAP' },
+    { key:'creatin', label:'Kreatinin',    satuan:'mg/dL', rujukan:'0.6-1.3',  kategori:'GINJAL LENGKAP' },
+    { key:'ureum',   label:'Ureum',        satuan:'mg/dL', rujukan:'15-45',    kategori:'GINJAL LENGKAP' },
+    { key:'hba1c',   label:'HbA1c',        satuan:'%',     rujukan:'4.0-6.0',  kategori:'KIMIA' },
+    { key:'mikro',   label:'Mikroalbumin', satuan:'mg/L',  rujukan:'< 20',     kategori:'URIN' }
   ];
   var d = String(diagnosa || '').toUpperCase();
   if (d === 'HT') return all.filter(function(c) { return c.key !== 'hba1c'; });
@@ -1455,6 +1455,7 @@ function buildProlanisPrintPage(keg, peserta) {
   var stempelHtml = stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-120px; left:50%; transform:translateX(-50%); width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
   var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
   var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+
   var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
     '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
     '<div style="flex:1; text-align:center; padding: 0 10px;">' +
@@ -1468,9 +1469,11 @@ function buildProlanisPrintPage(keg, peserta) {
     '</div>' +
     '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
     '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
+
   var judulHtml = '<div style="text-align:center; margin-top:10px; margin-bottom:4px;">' +
     '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
     '</div>';
+
   var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:12px; color:#000; line-height:1.25;">' +
     '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
     '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
@@ -1481,31 +1484,42 @@ function buildProlanisPrintPage(keg, peserta) {
     '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
-    '<div style="float:left; width:15%;">NIK</div><div style="float:left; width:45%;">: ' + esc(peserta.nik || '-') + '</div>' +
+    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
     '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
-    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
-    '<div style="float:left; width:20%;">Kegiatan</div><div style="float:left; width:20%;">: ' + esc(keg.nama_kegiatan || '-') + '</div>' +
-    '<div style="clear:both;"></div></div>' +
     '</div>';
+
   var headerTabel = '<div style="width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:12px; color:#000; overflow:hidden;">' +
     '<div style="float:left; width:45%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
     '<div style="float:left; width:15%; text-align:center;">HASIL</div>' +
     '<div style="float:left; width:40%; text-align:left; padding-left:10px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
     '<div style="clear:both;"></div></div>';
-  var rowsHtml = '';
+
+  var grup = {};
+  var urutanKategori = [];
   cols.forEach(function(c) {
-    var val = peserta[c.key];
-    if (val === undefined || val === null || val === '') val = '-';
-    var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-    rowsHtml += '<div style="width:100%; margin-bottom:3px; overflow:hidden;">' +
-      '<div style="float:left; width:45%; font-size:12px; color:#000; padding-right:10px; box-sizing:border-box; text-align:left;">' + esc(c.label) + '</div>' +
-      '<div style="float:left; width:15%; text-align:center; font-size:12px; color:#000;">' + esc(val) + '</div>' +
-      '<div style="float:left; width:40%; font-size:12px; color:#000; padding-left:10px; box-sizing:border-box; text-align:left;">' + esc(rujukanLengkap) + '</div>' +
-      '<div style="clear:both;"></div></div>';
+    var kat = c.kategori || 'LAINNYA';
+    if (!grup[kat]) { grup[kat] = []; urutanKategori.push(kat); }
+    grup[kat].push(c);
   });
+
+  var rowsHtml = '';
+  urutanKategori.forEach(function(kat) {
+    rowsHtml += '<div style="width:100%; margin-top:6px; margin-bottom:4px; font-weight:bold; font-size:12px; color:#000;">' + esc(kat) + '</div>';
+    grup[kat].forEach(function(c) {
+      var val = peserta[c.key];
+      if (val === undefined || val === null || val === '') val = '-';
+      var rujukanLengkap = c.rujukan + ' ' + c.satuan;
+      rowsHtml += '<div style="width:100%; margin-bottom:3px; overflow:hidden;">' +
+        '<div style="float:left; width:45%; font-size:12px; color:#000; padding-right:10px; box-sizing:border-box; text-align:left;">' + esc(c.label) + '</div>' +
+        '<div style="float:left; width:15%; text-align:center; font-size:12px; color:#000;">' + esc(val) + '</div>' +
+        '<div style="float:left; width:40%; font-size:12px; color:#000; padding-left:10px; box-sizing:border-box; text-align:left;">' + esc(rujukanLengkap) + '</div>' +
+        '<div style="clear:both;"></div></div>';
+    });
+  });
+
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
+
   var footer = '<table style="width:100%; border-collapse:collapse; font-size:12px; color:#000;">' +
     '<tr>' +
     '<td style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</td>' +
@@ -1524,9 +1538,9 @@ function buildProlanisPrintPage(keg, peserta) {
     '<td style="text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</td>' +
     '</tr>' +
     '</table>';
+
   return { content: content, footer: footer };
 }
-
 function showMultiPagePrint(pages, title) {
   var overlay = document.getElementById('printOverlay');
   if (!overlay) {
