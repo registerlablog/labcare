@@ -1450,46 +1450,46 @@ function buildProlanisPrintPage(keg, peserta) {
   var dokterData = (dokterList || []).find(function(d) {
     return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0;
   }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
-  var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:200px; max-width:90%; object-fit:contain; display:block; margin:0 auto 4px;">' : '';
-  var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:200px; max-width:90%; object-fit:contain; display:block; margin:0 auto 4px;">' : '';
-  var stempelHtml = stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-170px; left:0%; width:270px; height:270px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
+  var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:120px; max-width:85%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+  var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:120px; max-width:85%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+  var stempelHtml = stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-100px; left:0%; width:200px; height:200px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
   var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
   var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
 
-  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:8px;">' +
-    '<div style="width:120px; height:120px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
-    '<div style="flex:1; text-align:center; padding: 0 12px;">' +
-    '<div style="font-size:15px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
-    '<div style="font-size:15px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
-    '<div style="font-size:20px; font-weight:900; color:#000; margin:4px 0;">' + esc(CLINIC.baris3) + '</div>' +
-    '<div style="font-size:12px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
-    '<div style="font-size:12px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
+  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:6px;">' +
+    '<div style="width:100px; height:100px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
+    '<div style="flex:1; text-align:center; padding: 0 10px;">' +
+    '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+    '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
+    '<div style="font-size:17px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
+    '<div style="font-size:10px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+    '<div style="font-size:10px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
     '</div>' +
-    '<div style="width:150px; height:150px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
+    '<div style="width:120px; height:120px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
     '</div>' +
-    '<div style="border-top:3px solid #000; margin:0;"></div>' +
-    '<div style="border-top:1px solid #000; margin-top:3px;"></div>';
+    '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
+    '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
 
-  var judulHtml = '<div style="text-align:center; margin-top:24px; margin-bottom:16px;">' +
-    '<div style="font-size:22px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
+  var judulHtml = '<div style="text-align:center; margin-top:12px; margin-bottom:8px;">' +
+    '<div style="font-size:18px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
     '</div>';
 
-  var infoHtml = '<div style="margin-top:0; margin-bottom:24px; font-size:15px; color:#000; line-height:1.7;">' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:6px;">' +
+  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; color:#000; line-height:1.5;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
     '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:6px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div>' +
     '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:6px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
     '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '</div>';
 
-  var headerTabel = '<div style="width:100%; border-bottom:2.5px solid #000; padding-bottom:12px; margin-bottom:12px; font-weight:bold; font-size:15px; color:#000; overflow:hidden;">' +
+  var headerTabel = '<div style="width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000; overflow:hidden;">' +
     '<div style="float:left; width:45%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
     '<div style="float:left; width:15%; text-align:center;">HASIL</div>' +
     '<div style="float:left; width:40%; text-align:left; padding-left:10px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
@@ -1505,15 +1505,15 @@ function buildProlanisPrintPage(keg, peserta) {
 
   var rowsHtml = '';
   urutanKategori.forEach(function(kat) {
-    rowsHtml += '<div style="width:100%; margin-top:16px; margin-bottom:8px; font-weight:bold; font-size:15px; color:#000;">' + esc(kat) + '</div>';
+    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; color:#000;">' + esc(kat) + '</div>';
     grup[kat].forEach(function(c) {
       var val = peserta[c.key];
       if (val === undefined || val === null || val === '') val = '-';
       var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-      rowsHtml += '<div style="width:100%; margin-bottom:8px; overflow:hidden;">' +
-        '<div style="float:left; width:45%; font-size:15px; color:#000; padding-right:10px; box-sizing:border-box; text-align:left;">' + esc(c.label) + '</div>' +
-        '<div style="float:left; width:15%; text-align:center; font-size:15px; color:#000;">' + esc(val) + '</div>' +
-        '<div style="float:left; width:40%; font-size:15px; color:#000; padding-left:10px; box-sizing:border-box; text-align:left;">' + esc(rujukanLengkap) + '</div>' +
+      rowsHtml += '<div style="width:100%; margin-bottom:3px; overflow:hidden;">' +
+        '<div style="float:left; width:45%; font-size:13px; color:#000; padding-right:10px; box-sizing:border-box; text-align:left;">' + esc(c.label) + '</div>' +
+        '<div style="float:left; width:15%; text-align:center; font-size:13px; color:#000;">' + esc(val) + '</div>' +
+        '<div style="float:left; width:40%; font-size:13px; color:#000; padding-left:10px; box-sizing:border-box; text-align:left;">' + esc(rujukanLengkap) + '</div>' +
         '<div style="clear:both;"></div></div>';
     });
   });
@@ -1521,28 +1521,27 @@ function buildProlanisPrintPage(keg, peserta) {
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
 
   var footer =
-    '<div style="display:flex; width:100%; font-size:14px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:10px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
-      '<div style="width:50%; text-align:center; padding:10px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
     '</div>' +
-    '<div style="display:flex; width:100%; font-size:14px; color:#000;">' +
-      '<div style="width:50%; text-align:center; position:relative; height:140px; padding:0 12px;">' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; position:relative; height:100px; padding:0 12px;">' +
         (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') +
       '</div>' +
-      '<div style="width:50%; text-align:center; position:relative; height:140px; padding:0 12px;">' +
+      '<div style="width:50%; text-align:center; position:relative; height:100px; padding:0 12px;">' +
         (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') +
         stempelHtml +
       '</div>' +
     '</div>' +
-    '<div style="display:flex; width:100%; font-size:14px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:4px 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div>' +
-      '<div style="width:50%; text-align:center; padding:4px 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div>' +
     '</div>' +
-    '<div style="display:flex; width:100%; font-size:14px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:4px 12px;">' + esc(pemeriksaData.kode || '-') + '</div>' +
-      '<div style="width:50%; text-align:center; padding:4px 12px;">' + esc(dokterData.kode || '-') + '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</div>' +
     '</div>';
-
   return { content: content, footer: footer };
 }
 function showMultiPagePrint(pages, title) {
