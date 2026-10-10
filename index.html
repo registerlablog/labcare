@@ -792,8 +792,10 @@ function simpanKalibrasiHariIni() {
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah Baris</button>' +
-    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📥 Paste Excel</button>' +
+    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah</button>' +
+    '<button class="btn btn-secondary" onclick="uploadExcelProlanis()">📁 Upload Excel</button>' +
+    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📋 Paste Excel</button>' +
+    '<button class="btn btn-secondary" onclick="downloadTemplateProlanis()">📥 Template</button>' +
     '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
     '</div></div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
@@ -918,37 +920,274 @@ function hapusPesertaProlanis(idx) {
   render();
 }
 
-function pasteExcelProlanis() {
-  var text = prompt('Paste dari Excel (kolom: NIK, Nama, TglLahir, Alamat, Chol, Trig, HDL, LDL, Crea, Ureum, HbA1c, Mikro)\nPisah antar kolom dengan TAB, antar baris dengan ENTER.\n\nKosongkan dan klik OK untuk batal:');
-  if (!text) return;
+/* ===== PROLANIS: PASTE/IMPORT EXCEL (Level 2+3+4) ===== */
+
+// --- Helper: normalisasi tanggal berbagai format ---
+function normalizeDate(v) {
+  if (!v) return '';
+  v = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  var m1 = v.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  if (m1) return m1[3] + '-' + m1[2].padStart(2, '0') + '-' + m1[1].padStart(2, '0');
+  var m2 = v.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+  if (m2) return m2[1] + '-' + m2[2].padStart(2, '0') + '-' + m2[3].padStart(2, '0');
+  return v;
+}
+
+// --- Helper: matrix → array objek (auto-detect header + mapping kolom) ---
+function matrixToProlanisObjects(matrix) {
+  if (!matrix || matrix.length === 0) return [];
+  var headerKeywords = ['nik','nama','tgl','lahir','alamat','chol','kolesterol','hdl','ldl'];
+  var firstRow = matrix[0].map(function(c) { return String(c).toLowerCase().trim(); });
+  var headerFound = headerKeywords.some(function(k) {
+    return firstRow.some(function(c) { return c.indexOf(k) >= 0; });
+  });
+  var idxMap = {};
+  var dataRows;
+  if (headerFound) {
+    firstRow.forEach(function(h, i) {
+      var hl = h;
+      if (hl.indexOf('nik') >= 0) idxMap.nik = i;
+      else if (hl === 'nama' || hl.indexOf('nama ') === 0) idxMap.nama = i;
+      else if (hl.indexOf('lahir') >= 0 || hl === 'tgl' || hl === 'tanggal lahir') idxMap.tgl_lahir = i;
+      else if (hl.indexOf('alamat') >= 0) idxMap.alamat = i;
+      else if (hl.indexOf('diagnosa') >= 0 || hl === 'dx' || hl === 'diag') idxMap.diagnosa = i;
+      else if (hl.indexOf('chol') >= 0 || hl.indexOf('kolesterol') >= 0) idxMap.chol = i;
+      else if (hl.indexOf('trig') >= 0) idxMap.trig = i;
+      else if (hl === 'hdl') idxMap.hdl = i;
+      else if (hl === 'ldl') idxMap.ldl = i;
+      else if (hl.indexOf('crea') >= 0) idxMap.creatin = i;
+      else if (hl.indexOf('ureum') >= 0 || hl.indexOf('urea') >= 0) idxMap.ureum = i;
+      else if (hl.indexOf('hba1c') >= 0) idxMap.hba1c = i;
+      else if (hl.indexOf('mikro') >= 0) idxMap.mikro = i;
+    });
+    dataRows = matrix.slice(1);
+  } else {
+    var order = ['nik','nama','tgl_lahir','alamat','chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+    order.forEach(function(k, i) { idxMap[k] = i; });
+    dataRows = matrix;
+  }
+  var result = [];
+  dataRows.forEach(function(row) {
+    var obj = {};
+    Object.keys(idxMap).forEach(function(k) {
+      var v = row[idxMap[k]];
+      if (v === undefined || v === null) v = '';
+      v = String(v).trim();
+      if (k === 'tgl_lahir') v = normalizeDate(v);
+      obj[k] = v;
+    });
+    if (obj.nama || obj.nik) result.push(obj);
+  });
+  return result;
+}
+
+// --- Helper: parse text paste (auto-detect delimiter) ---
+function parsePastedText(text) {
   var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
-  if (lines.length === 0) return;
+  if (lines.length === 0) return [];
+  var sample = lines[0];
+  var tabCount = (sample.match(/\t/g) || []).length;
+  var semiCount = (sample.match(/;/g) || []).length;
+  var commaCount = (sample.match(/,/g) || []).length;
+  var delim = '\t';
+  if (tabCount === 0) delim = (semiCount >= commaCount) ? ';' : ',';
+  var matrix = lines.map(function(l) { return l.split(delim).map(function(c) { return c.trim(); }); });
+  return matrixToProlanisObjects(matrix);
+}
+
+// --- Helper: render preview tabel di modal ---
+function renderProlanisPreview(containerId, rows, onConfirm) {
+  var html = '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px;font-size:12px;margin-bottom:8px;">' +
+    '<b>✅ ' + rows.length + ' baris terdeteksi</b></div>';
+  html += '<div style="max-height:200px;overflow:auto;border:1px solid var(--slate-200);border-radius:8px;">' +
+    '<table style="width:100%;font-size:11px;border-collapse:collapse;">' +
+    '<thead><tr style="background:var(--slate-100);">' +
+    '<th style="padding:4px;text-align:left;">Nama</th>' +
+    '<th style="padding:4px;text-align:left;">NIK</th>' +
+    '<th style="padding:4px;text-align:left;">Tgl Lahir</th>' +
+    '<th style="padding:4px;text-align:center;">Chol</th>' +
+    '<th style="padding:4px;text-align:center;">Trig</th>' +
+    '<th style="padding:4px;text-align:center;">HDL</th>' +
+    '</tr></thead><tbody>';
+  rows.slice(0, 5).forEach(function(r) {
+    html += '<tr>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);">' + esc(r.nama || '-') + '</td>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);">' + esc(r.nik || '-') + '</td>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);">' + esc(r.tgl_lahir || '-') + '</td>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);text-align:center;">' + esc(r.chol || '-') + '</td>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);text-align:center;">' + esc(r.trig || '-') + '</td>' +
+      '<td style="padding:4px;border-bottom:1px solid var(--slate-100);text-align:center;">' + esc(r.hdl || '-') + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  if (rows.length > 5) {
+    html += '<div style="font-size:11px;color:var(--slate-500);margin-top:4px;text-align:center;">...dan ' + (rows.length - 5) + ' baris lagi</div>';
+  }
+  html += '<div class="btn-row" style="margin-top:12px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="' + onConfirm + '()">✅ Tambahkan ' + rows.length + ' Baris</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button>' +
+    '</div>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// --- Helper: tambah rows ke kegiatan aktif ---
+function appendProlanisRows(rows) {
+  if (!window._prolanisDetail || !rows || rows.length === 0) return 0;
   if (!window._prolanisDetail.peserta) window._prolanisDetail.peserta = [];
   var nextNum = parseInt(getNextProlanisNo(window._prolanisDetail).replace(/\D/g, ''), 10);
-  var tambah = 0;
-  lines.forEach(function(line) {
-    var c = line.split('\t');
-    var row = {
-      no: 'P-' + String(nextNum + tambah).padStart(3, '0'),
-      nik: (c[0] || '').trim(),
-      nama: (c[1] || '').trim(),
-      tgl_lahir: (c[2] || '').trim(),
-      alamat: (c[3] || '').trim(),
-      chol: (c[4] || '').trim(),
-      trig: (c[5] || '').trim(),
-      hdl: (c[6] || '').trim(),
-      ldl: (c[7] || '').trim(),
-      creatin: (c[8] || '').trim(),
-      ureum: (c[9] || '').trim(),
-      hba1c: (c[10] || '').trim(),
-      mikro: (c[11] || '').trim()
-    };
-    if (row.nama || row.nik) { window._prolanisDetail.peserta.push(row); tambah++; }
+  var alamatKeg = window._prolanisDetail.alamat || '';
+  var added = 0;
+  rows.forEach(function(r) {
+    window._prolanisDetail.peserta.push({
+      no: 'P-' + String(nextNum + added).padStart(3, '0'),
+      nik: r.nik || '',
+      nama: r.nama || '',
+      tgl_lahir: r.tgl_lahir || '',
+      alamat: r.alamat || alamatKeg,
+      diagnosa: r.diagnosa || '',
+      chol: r.chol || '',
+      trig: r.trig || '',
+      hdl: r.hdl || '',
+      ldl: r.ldl || '',
+      creatin: r.creatin || '',
+      ureum: r.ureum || '',
+      hba1c: r.hba1c || '',
+      mikro: r.mikro || ''
+    });
+    added++;
   });
-  render();
-  toastMsg('✅ ' + tambah + ' baris ditambahkan', 'ok');
+  return added;
 }
-function simpanDetailKegiatan() {
+
+// ===== LEVEL 2: PASTE MODAL =====
+function pasteExcelProlanis() {
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>📋 Paste dari Excel</h3><p>Copy dari Excel/Sheets, paste di kotak bawah</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="info-box info-blue" style="margin-bottom:12px;">' +
+    '<span class="info-em">💡</span>' +
+    '<span>Block sel di Excel (termasuk header kalau ada) → Ctrl+C → paste di bawah. <b>Delimiter auto-detect</b> (TAB/koma/titik-koma). <b>Header auto-detect</b>. Tanggal format apapun akan dikonversi.</span>' +
+    '</div>' +
+    '<textarea id="pasteArea" rows="10" class="inp-ta" placeholder="Klik di sini lalu Ctrl+V..." style="font-family:monospace;font-size:12px;min-height:200px;"></textarea>' +
+    '<div id="pastePreview" style="margin-top:12px;"></div>' +
+    '<div class="btn-row" id="pasteActions">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="prosesPasteProlanis()">🔍 Proses &amp; Preview</button>' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button>' +
+    '</div></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  window._pasteParsedRows = null;
+  setTimeout(function() { var el = document.getElementById('pasteArea'); if (el) el.focus(); }, 100);
+}
+
+function prosesPasteProlanis() {
+  var text = document.getElementById('pasteArea').value;
+  if (!text || !text.trim()) { toastMsg('Belum ada data dipaste', 'err'); return; }
+  var rows = parsePastedText(text);
+  if (rows.length === 0) { toastMsg('Tidak ada baris valid terdeteksi', 'err'); return; }
+  window._pasteParsedRows = rows;
+  renderProlanisPreview('pastePreview', rows, 'konfirmasiPasteProlanis');
+}
+
+function konfirmasiPasteProlanis() {
+  if (!window._pasteParsedRows || window._pasteParsedRows.length === 0) {
+    toastMsg('Tidak ada data', 'err'); return;
+  }
+  var added = appendProlanisRows(window._pasteParsedRows);
+  window._pasteParsedRows = null;
+  closeModal();
+  render();
+  toastMsg('✅ ' + added + ' peserta ditambahkan', 'ok');
+}
+
+// ===== LEVEL 3: UPLOAD FILE =====
+function uploadExcelProlanis() {
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3>📁 Upload File Excel / CSV</h3><p>Pilih file .xlsx, .xls, atau .csv</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    '<div class="info-box info-blue" style="margin-bottom:12px;">' +
+    '<span class="info-em">💡</span>' +
+    '<span>Format kolom: <b>NIK, Nama, TglLahir, Alamat, Chol, Trig, HDL, LDL, Crea, Ureum, HbA1c, Mikro</b>.<br>Header otomatis terdeteksi — kalau tidak ada header, urutan itu yang dipakai.</span>' +
+    '</div>' +
+    '<input type="file" id="fileExcel" accept=".xlsx,.xls,.csv" class="inp" onchange="handleUploadProlanis(this)" style="padding:12px;">' +
+    '<div id="uploadPreview" style="margin-top:12px;"></div>' +
+    '</div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  window._uploadParsedRows = null;
+}
+
+function handleUploadProlanis(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = new Uint8Array(e.target.result);
+      var wb = XLSX.read(data, { type: 'array', cellDates: true });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      matrix = matrix.filter(function(row) { return row.some(function(c) { return String(c).trim() !== ''; }); });
+      if (matrix.length === 0) { toastMsg('File kosong', 'err'); return; }
+      var rows = matrixToProlanisObjects(matrix);
+      if (rows.length === 0) { toastMsg('Tidak ada baris valid', 'err'); return; }
+      window._uploadParsedRows = rows;
+      renderProlanisPreview('uploadPreview', rows, 'konfirmasiUploadProlanis');
+    } catch (err) {
+      toastMsg('Gagal baca file: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function konfirmasiUploadProlanis() {
+  if (!window._uploadParsedRows || window._uploadParsedRows.length === 0) {
+    toastMsg('Tidak ada data', 'err'); return;
+  }
+  var added = appendProlanisRows(window._uploadParsedRows);
+  window._uploadParsedRows = null;
+  closeModal();
+  render();
+  toastMsg('✅ ' + added + ' peserta ditambahkan', 'ok');
+}
+
+// ===== LEVEL 4: DOWNLOAD TEMPLATE =====
+function downloadTemplateProlanis() {
+  if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
+  var header = ['No','Nama','NIK','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro'];
+  var contoh = [
+    [1, 'Budi Santoso', '3512345678900001', '10/02/1996', 'Curah Dami, Jatis', 'DM', '200', '150', '50', '100', '1.0', '30', '5.5', '15'],
+    [2, 'Siti Aminah', '3512345678900002', '15/05/1975', 'Krajan, Jatis', 'HT', '180', '120', '45', '90', '0.9', '28', '', '12']
+  ];
+  var aoa = [header].concat(contoh);
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [
+    { wch: 5 }, { wch: 24 }, { wch: 18 }, { wch: 12 }, { wch: 26 },
+    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
+    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }
+  ];
+  var headerStyle = {
+    font: { bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '1E40AF' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: {
+      top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+      right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+    }
+  };
+  for (var c = 0; c < header.length; c++) {
+    var addr = XLSX.utils.encode_cell({ r: 0, c: c });
+    if (ws[addr]) ws[addr].s = headerStyle;
+  }
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
+  XLSX.writeFile(wb, 'Template_Prolanis.xlsx');
+  toastMsg('📥 Template ter-download — isi lalu upload balik', 'ok');
+}function simpanDetailKegiatan() {
   if (!window._prolanisDetail) return;
   var k = window._prolanisDetail;
   // Update list
