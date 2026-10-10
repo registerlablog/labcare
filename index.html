@@ -1977,7 +1977,28 @@ function cetakHasil(id) {
     '<div style="width: 100%; overflow: hidden; margin-bottom: 2px;"><div style="float: left; width: 15%;">Alamat</div><div style="float: left; width: 45%;">: ' + esc(p.alamat || '-') + '</div><div style="float: left; width: 20%;">Pengirim</div><div style="float: left; width: 20%;">: ' + esc(p.pengirim || '-') + '</div><div style="clear: both;"></div></div></div>' +
     (totalTes > 25 ? '' : '<div style="width: 100%; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 6px; font-weight: bold; font-size: 12px; color:#000; overflow: hidden;"><div style="float: left; width: 45%; text-align: left;">PEMERIKSAAN LABORATORIUM</div><div style="float: left; width: 15%; text-align: center;">HASIL</div><div style="float: left; width: 40%; text-align: left; padding-left: 10px; box-sizing: border-box;">NILAI RUJUKAN</div><div style="clear: both;"></div></div>') +
     '<div style="width: 100%; overflow: hidden;">' + rowsHtml + '</div></div>';
-  var ttdHtml = '<table style="width:100%; border-collapse:collapse; font-size:12px; color:#000;"><tr><td style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</td><td style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</td></tr><tr><td style="height:80px; padding:0 12px; position:relative;">' + (ttdAnalisHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdAnalisHtml + '</div>' : '') + '</td><td style="height:80px; padding:0 12px; position:relative;">' + (ttdDokterHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokterHtml + '</div>' : '') + (stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '') + '</td></tr><tr><td style="text-align:center; padding:0 12px; font-weight:bold;">' + esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') + '</td><td style="text-align:center; padding:0 12px; font-weight:bold;">' + esc(p.dokter || 'dr. Arief Sudibyo') + '</td></tr><tr><td style="text-align:center; padding:0 12px;">' + esc(analisData && analisData.kode ? analisData.kode : 'NIP. -') + '</td><td style="text-align:center; padding:0 12px;">' + esc(dokterData && dokterData.kode ? dokterData.kode : 'NIP. -') + '</td></tr></table>';
+ var ttdHtml =
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdAnalisHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdAnalisHtml + '</div>' : '') +
+      '</div>' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdDokterHtml ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokterHtml + '</div>' : '') +
+        (stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '') +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(p.analis || 'Linda Hardiyanti Putri, A.Md.Kes') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(p.dokter || 'dr. Arief Sudibyo') + '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(analisData && analisData.kode ? analisData.kode : 'NIP. -') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData && dokterData.kode ? dokterData.kode : 'NIP. -') + '</div>' +
+    '</div>';
   showPrintPreview(html, 'Hasil Lab — ' + p.nama, { footerHtml: ttdHtml });
 }
 function cetakLaporan() {
