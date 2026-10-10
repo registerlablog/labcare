@@ -711,6 +711,7 @@ function renderPesertaList() {
 function bukaForm(id) {
   currentPatient = patients.find(function(p) { return p.id === id; });
   if (!currentPatient) return;
+  currentPatient._originalHasil = JSON.parse(JSON.stringify(currentPatient.hasil || {}));
   document.getElementById('listPage').className = 'list-page hidden';
   document.getElementById('formPage').className = 'form-page active';
   document.getElementById('formNama').textContent = currentPatient.nama || '-';
@@ -723,6 +724,10 @@ function bukaForm(id) {
 function bukaFormPeserta(id) {
   currentPeserta = prolanisPeserta.find(function(p) { return String(p.id) === String(id); });
   if (!currentPeserta) return;
+  currentPeserta._originalData = {};
+  PROLANIS_TESTS.forEach(function(t) {
+  currentPeserta._originalData[t.kode] = currentPeserta[t.kode] || '';
+});
   currentPatient = null;
   document.getElementById('listPage').className = 'list-page hidden';
   document.getElementById('formPage').className = 'form-page active';
@@ -867,13 +872,20 @@ function hitungKalibrasi(kode) {
 async function simpanHasilForm() {
   if (!currentPatient) return;
   var p = currentPatient;
-  if (!p.hasil) p.hasil = {};
-  (p.tests || []).forEach(function(kode) {
-    var el = document.getElementById('h_' + kode);
-    if (el && el.value.trim()) p.hasil[kode] = el.value.trim();
-    else delete p.hasil[kode];
-  });
-  var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
+if (!p.hasil) p.hasil = {};
+var orig = p._originalHasil || {};
+var forceDelete = [];
+(p.tests || []).forEach(function(kode) {
+  var el = document.getElementById('h_' + kode);
+  var v = el ? el.value.trim() : '';
+  if (v) {
+    p.hasil[kode] = v;
+  } else {
+    delete p.hasil[kode];
+    if (orig[kode]) forceDelete.push(kode);
+  }
+});
+p._forceDelete = forceDelete;  var filled = (p.tests || []).filter(function(k) { return p.hasil[k]; }).length;
   if (filled === (p.tests || []).length && p.tests.length > 0) p.status = 'selesai';
   else if (filled > 0) p.status = 'proses';
   else p.status = 'menunggu';
@@ -894,13 +906,21 @@ async function simpanHasilForm() {
 async function simpanPesertaForm() {
   if (!currentPeserta) return;
   var p = currentPeserta;
-  var filled = 0;
-  PROLANIS_TESTS.forEach(function(t) {
-    var el = document.getElementById('pt_' + t.kode);
-    var v = el ? el.value.trim() : '';
-    if (v) { p[t.kode] = v; filled++; }
-    else p[t.kode] = '';
-  });
+  var orig = p._originalData || {};
+var forceDelete = [];
+var filled = 0;
+PROLANIS_TESTS.forEach(function(t) {
+  var el = document.getElementById('pt_' + t.kode);
+  var v = el ? el.value.trim() : '';
+  if (v) {
+    p[t.kode] = v;
+    filled++;
+  } else {
+    p[t.kode] = '';
+    if (orig[t.kode]) forceDelete.push(t.kode);
+  }
+});
+p._forceDelete = forceDelete;
   if (filled === PROLANIS_TESTS.length) p.status = 'selesai';
   else if (filled > 0) p.status = 'proses';
   else p.status = 'menunggu';
