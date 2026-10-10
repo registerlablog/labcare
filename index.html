@@ -1520,25 +1520,28 @@ function buildProlanisPrintPage(keg, peserta) {
 
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
 
-  var footer = '<table style="width:100%; border-collapse:collapse; font-size:12px; color:#000;">' +
-    '<tr>' +
-    '<td style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</td>' +
-    '<td style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td style="height:80px; padding:0 12px; position:relative;">' + (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') + '</td>' +
-    '<td style="height:80px; padding:0 12px; position:relative;">' + (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') + stempelHtml + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td style="text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</td>' +
-    '<td style="text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</td>' +
-    '</tr>' +
-    '<tr>' +
-    '<td style="text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</td>' +
-    '<td style="text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</td>' +
-    '</tr>' +
-    '</table>';
-
+  var footer =
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') +
+      '</div>' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') +
+        stempelHtml +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</div>' +
+    '</div>';
   return { content: content, footer: footer };
 }
 function showMultiPagePrint(pages, title) {
