@@ -1266,9 +1266,7 @@ function uploadExcelProlanis() {
 function handleUploadProlanis(input) {
   var file = input.files && input.files[0];
   if (!file) return;
-  input.value = '';
   if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
-  ...
   var reader = new FileReader();
   reader.onload = function(e) {
     try {
