@@ -877,7 +877,6 @@ function buildProlanisRowsHtml() {
     }).join('');
     return '<tr>' +
       '<td style="text-align:center;"><input class="inp" readonly style="padding:6px 8px;font-size:12px;width:80px;text-align:center;font-weight:700;color:var(--primary);background:var(--slate-100);cursor:not-allowed;" value="' + esc(p.no || '') + '"></td>' +
-      '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:150px;" value="' + esc(p.nik || '') + '" oninput="updatePesertaField(' + idx + ',\'nik\',this.value)"></td>' +
       '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:180px;" value="' + esc(p.nama || '') + '" oninput="updatePesertaField(' + idx + ',\'nama\',this.value)"></td>' +
       '<td><input class="inp" type="date" style="padding:6px 8px;font-size:12px;width:130px;" value="' + esc((p.tgl_lahir || '').slice(0,10)) + '" oninput="updatePesertaField(' + idx + ',\'tgl_lahir\',this.value)"></td>' +
       '<td><select class="inp-sel" style="padding:6px 8px;font-size:12px;width:100px;" onchange="updatePesertaField(' + idx + ',\'diagnosa\',this.value)"><option value="">-</option><option value="DM"' + (p.diagnosa === 'DM' ? ' selected' : '') + '>DM</option><option value="HT"' + (p.diagnosa === 'HT' ? ' selected' : '') + '>HT</option></select></td>' +
@@ -896,7 +895,7 @@ function renderProlanisTbody() {
   var result = buildProlanisRowsHtml();
   var tbody = document.getElementById('prolanisTbody');
   if (tbody) {
-    tbody.innerHTML = result.rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada peserta yang cocok.</td></tr>';
+    tbody.innerHTML = result.rowsHtml || '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada peserta yang cocok.</td></tr>';
   }
   var count = document.getElementById('prolanisCount');
   if (count) count.textContent = result.count + ' dari ' + result.total + ' peserta';
@@ -944,8 +943,8 @@ function viewDetailKegiatan() {
     '<span id="prolanisCount" style="font-size:13px;color:var(--slate-500);font-weight:600;">' + result.count + ' dari ' + result.total + ' peserta</span>' +
     '</div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
-    '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
-    '<tbody id="prolanisTbody">' + (result.rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody>' +
+    '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>Nama</th><th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
+    '<tbody id="prolanisTbody">' + (result.rowsHtml || '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody>' +
     '</table></div>';
 }
   function modalKegiatanProlanis(id) {
