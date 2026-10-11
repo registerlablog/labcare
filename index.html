@@ -739,7 +739,43 @@ function simpanKalibrasiHariIni() {
 }
   function viewKegiatanProlanis() {
   var list = window._prolanisList || [];
-  var cards = list.map(function(k) {
+  var search = (window._kegiatanSearch || '').toLowerCase();
+  var filter = window._kegiatanFilter || 'semua';
+  
+  // Filter
+  var filtered = list.filter(function(k) {
+    // Filter status
+    if (filter !== 'semua') {
+      var pesertaKeg = k.peserta || [];
+      var total = pesertaKeg.length;
+      if (total === 0) {
+        if (filter === 'belum') return true;
+        if (filter === 'proses' || filter === 'selesai') return false;
+      } else {
+        var allCols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+        var totalSelesai = pesertaKeg.filter(function(p) {
+          var d = String(p.diagnosa || '').toUpperCase();
+          var colsP = (d === 'HT') ? allCols.filter(function(c) { return c !== 'hba1c'; }) : allCols;
+          var filled = colsP.filter(function(c) { return p[c]; }).length;
+          return filled === colsP.length && colsP.length > 0;
+        }).length;
+        if (filter === 'belum') return totalSelesai === 0;
+        if (filter === 'proses') return totalSelesai > 0 && totalSelesai < total;
+        if (filter === 'selesai') return totalSelesai === total;
+      }
+    }
+    // Search
+    if (search) {
+      return (k.nama_kegiatan || '').toLowerCase().indexOf(search) >= 0 ||
+             (k.pengirim || '').toLowerCase().indexOf(search) >= 0 ||
+             (k.alamat || '').toLowerCase().indexOf(search) >= 0 ||
+             (k.petugas || '').toLowerCase().indexOf(search) >= 0 ||
+             String(k.tanggal || '').indexOf(search) >= 0;
+    }
+    return true;
+  });
+  
+  var cards = filtered.map(function(k) {
     var jumlah = ((k.peserta || []).length || k.peserta_count || 0);
     return '<div class="patient-card" style="cursor:pointer;margin-bottom:14px;" onclick="bukaKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
@@ -759,15 +795,46 @@ function simpanKalibrasiHariIni() {
       '</div>' +
       '</div>';
   }).join('');
+  
   if (list.length === 0) {
     cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p><p style="margin-top:8px;">Klik "➕ Buat Kegiatan" untuk mulai.</p></div>';
+  } else if (filtered.length === 0) {
+    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">🔍</span><p>Tidak ada kegiatan yang cocok dengan filter/pencarian.</p></div>';
   }
+  
+  var totalSemua = list.length;
+  var totalTampil = filtered.length;
+  
   return '<div class="page-header-flex"><div><h2>📋 Kegiatan Prolanis</h2><p>Kelola kegiatan pemeriksaan Prolanis</p></div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
     '<button class="btn btn-primary" onclick="modalKegiatanProlanis()">➕ Buat Kegiatan</button>' +
     '<button class="btn btn-secondary" onclick="syncAllFromServer(false)">🔄 Refresh</button>' +
     '</div></div>' +
+    
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">' +
+    '<input type="text" id="kegiatanSearchInput" placeholder="🔍 Cari nama kegiatan / pengirim / petugas / tanggal..." value="' + esc(window._kegiatanSearch || '') + '" oninput="onSearchKegiatan(this.value)" style="flex:1;min-width:250px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
+    '<select onchange="onFilterKegiatan(this.value)" style="padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;">' +
+    '<option value="semua"' + (filter === 'semua' ? ' selected' : '') + '>📋 Semua</option>' +
+    '<option value="belum"' + (filter === 'belum' ? ' selected' : '') + '>⏳ Belum Selesai</option>' +
+    '<option value="proses"' + (filter === 'proses' ? ' selected' : '') + '>✏️ Sedang Proses</option>' +
+    '<option value="selesai"' + (filter === 'selesai' ? ' selected' : '') + '>✅ Selesai Semua</option>' +
+    '</select>' +
+    '<span style="font-size:13px;color:var(--slate-500);font-weight:600;">' + totalTampil + ' dari ' + totalSemua + ' kegiatan</span>' +
+    '</div>' +
+    
     '<div class="patient-grid">' + cards + '</div>';
+}
+
+function onSearchKegiatan(val) {
+  window._kegiatanSearch = val;
+  document.getElementById('app').innerHTML = viewKegiatanProlanis();
+  var input = document.getElementById('kegiatanSearchInput');
+  if (input) { input.focus(); input.setSelectionRange(val.length, val.length); }
+}
+
+function onFilterKegiatan(val) {
+  window._kegiatanFilter = val;
+  document.getElementById('app').innerHTML = viewKegiatanProlanis();
 }
     /* ===== SEARCH & FILTER PESERTA PROLANIS ===== */
 function buildProlanisRowsHtml() {
