@@ -1297,20 +1297,29 @@ function konfirmasiUploadProlanis() {
   toastMsg('✅ ' + added + ' peserta ditambahkan', 'ok');
 }
 
-// ===== LEVEL 4: DOWNLOAD TEMPLATE =====
 function downloadTemplateProlanis() {
   if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
-  var header = ['No','Nama','NIK','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro'];
+  var header = ['No','Nama','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro'];
   var contoh = [
-    [1, 'Budi Santoso', '3512345678900001', '10/02/1996', 'Curah Dami, Jatis', 'DM', '200', '150', '50', '100', '1.0', '30', '5.5', '15'],
-    [2, 'Siti Aminah', '3512345678900002', '15/05/1975', 'Krajan, Jatis', 'HT', '180', '120', '45', '90', '0.9', '28', '', '12']
+    [1, 'Budi Santoso', '10/02/1996', 'Curah Dami, Jatis', 'DM', '200', '150', '50', '100', '1.0', '30', '5.5', '15'],
+    [2, 'Siti Aminah', '15/05/1975', 'Krajan, Jatis', 'HT', '180', '120', '45', '90', '0.9', '28', '', '12']
   ];
   var aoa = [header].concat(contoh);
   var ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [
-    { wch: 5 }, { wch: 24 }, { wch: 18 }, { wch: 12 }, { wch: 26 },
-    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
-    { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 }
+    { wch: 5 },   // No
+    { wch: 24 },  // Nama
+    { wch: 12 },  // Tgl Lahir
+    { wch: 26 },  // Alamat
+    { wch: 10 },  // Diagnosa
+    { wch: 8 },   // Chol
+    { wch: 8 },   // Trig
+    { wch: 8 },   // HDL
+    { wch: 8 },   // LDL
+    { wch: 10 },  // Creatinin
+    { wch: 8 },   // Ureum
+    { wch: 8 },   // HbA1c
+    { wch: 8 }    // Mikro
   ];
   var headerStyle = {
     font: { bold: true, color: { rgb: 'FFFFFF' } },
@@ -1331,7 +1340,8 @@ function downloadTemplateProlanis() {
   XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
   XLSX.writeFile(wb, 'Template_Prolanis.xlsx');
   toastMsg('📥 Template ter-download — isi lalu upload balik', 'ok');
-}function simpanDetailKegiatan() {
+}
+function simpanDetailKegiatan() {
   if (!window._prolanisDetail) return;
   var k = window._prolanisDetail;
   // Update list
