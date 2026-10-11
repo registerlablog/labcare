@@ -1265,7 +1265,9 @@ function uploadExcelProlanis() {
 
 function handleUploadProlanis(input) {
   var file = input.files && input.files[0];
-  if (!file) return;
+if (!file) return;
+var _savedFile = file;
+input.value = '';
   if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
   var reader = new FileReader();
   reader.onload = function(e) {
@@ -1284,7 +1286,7 @@ function handleUploadProlanis(input) {
       toastMsg('Gagal baca file: ' + err.message, 'err');
     }
   };
-  reader.readAsArrayBuffer(file);
+  reader.readAsArrayBuffer(_savedFile);
 }
 
 function konfirmasiUploadProlanis() {
