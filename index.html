@@ -290,6 +290,8 @@ window._editPickSearch = '';
 window._prolanisList = window._prolanisList || [];
 window._prolanisDetail = window._prolanisDetail || null;
 window._prolanisMode = window._prolanisMode || 'list';
+window._prolanisFilter = window._prolanisFilter || 'semua';
+window._prolanisSearch = window._prolanisSearch || '';
 window._hasilTab = window._hasilTab || 'umum';
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -767,13 +769,42 @@ function simpanKalibrasiHariIni() {
     '</div></div>' +
     '<div class="patient-grid">' + cards + '</div>';
 }
-  function viewDetailKegiatan() {
+    /* ===== SEARCH & FILTER PESERTA PROLANIS ===== */
+function buildProlanisRowsHtml() {
   var k = window._prolanisDetail;
-  if (!k) { view = 'prolanis'; return viewKegiatanProlanis(); }
-  var pesertaList = (k.peserta || []);
+  if (!k) return { rowsHtml: '', count: 0, total: 0 };
+  var pesertaList = k.peserta || [];
+  var filter = window._prolanisFilter || 'semua';
+  var search = (window._prolanisSearch || '').toLowerCase();
+  
+  var indexed = pesertaList.map(function(p, i) { return { idx: i, p: p }; });
+  var allCols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  
+  if (filter !== 'semua') {
+    indexed = indexed.filter(function(x) {
+      var d = String(x.p.diagnosa || '').toUpperCase();
+      var colsP = (d === 'HT') ? allCols.filter(function(c) { return c !== 'hba1c'; }) : allCols;
+      var filled = colsP.filter(function(c) { return x.p[c]; }).length;
+      if (filter === 'belum') return filled === 0;
+      if (filter === 'proses') return filled > 0 && filled < colsP.length;
+      if (filter === 'selesai') return filled === colsP.length && colsP.length > 0;
+      return true;
+    });
+  }
+  
+  if (search) {
+    indexed = indexed.filter(function(x) {
+      return (x.p.nama || '').toLowerCase().indexOf(search) >= 0 ||
+             (x.p.nik || '').toLowerCase().indexOf(search) >= 0 ||
+             (x.p.no || '').toLowerCase().indexOf(search) >= 0;
+    });
+  }
+  
   var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
-  var colLabel = { chol:'CHOL', trig:'TRIG', hdl:'HDL', ldl:'LDL', creatin:'CREA', ureum:'UREA', hba1c:'HbA1c', mikro:'MIKRO' };
-  var rowsHtml = pesertaList.map(function(p, idx) {
+  
+  var rowsHtml = indexed.map(function(item) {
+    var p = item.p;
+    var idx = item.idx;
     var inputs = cols.map(function(c) {
       return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(p[c] || '') + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
     }).join('');
@@ -785,28 +816,67 @@ function simpanKalibrasiHariIni() {
       '<td><select class="inp-sel" style="padding:6px 8px;font-size:12px;width:100px;" onchange="updatePesertaField(' + idx + ',\'diagnosa\',this.value)"><option value="">-</option><option value="DM"' + (p.diagnosa === 'DM' ? ' selected' : '') + '>DM</option><option value="HT"' + (p.diagnosa === 'HT' ? ' selected' : '') + '>HT</option></select></td>' +
       inputs +
       '<td style="text-align:center;white-space:nowrap;">' +
-'<button class="btn-icon" onclick="cetakProlanisPeserta(\'' + esc(k.id_kegiatan) + '\',' + idx + ')" title="Cetak PDF" style="background:#dbeafe;color:#1d4ed8;">🖨️</button> ' +
-'<button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus">🗑️</button>' +
-'</td>' +
+      '<button class="btn-icon" onclick="cetakProlanisPeserta(\'' + esc(k.id_kegiatan) + '\',' + idx + ')" title="Cetak PDF" style="background:#dbeafe;color:#1d4ed8;">🖨️</button> ' +
+      '<button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus">🗑️</button>' +
+      '</td>' +
       '</tr>';
   }).join('');
+  
+  return { rowsHtml: rowsHtml, count: indexed.length, total: pesertaList.length };
+}
+
+function renderProlanisTbody() {
+  var result = buildProlanisRowsHtml();
+  var tbody = document.getElementById('prolanisTbody');
+  if (tbody) {
+    tbody.innerHTML = result.rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Tidak ada peserta yang cocok.</td></tr>';
+  }
+  var count = document.getElementById('prolanisCount');
+  if (count) count.textContent = result.count + ' dari ' + result.total + ' peserta';
+}
+
+function onSearchProlanis(val) {
+  window._prolanisSearch = val;
+  renderProlanisTbody();
+}
+
+function onFilterProlanis(val) {
+  window._prolanisFilter = val;
+  renderProlanisTbody();
+}
+function viewDetailKegiatan() {
+  var k = window._prolanisDetail;
+  if (!k) { view = 'prolanis'; return viewKegiatanProlanis(); }
+  var pesertaList = (k.peserta || []);
+  var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  var colLabel = { chol:'CHOL', trig:'TRIG', hdl:'HDL', ldl:'LDL', creatin:'CREA', ureum:'UREA', hba1c:'HbA1c', mikro:'MIKRO' };
   var headerCols = cols.map(function(c) { return '<th style="text-align:center;">' + colLabel[c] + '</th>'; }).join('');
+  var result = buildProlanisRowsHtml();
+  
   return '<div class="page-header-flex"><div>' +
-    '<button class="btn btn-secondary btn-sm" onclick="window._prolanisDetail=null;view=\'prolanis\';render();" style="margin-bottom:8px;">← Kembali</button>' +
+    '<button class="btn btn-secondary btn-sm" onclick="window._prolanisDetail=null;window._prolanisFilter=\'semua\';window._prolanisSearch=\'\';view=\'prolanis\';render();" style="margin-bottom:8px;">← Kembali</button>' +
     '<h2 style="margin-top:8px;">📋 ' + esc(k.nama_kegiatan || '-') + '</h2>' +
     '<p>' + esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah</button>' +
-    '<button class="btn btn-secondary" onclick="uploadExcelProlanis()">📁 Upload Excel</button>' +
-    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📋 Paste Excel</button>' +
-    '<button class="btn btn-secondary" onclick="downloadTemplateProlanis()">📥 Template</button>' +
+    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah Baris</button>' +
+    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📥 Paste Excel</button>' +
     '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
     '</div></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">' +
+    '<input type="text" id="prolanisSearchInput" placeholder="🔍 Cari nama / NIK / no..." value="' + esc(window._prolanisSearch || '') + '" oninput="onSearchProlanis(this.value)" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
+    '<select onchange="onFilterProlanis(this.value)" style="padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;">' +
+    '<option value="semua"' + (window._prolanisFilter === 'semua' ? ' selected' : '') + '>📋 Semua</option>' +
+    '<option value="belum"' + (window._prolanisFilter === 'belum' ? ' selected' : '') + '>⏳ Belum Diisi</option>' +
+    '<option value="proses"' + (window._prolanisFilter === 'proses' ? ' selected' : '') + '>✏️ Proses</option>' +
+    '<option value="selesai"' + (window._prolanisFilter === 'selesai' ? ' selected' : '') + '>✅ Selesai</option>' +
+    '</select>' +
+    '<span id="prolanisCount" style="font-size:13px;color:var(--slate-500);font-weight:600;">' + result.count + ' dari ' + result.total + ' peserta</span>' +
+    '</div>' +
     '<div class="table-wrap"><table style="min-width:1400px;">' +
     '<thead><tr><th style="width:100px;text-align:center;">No. Sample</th><th>NIK</th><th>Nama</th><th>Tgl Lahir</th><th>Diagnosa</th>' + headerCols + '<th style="text-align:center;">Aksi</th></tr></thead>' +
-    '<tbody>' + (rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta. Klik "➕ Tambah Baris" atau "📥 Paste Excel".</td></tr>') + '</tbody>' +
+    '<tbody id="prolanisTbody">' + (result.rowsHtml || '<tr><td colspan="14" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody>' +
     '</table></div>';
 }
   function modalKegiatanProlanis(id) {
