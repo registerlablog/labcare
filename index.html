@@ -1090,8 +1090,9 @@ function matrixToProlanisObjects(matrix) {
   var dataRows;
   if (headerFound) {
     firstRow.forEach(function(h, i) {
-      var hl = h;
-      if (hl.indexOf('nik') >= 0) idxMap.nik = i;
+    var hl = h;
+      if (hl === 'no' || hl.indexOf('nomor') >= 0) idxMap.no = i;
+      else if (hl.indexOf('nik') >= 0) idxMap.nik = i;
       else if (hl === 'nama' || hl.indexOf('nama ') === 0) idxMap.nama = i;
       else if (hl.indexOf('lahir') >= 0 || hl === 'tgl' || hl === 'tanggal lahir') idxMap.tgl_lahir = i;
       else if (hl.indexOf('alamat') >= 0) idxMap.alamat = i;
@@ -1121,7 +1122,7 @@ function matrixToProlanisObjects(matrix) {
       if (k === 'tgl_lahir') v = normalizeDate(v);
       obj[k] = v;
     });
-    if (obj.nama || obj.nik) result.push(obj);
+    if (obj.nama || obj.nik || obj.no) result.push(obj);
   });
   return result;
 }
@@ -1252,7 +1253,7 @@ function uploadExcelProlanis() {
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="info-box info-blue" style="margin-bottom:12px;">' +
     '<span class="info-em">💡</span>' +
-    '<span>Format kolom: <b>NIK, Nama, TglLahir, Alamat, Chol, Trig, HDL, LDL, Crea, Ureum, HbA1c, Mikro</b>.<br>Header otomatis terdeteksi — kalau tidak ada header, urutan itu yang dipakai.</span>' +
+    '<span>Format kolom: <b>No, Nama, Tgl Lahir, Alamat, Diagnosa, Chol, Trig, HDL, LDL, Crea, Ureum, HbA1c, Mikro</b>.<br>Header otomatis terdeteksi. Baris dengan No terisi akan di-import meskipun Nama kosong.</span>' +
     '</div>' +
     '<input type="file" id="fileExcel" accept=".xlsx,.xls,.csv" class="inp" onchange="handleUploadProlanis(this)" style="padding:12px;">' +
     '<div id="uploadPreview" style="margin-top:12px;"></div>' +
