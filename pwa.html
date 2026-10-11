@@ -893,13 +893,30 @@ p._forceDelete = forceDelete;  var filled = (p.tests || []).filter(function(k) {
   var idx = patients.findIndex(function(x) { return x.id === p.id; });
   if (idx >= 0) patients[idx] = p;
   saveLocal();
+showLoading(true);
+var r = await apiCall('savePasien', p);
+showLoading(false);
 
+// Cek konflik
+if (r && !r.ok && r.conflict) {
+  var msg = '⚠️ Nilai berikut sudah diubah orang lain:\n\n';
+  Object.keys(r.conflict).forEach(function(k) {
+    var t = findTest(k) || { nama: k };
+    msg += '• ' + t.nama + ': server=' + r.conflict[k].server + ', kamu=' + r.conflict[k].client + '\n';
+  });
+  msg += '\nTetap timpa dengan nilai kamu?';
+  if (!confirm(msg)) {
+    await loadFromServer(true);
+    return;
+  }
+  p._forceOverwrite = true;
   showLoading(true);
-  var r = await apiCall('savePasien', p);
+  r = await apiCall('savePasien', p);
   showLoading(false);
+}
 
-  if (SYNC_ENABLED && (!r || !r.ok)) toastMsg('💾 Tersimpan lokal, sinkron nanti');
-  else toastMsg('✅ Hasil tersimpan', 'ok');
+if (SYNC_ENABLED && (!r || !r.ok)) toastMsg('💾 Tersimpan lokal, sinkron nanti');
+else toastMsg('✅ Hasil tersimpan', 'ok');
   setTimeout(function() { tutupForm(); }, 600);
 }
 
@@ -931,11 +948,28 @@ p._forceDelete = forceDelete;
   saveLocal();
 
   showLoading(true);
-  var r = await apiCall('saveProlanisPeserta', p);
-  showLoading(false);
+var r = await apiCall('saveProlanisPeserta', p);
+showLoading(false);
 
-  if (SYNC_ENABLED && (!r || !r.ok)) toastMsg('💾 Tersimpan lokal, sinkron nanti');
-  else toastMsg('✅ Hasil peserta tersimpan', 'ok');
+// Cek konflik
+if (r && !r.ok && r.conflict) {
+  var msg = '⚠️ Nilai berikut sudah diubah orang lain:\n\n';
+  Object.keys(r.conflict).forEach(function(k) {
+    msg += '• ' + k.toUpperCase() + ': server=' + r.conflict[k].server + ', kamu=' + r.conflict[k].client + '\n';
+  });
+  msg += '\nTetap timpa dengan nilai kamu?';
+  if (!confirm(msg)) {
+    await loadFromServer(true);
+    return;
+  }
+  p._forceOverwrite = true;
+  showLoading(true);
+  r = await apiCall('saveProlanisPeserta', p);
+  showLoading(false);
+}
+
+if (SYNC_ENABLED && (!r || !r.ok)) toastMsg('💾 Tersimpan lokal, sinkron nanti');
+else toastMsg('✅ Hasil peserta tersimpan', 'ok');
   setTimeout(function() { tutupForm(); }, 600);
 }
 
