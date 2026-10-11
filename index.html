@@ -860,10 +860,12 @@ function viewDetailKegiatan() {
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah Baris</button>' +
-    '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📥 Paste Excel</button>' +
-    '<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
-    '</div></div>' +
+'<button class="btn btn-primary" onclick="tambahPesertaProlanis()">➕ Tambah</button>' +
+'<button class="btn btn-secondary" onclick="uploadExcelProlanis()">📁 Upload Excel</button>' +
+'<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📋 Paste Excel</button>' +
+'<button class="btn btn-secondary" onclick="downloadTemplateProlanis()">📥 Template</button>' +
+'<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
+'</div></div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">' +
     '<input type="text" id="prolanisSearchInput" placeholder="🔍 Cari nama / NIK / no..." value="' + esc(window._prolanisSearch || '') + '" oninput="onSearchProlanis(this.value)" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
     '<select onchange="onFilterProlanis(this.value)" style="padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;">' +
