@@ -1343,9 +1343,7 @@ function downloadTemplateProlanis() {
   XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
   var _keg = window._prolanisDetail;
   var _namaKeg = (_keg && _keg.nama_kegiatan) ? _keg.nama_kegiatan : 'Prolanis';
-  var _namaSafe = _namaKeg.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  var _tglSafe = (_keg && _keg.tanggal) ? String(_keg.tanggal).replace(/[^0-9]/g, '-') : '';
-  var _namaFile = 'Template_' + _namaSafe + (_tglSafe ? '_' + _tglSafe : '') + '.xlsx';
+  var _namaFile = 'Template ' + _namaKeg.replace(/[\\\/:*?"<>|]/g, '') + '.xlsx';
   XLSX.writeFile(wb, _namaFile);
   toastMsg('📥 Template ter-download — isi lalu upload balik', 'ok');
 }
