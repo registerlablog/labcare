@@ -1083,6 +1083,13 @@ function matrixToProlanisObjects(matrix) {
   if (!matrix || matrix.length === 0) return [];
   var headerKeywords = ['nik','nama','tgl','lahir','alamat','chol','kolesterol','hdl','ldl'];
   var firstRow = matrix[0].map(function(c) { return String(c).toLowerCase().trim(); });
+  // --- VALIDASI HEADER KETAT ---
+var firstRowStr = firstRow.join('|');
+if (firstRowStr.indexOf('nama') === -1 || firstRowStr.indexOf('chol') === -1) {
+  toastMsg('❌ Format Excel tidak sesuai template. Pastikan ada kolom Nama & Chol.', 'err');
+  return [];
+}
+// ------------------------------
   var headerFound = headerKeywords.some(function(k) {
     return firstRow.some(function(c) { return c.indexOf(k) >= 0; });
   });
