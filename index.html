@@ -1656,12 +1656,11 @@ var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-h
     '<div style="clear:both;"></div></div>' +
     '</div>';
 
-  var headerTabel = '<div style="width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000; overflow:hidden;">' +
-    '<div style="float:left; width:40%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
-    '<div style="float:left; width:20%; text-align:center;">HASIL</div>' +
-    '<div style="float:left; width:40%; text-align:left; padding-left:10px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
-    '<div style="clear:both;"></div></div>';
-
+  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000;">' +
+    '<div style="width:45%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
+    '<div style="width:10%; text-align:center;">HASIL</div>' +
+    '<div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
+    '</div>';
   var grup = {};
   var urutanKategori = [];
   cols.forEach(function(c) {
@@ -1677,11 +1676,11 @@ var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-h
       var val = peserta[c.key];
       if (val === undefined || val === null || val === '') val = '-';
       var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-      rowsHtml += '<div style="width:100%; margin-bottom:3px; overflow:hidden;">' +
-        '<div style="float:left; width:40%; font-size:13px; color:#000; padding-right:10px; box-sizing:border-box; text-align:left;">' + esc(c.label) + '</div>' +
-        '<div style="float:left; width:20%; text-align:center; font-size:13px; color:#000;">' + esc(val) + '</div>' +
-        '<div style="float:left; width:40%; font-size:13px; color:#000; padding-left:10px; box-sizing:border-box; text-align:left;">' + esc(rujukanLengkap) + '</div>' +
-        '<div style="clear:both;"></div></div>';
+      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; color:#000;">' +
+    '<div style="width:45%; text-align:left; padding-right:15px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
+    '<div style="width:10%; text-align:center;">' + esc(val) + '</div>' +
+    '<div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
+    '</div>';
     });
   });
 
