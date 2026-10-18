@@ -1300,21 +1300,72 @@ function konfirmasiUploadProlanis() {
   if (!window._uploadParsedRows || window._uploadParsedRows.length === 0) {
     toastMsg('Tidak ada data', 'err'); return;
   }
-  var added = appendProlanisRows(window._uploadParsedRows);
+  
+  // Munculkan konfirmasi sebelum menimpa data
+  if (!confirm('⚠️ Data peserta di layar akan DIGANTI dengan data dari Excel ini. Lanjutkan?')) return;
+
+  var rows = window._uploadParsedRows;
+  var newList = [];
+  
+  // Susun ulang data dari Excel ke format aplikasi
+  rows.forEach(function(r, i) {
+    newList.push({
+      no: 'P-' + String(i + 1).padStart(3, '0'),
+      nik: r.nik || '',
+      nama: r.nama || '',
+      tgl_lahir: r.tgl_lahir || '',
+      alamat: r.alamat || (window._prolanisDetail ? window._prolanisDetail.alamat : ''),
+      diagnosa: r.diagnosa || '',
+      chol: r.chol || '',
+      trig: r.trig || '',
+      hdl: r.hdl || '',
+      ldl: r.ldl || '',
+      creatin: r.creatin || '',
+      ureum: r.ureum || '',
+      hba1c: r.hba1c || '',
+      mikro: r.mikro || ''
+    });
+  });
+
+  // Timpa daftar peserta yang lama dengan data yang baru
+  window._prolanisDetail.peserta = newList;
+  
   window._uploadParsedRows = null;
   closeModal();
   render();
-  toastMsg('✅ ' + added + ' peserta ditambahkan', 'ok');
+  toastMsg('✅ ' + newList.length + ' peserta berhasil diperbarui', 'ok');
 }
-
 function downloadTemplateProlanis() {
   if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
   var header = ['No','Nama','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro'];
-  var contoh = [
+  var dataPeserta = [];
+// Jika sedang buka kegiatan dan ada pesertanya, ambil data asli
+if (window._prolanisDetail && window._prolanisDetail.peserta && window._prolanisDetail.peserta.length > 0) {
+  window._prolanisDetail.peserta.forEach(function(p, i) {
+    dataPeserta.push([
+      i + 1, 
+      p.nama || '', 
+      p.tgl_lahir || '', 
+      p.alamat || '', 
+      p.diagnosa || '', 
+      p.chol || '', 
+      p.trig || '', 
+      p.hdl || '', 
+      p.ldl || '', 
+      p.creatin || '', 
+      p.ureum || '', 
+      p.hba1c || '', 
+      p.mikro || ''
+    ]);
+  });
+} else {
+  // Kalau belum ada peserta, pakai contoh statis
+  dataPeserta = [
     [1, 'Budi Santoso', '10/02/1996', 'Curah Dami, Jatis', 'DM', '200', '150', '50', '100', '1.0', '30', '5.5', '15'],
     [2, 'Siti Aminah', '15/05/1975', 'Krajan, Jatis', 'HT', '180', '120', '45', '90', '0.9', '28', '', '12']
   ];
-  var aoa = [header].concat(contoh);
+}
+var aoa = [header].concat(dataPeserta);
   var ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [
     { wch: 5 },   // No
