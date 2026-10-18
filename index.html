@@ -766,6 +766,11 @@ function simpanKalibrasiHariIni() {
         if (filter === 'selesai') return totalSelesai === total;
       }
     }
+    // Filter Tanggal
+var dateFilter = window._kegiatanDateFilter;
+if (dateFilter) {
+  if (String(k.tanggal || '').indexOf(dateFilter) === -1) return false;
+}
     // Search
     if (search) {
       return (k.nama_kegiatan || '').toLowerCase().indexOf(search) >= 0 ||
@@ -776,12 +781,6 @@ function simpanKalibrasiHariIni() {
     }
     return true;
   });
-
-    // Filter Tanggal
-var dateFilter = window._kegiatanDateFilter;
-if (dateFilter) {
-  if (String(k.tanggal || '').indexOf(dateFilter) === -1) return false;
-}
 
   var cards = filtered.map(function(k) {
     var pesertaList = k.peserta || [];
