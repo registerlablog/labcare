@@ -892,7 +892,7 @@ function renderForm() {
           '<div class="test-ref">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
           '</div>' +
           '<div class="test-inputs">' +
-          '<div class="field"><input type="text" inputmode="decimal" id="h_' + kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
+          '<div class="field"><input type="text" id="h_' + kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
           '</div>' +
           '</div>';
       }
@@ -944,7 +944,7 @@ var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radiu
       '<div class="test-ref">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
       '</div>' +
       '<div class="test-inputs">' +
-      '<div class="field"><input type="text" inputmode="decimal" id="pt_' + t.kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
+      '<div class="field"><input type="text" id="pt_' + t.kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
       '</div>' +
       '</div>';
   });
