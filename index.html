@@ -292,6 +292,8 @@ window._prolanisDetail = window._prolanisDetail || null;
 window._prolanisMode = window._prolanisMode || 'list';
 window._prolanisFilter = window._prolanisFilter || 'semua';
 window._prolanisSearch = window._prolanisSearch || '';
+window._kegiatanSearch = window._kegiatanSearch || '';
+window._kegiatanDateFilter = window._kegiatanDateFilter === undefined ? new Date().toISOString().slice(0, 10) : window._kegiatanDateFilter;
 window._hasilTab = window._hasilTab || 'umum';
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
@@ -774,7 +776,13 @@ function simpanKalibrasiHariIni() {
     }
     return true;
   });
-  
+
+    // Filter Tanggal
+var dateFilter = window._kegiatanDateFilter;
+if (dateFilter) {
+  if (String(k.tanggal || '').indexOf(dateFilter) === -1) return false;
+}
+
   var cards = filtered.map(function(k) {
     var pesertaList = k.peserta || [];
 var jumlah = pesertaList.length || k.peserta_count || 0;
@@ -825,16 +833,27 @@ var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
     '<button class="btn btn-secondary" onclick="syncAllFromServer(false)">🔄 Refresh</button>' +
     '</div></div>' +
     
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">' +
-    '<input type="text" id="kegiatanSearchInput" placeholder="🔍 Cari nama kegiatan / pengirim / petugas / tanggal..." value="' + esc(window._kegiatanSearch || '') + '" oninput="onSearchKegiatan(this.value)" style="flex:1;min-width:250px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
-    '<select onchange="onFilterKegiatan(this.value)" style="padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;">' +
-    '<option value="semua"' + (filter === 'semua' ? ' selected' : '') + '>📋 Semua</option>' +
-    '<option value="belum"' + (filter === 'belum' ? ' selected' : '') + '>⏳ Belum Selesai</option>' +
-    '<option value="proses"' + (filter === 'proses' ? ' selected' : '') + '>✏️ Sedang Proses</option>' +
-    '<option value="selesai"' + (filter === 'selesai' ? ' selected' : '') + '>✅ Selesai Semua</option>' +
-    '</select>' +
-    '<span style="font-size:13px;color:var(--slate-500);font-weight:600;">' + totalTampil + ' dari ' + totalSemua + ' kegiatan</span>' +
-    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">' +
+'<input type="text" id="kegiatanSearchInput" placeholder="🔍 Cari nama kegiatan / pengirim / petugas / tanggal..." value="' + esc(window._kegiatanSearch || '') + '" oninput="onSearchKegiatan(this.value)" style="flex:1;min-width:250px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
+
+'<div style="display:flex;align-items:center;background:#fff;border:1px solid var(--slate-300);border-radius:10px;padding:0 10px;">' +
+  '<span style="font-size:16px;">📅</span>' +
+  '<input type="date" value="' + (window._kegiatanDateFilter || '') + '" onchange="onFilterDateKegiatan(this.value)" style="border:none;outline:none;padding:10px 6px;font-size:14px;font-family:inherit;background:transparent;">' +
+  (window._kegiatanDateFilter ? '<button onclick="onFilterDateKegiatan(\'\')" style="border:none;background:none;cursor:pointer;padding:0 4px;font-size:16px;" title="Hapus Filter Tanggal">✕</button>' : '') +
+'</div>' +
+
+'<select onchange="onFilterKegiatan(this.value)" style="padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:none;">' +
+'<option value="semua"' + (filter === 'semua' ? ' selected' : '') + '>📋 Semua</option>' +
+'<option value="belum"' + (filter === 'belum' ? ' selected' : '') + '>⏳ Belum Selesai</option>' +
+'<option value="proses"' + (filter === 'proses' ? ' selected' : '') + '>✏️ Sedang Proses</option>' +
+'<option value="selesai"' + (filter === 'selesai' ? ' selected' : '') + '>✅ Selesai Semua</option>' +
+'</select>' +
+'<span style="font-size:13px;color:var(--slate-500);font-weight:600;">' + totalTampil + ' dari ' + totalSemua + ' kegiatan</span>' +
+'</div>' +
+
+'<div style="font-size:12px;color:var(--slate-500);margin-bottom:16px;font-style:italic;">' +
+'💡 Jika tidak menemukan data berdasarkan tgl pelaksanaan, coba cari berdasarkan tanggal klaim.' +
+'</div>' +
     
     '<div class="patient-grid">' + cards + '</div>';
 }
@@ -848,6 +867,10 @@ function onSearchKegiatan(val) {
 
 function onFilterKegiatan(val) {
   window._kegiatanFilter = val;
+  document.getElementById('app').innerHTML = viewKegiatanProlanis();
+}
+  function onFilterDateKegiatan(val) {
+  window._kegiatanDateFilter = val;
   document.getElementById('app').innerHTML = viewKegiatanProlanis();
 }
     /* ===== SEARCH & FILTER PESERTA PROLANIS ===== */
