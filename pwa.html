@@ -949,10 +949,11 @@ var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radiu
       '</div>';
   });
 
-  html += '<div class="form-actions">' +
-    '<button class="btn btn-primary" onclick="simpanPesertaForm()">💾 Simpan Hasil</button>' +
-    '<button class="btn btn-secondary" onclick="tutupForm()">Batal</button>' +
-    '</div>';
+  html += '<div class="form-actions" style="display:flex;flex-wrap:wrap;gap:8px;">' +
+  '<button class="btn btn-primary" style="flex:1;min-width:120px;" onclick="simpanPesertaForm(false)">💾 Simpan</button>' +
+  '<button class="btn" style="flex:1;min-width:150px;background:#16a34a;color:#fff;" onclick="simpanPesertaForm(true)">⏭️ Simpan & Lanjut</button>' +
+  '<button class="btn btn-secondary" onclick="tutupForm()">Batal</button>' +
+  '</div>';
   document.getElementById('formBody').innerHTML = html;
 }
 
@@ -1028,7 +1029,7 @@ else toastMsg('✅ Hasil tersimpan', 'ok');
 setTimeout(function() { tutupForm(true); }, 600);
 }
 
-async function simpanPesertaForm() {
+async function simpanPesertaForm(lanjut) {
   if (!currentPeserta) return;
   var p = currentPeserta;
   var orig = p._originalData || {};
@@ -1076,10 +1077,31 @@ if (r && !r.ok && r.conflict) {
   showLoading(false);
 }
 
-if (SYNC_ENABLED && (!r || !r.ok)) toastMsg('💾 Tersimpan lokal, sinkron nanti');
-else toastMsg('✅ Hasil peserta tersimpan', 'ok');
+  if (SYNC_ENABLED && (!r || !r.ok)) {
+    toastMsg('💾 Tersimpan lokal, sinkron nanti');
+  } else {
+    toastMsg(lanjut ? '✅ Lanjut ke peserta berikutnya...' : '✅ Hasil peserta tersimpan', 'ok');
+  }
+  
   clearDraft();
-setTimeout(function() { tutupForm(true); }, 600);
+
+  if (lanjut) {
+    // Cari peserta berikutnya di kegiatan yang sama
+    var listKeg = prolanisPeserta.filter(function(x) { return String(x.id_kegiatan) === String(currentKegiatan.id_kegiatan); });
+    var idx = listKeg.findIndex(function(x) { return String(x.id) === String(p.id); });
+    
+    if (idx >= 0 && idx < listKeg.length - 1) {
+      var nextId = listKeg[idx + 1].id;
+      setTimeout(function() {
+        bukaFormPeserta(nextId); // Otomatis buka form peserta selanjutnya
+      }, 500);
+      return; // Hentikan fungsi di sini agar form tidak tertutup
+    } else {
+      toastMsg('🎉 Ini peserta terakhir', 'ok');
+    }
+  }
+
+  setTimeout(function() { tutupForm(true); }, 600);
 }
 
 function cetakHasilCurrent() {
