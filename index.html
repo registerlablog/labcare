@@ -303,6 +303,13 @@ function umur(tglLahir) { if (!tglLahir) return '-'; var d = new Date(tglLahir),
 function nextRM() { return 'RM-' + String(patients.length + 1).padStart(4, '0'); }
 function nextQueueNo() { var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }); return t.length + 1; }
 function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function cleanValue(v) {
+  if (v === undefined || v === null) return '';
+  var s = String(v).trim();
+  // Jika diawali format tahun-bulan (contoh: 2026-04-12), maka kosongkan
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
+  return s;
+}
 function fmtTanggalKeg(tgl) {
   if (!tgl) return '-';
   var s = String(tgl);
@@ -637,7 +644,7 @@ function modalHasilProlanis(kegId, idx) {
   var rujukan = (master && master.rujukan) ? master.rujukan : c.fbRujukan;
   var isHba1c = c.key === 'hba1c';
   var disabled = isHba1c && isHT;
-  var val = disabled ? '' : (p[c.key] || '');
+  var val = disabled ? '' : cleanValue(p[c.key] || '');
   return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--slate-100);' + (disabled ? 'opacity:0.5;' : '') + '">' +
     '<div style="flex:1;min-width:0;">' +
     '<div style="font-size:14px;font-weight:600;">' + c.label + (disabled ? ' <span style="font-size:10px;color:var(--slate-400);">(tidak untuk HT)</span>' : '') + '</div>' +
@@ -909,7 +916,7 @@ function buildProlanisRowsHtml() {
     var p = item.p;
     var idx = item.idx;
     var inputs = cols.map(function(c) {
-      return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(p[c] || '') + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
+      return '<td><input class="inp" style="padding:6px 8px;font-size:12px;width:70px;" value="' + esc(cleanValue(p[c] || '')) + '" oninput="updatePesertaField(' + idx + ',\'' + c + '\',this.value)" placeholder="-"></td>';
     }).join('');
     return '<tr>' +
       '<td style="text-align:center;"><input class="inp" readonly style="padding:6px 8px;font-size:12px;width:80px;text-align:center;font-weight:700;color:var(--primary);background:var(--slate-100);cursor:not-allowed;" value="' + esc(p.no || '') + '"></td>' +
