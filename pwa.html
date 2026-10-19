@@ -408,6 +408,13 @@ var syncState = 'idle';
 
 /* ===== UTILITY ===== */
 function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function cleanValue(v) {
+  if (v === undefined || v === null) return '';
+  var s = String(v).trim();
+  // Jika diawali format tahun-bulan (contoh: 2026-04-12), maka kosongkan
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
+  return s;
+}
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
 
 var _toastTimer;
@@ -869,7 +876,7 @@ function renderForm() {
     grouped[kat].forEach(function(item) {
       var kode = item.kode;
       var t = item.t;
-      var val = hasil[kode] || '';
+      var val = cleanValue(hasil[kode] || '');
       if (t.kal_aktif) {
         html += '<div class="test-item kalibrasi">' +
           '<div class="test-head">' +
@@ -936,7 +943,7 @@ var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radiu
   // Daftar tes lab Prolanis
   html += '<div class="kategori-title">🧪 Hasil Laboratorium Prolanis</div>';
   PROLANIS_TESTS.forEach(function(t) {
-    var val = p[t.kode];
+    var val = cleanValue(p[t.kode]);
     if (val === null || val === undefined) val = '';
     html += '<div class="test-item">' +
       '<div class="test-head">' +
@@ -944,7 +951,7 @@ var html = '<div style="background:#fff7ed;border:2px solid #fed7aa;border-radiu
       '<div class="test-ref">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div></div>' +
       '</div>' +
       '<div class="test-inputs">' +
-      '<div class="field"><input type="text" id="pt_' + t.kode + '" class="hasil" value="' + esc(val) + '" placeholder="Ketik hasil..."></div>' +
+      '<div class="field"><input type="text" id="pt_' + t.kode + '" class="hasil" value="' + esc(cleanValue(val)) + '" placeholder="Ketik hasil..."></div>' +
       '</div>' +
       '</div>';
   });
