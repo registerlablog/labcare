@@ -1162,8 +1162,14 @@ if (firstRowStr.indexOf('nama') === -1 || firstRowStr.indexOf('chol') === -1) {
       var v = row[idxMap[k]];
       if (v === undefined || v === null) v = '';
       v = String(v).trim();
-      if (k === 'tgl_lahir') v = normalizeDate(v);
-      obj[k] = v;
+if (k === 'tgl_lahir') v = normalizeDate(v);
+
+// Bersihkan jika ada teks tanggal masuk ke kolom hasil lab
+if (['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'].indexOf(k) !== -1) {
+  if (/^\d{4}-\d{2}-\d{2}T/.test(v)) v = ''; 
+}
+
+obj[k] = v;
     });
     if (obj.nama || obj.nik || obj.no) result.push(obj);
   });
@@ -1316,7 +1322,7 @@ input.value = '';
   reader.onload = function(e) {
     try {
       var data = new Uint8Array(e.target.result);
-      var wb = XLSX.read(data, { type: 'array', cellDates: true });
+      var wb = XLSX.read(data, { type: 'array', cellDates: false });
       var ws = wb.Sheets[wb.SheetNames[0]];
       var matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
       matrix = matrix.filter(function(row) { return row.some(function(c) { return String(c).trim() !== ''; }); });
