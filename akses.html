@@ -339,22 +339,24 @@ function buildProlanisPrintPage(keg, peserta) {
     '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
     '</div>';
 
-  var infoHtml = '<div style="margin-top:0; margin-bottom:10px; font-size:11.5px; color:#000; line-height:1.4;">' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
+  // --- BAGIAN INFO PASIEN ---
+  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; font-family: Arial, sans-serif; color:#000; line-height:1.5;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
     '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div>' +
     '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
     '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '</div>';
 
-  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:4px; margin-bottom:4px; font-weight:bold; font-size:11.5px; color:#000;">' +
+  // --- BAGIAN JUDUL TABEL ---
+  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:6px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
     '<div style="width:35%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
     '<div style="width:20%; text-align:center;">HASIL</div>' +
     '<div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
@@ -368,15 +370,19 @@ function buildProlanisPrintPage(keg, peserta) {
     grup[kat].push(c);
   });
 
+  // --- BAGIAN ISI TABEL ---
   var rowsHtml = '';
   urutanKategori.forEach(function(kat) {
-    rowsHtml += '<div style="width:100%; margin-top:6px; margin-bottom:3px; font-weight:bold; font-size:11.5px; color:#000;">' + esc(kat) + '</div>';
+    // Judul Kategori (LEMAK LENGKAP, dll)
+    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' + esc(kat) + '</div>';
+    
     grup[kat].forEach(function(c) {
       var val = peserta[c.key];
       if (val === undefined || val === null || val === '') val = '-';
       var rujukanLengkap = c.rujukan + ' ' + c.satuan;
       
-      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:2px; font-size:11.5px; color:#000;">' +
+      // Baris Data Lab
+      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
         '<div style="width:35%; text-align:left; padding-right:10px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
         '<div style="width:20%; text-align:center;">' + esc(val) + '</div>' +
         '<div style="width:45%; text-align:left; padding-left:15px; padding-right:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
@@ -385,9 +391,6 @@ function buildProlanisPrintPage(keg, peserta) {
   });
 
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
-  
-  return { content: content, footer: '' }; 
-}
 // 3. Helper Data Laboratorium
 function getProlanisPrintCols(diagnosa) {
   var base = [
