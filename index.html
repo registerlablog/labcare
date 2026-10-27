@@ -999,17 +999,45 @@ function viewDetailKegiatan() {
     '<tbody id="prolanisTbody">' + (result.rowsHtml || '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody>' +
     '</table></div>';
 }
+  function togglePuskesmasLainnya(val) {
+  var manualInput = document.getElementById('pk_pengirim_manual');
+  if (manualInput) {
+    if (val === 'lainnya') {
+      manualInput.style.display = 'block';
+      manualInput.focus();
+    } else {
+      manualInput.style.display = 'none';
+    }
+  }
+}
   function modalKegiatanProlanis(id) {
   var isEdit = !!id;
   var k = isEdit ? (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(id); }) : null;
   if (isEdit && !k) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+  var isCustomPengirim = k && k.pengirim && !masterPuskesmasList.some(function(p) { 
+  return p.nama_puskesmas === k.pengirim; 
+});
+
+var pengirimHtml = 
+  '<div>' +
+  '<label class="lbl">Pengirim *</label>' +
+  '<select id="pk_pengirim_select" class="inp-sel" onchange="togglePuskesmasLainnya(this.value)">' +
+    '<option value="">— Pilih Puskesmas —</option>' +
+    masterPuskesmasList.map(function(p) {
+      var selected = (k && k.pengirim === p.nama_puskesmas) ? ' selected' : '';
+      return '<option value="' + esc(p.nama_puskesmas) + '"' + selected + '>' + esc(p.nama_puskesmas) + '</option>';
+    }).join('') +
+    '<option value="lainnya"' + (isCustomPengirim ? ' selected' : '') + '>➕ Lainnya (Ketik Manual)</option>' +
+  '</select>' +
+  '<input type="text" id="pk_pengirim_manual" class="inp" style="display:' + (isCustomPengirim ? 'block' : 'none') + '; margin-top:8px;" value="' + (isCustomPengirim ? esc(k.pengirim) : '') + '" placeholder="Ketik nama Puskesmas baru...">' +
+  '</div>';
   var html = '<div class="modal-body">' +
     '<div class="modal-head"><div><h3>' + (isEdit ? '✏️ Edit Kegiatan Prolanis' : '➕ Buat Kegiatan Prolanis') + '</h3><p>Isi data kegiatan</p></div>' +
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="form-row" style="grid-template-columns:1fr;">' +
     '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" value="' + (k ? esc(k.nama_kegiatan) : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
     '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc((k.tanggal || '').slice(0, 10)) : '') + '"></div>' +
-    '<div><label class="lbl">Pengirim</label><input id="pk_pengirim" class="inp" value="' + (k ? esc(k.pengirim || '') : '') + '" placeholder="Contoh: Pusk. Maesan"></div>' +
+    pengirimHtml +
     '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
     '<div><label class="lbl">Jumlah Peserta</label><input type="number" id="pk_jumlah" class="inp" value="0" min="0" max="500"><div style="font-size:11px;color:var(--slate-400);margin-top:4px;">Isi jumlah peserta → otomatis buat baris kosong</div></div>' +
     '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
@@ -1024,7 +1052,22 @@ function viewDetailKegiatan() {
 function simpanKegiatanProlanis(editId) {
   var nama = (document.getElementById('pk_nama').value || '').trim();
   var tanggal = (document.getElementById('pk_tanggal').value || '').trim();
-  var pengirim = (document.getElementById('pk_pengirim').value || '').trim();
+  var selectPengirim = document.getElementById('pk_pengirim_select').value;
+var pengirim = '';
+
+if (selectPengirim === 'lainnya') {
+  pengirim = (document.getElementById('pk_pengirim_manual').value || '').trim();
+  if (!pengirim) { 
+    alert('Nama Puskesmas manual wajib diisi!'); 
+    return; 
+  }
+} else {
+  pengirim = selectPengirim;
+  if (!pengirim) { 
+    alert('Pilih Puskesmas Pengirim terlebih dahulu.'); 
+    return; 
+  }
+}
   var alamat = (document.getElementById('pk_alamat').value || '').trim();
   var petugas = (document.getElementById('pk_petugas').value || '').trim();
   var jumlah = parseInt(document.getElementById('pk_jumlah').value || '0', 10) || 0;
