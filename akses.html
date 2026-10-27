@@ -62,12 +62,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 .toast.err { background: #dc2626; }
 .toast.ok { background: var(--success); }
+   /* --- PERBAIKAN CSS CETAK UNTUK AKSES.HTML --- */
   @media print {
     @page { size: A4 portrait; margin: 0; }
-    body > *:not(#printOverlay):not(#printArea) { display: none !important; }
-    #printOverlay { display: block !important; position: static; background: #fff; overflow: visible; }
-    #printOverlay .print-toolbar { display: none !important; } 
-    #printOverlay .print-page {
+    body > *:not(#printOverlayAkses):not(#printArea) { display: none !important; }
+    #printOverlayAkses { display: block !important; position: static; background: #fff; overflow: visible; }
+    
+    /* Menyembunyikan toolbar hitam (Tutup/Cetak) */
+    #printOverlayAkses > div:first-child { display: none !important; } 
+    
+    #printOverlayAkses .print-page {
       box-shadow: none !important;
       margin: 0 !important;
       padding: 0 !important;
@@ -78,8 +82,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       overflow: hidden !important;
       page-break-after: always;
     }
-    #printOverlay .print-page:last-child { page-break-after: auto; }
+    #printOverlayAkses .print-page:last-child { page-break-after: auto; }
   }
+  /* ------------------------------------------- */
 </style>
 </head>
 <body>
