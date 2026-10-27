@@ -105,6 +105,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
 var currentPuskesmas = '';
 var currentKegiatan = [];
 
@@ -208,6 +209,191 @@ function renderDashboard() {
       '</div>' +
     '</div>';
   }).join('');
+}
+/* ===== FUNGSI CETAK PDF & EXCEL UNTUK PUSKESMAS ===== */
+
+// 1. Fungsi untuk Cetak PDF
+function cetakKegiatan(idx) {
+  var keg = currentKegiatan[idx];
+  if (!keg || !keg.peserta || keg.peserta.length === 0) {
+    toastMsg('Tidak ada data peserta untuk dicetak', 'err');
+    return;
+  }
+
+  var pages = keg.peserta.map(function(p) {
+    return buildProlanisPrintPage(keg, p);
+  });
+  
+  var title = 'Cetak ' + keg.peserta.length + ' halaman — ' + (keg.nama_kegiatan || 'Prolanis');
+  
+  var overlay = document.createElement('div');
+  overlay.id = 'printOverlayAkses';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#e2e8f0;overflow-y:auto;display:block;';
+  
+  var pagesHtml = pages.map(function(p, i) {
+    var isLast = (i === pages.length - 1);
+    var breakStyle = isLast ? '' : 'page-break-after:always;';
+    return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:287mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
+      '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:287mm;object-fit:fill;z-index:0;pointer-events:none;">' +
+      '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + p.content + '</div>' +
+      (p.footer ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + p.footer + '</div>' : '') +
+      '</div>';
+  }).join('');
+
+  overlay.innerHTML = '<div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#0f172a;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.2);">' +
+    '<button onclick="document.getElementById(\'printOverlayAkses\').remove();document.body.style.overflow=\'\';" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.15);color:#fff;">✕ Tutup</button>' +
+    '<div style="font-size:13px;font-weight:600;flex:1;text-align:center;">' + esc(title) + '</div>' +
+    '<button onclick="window.print()" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:#2563eb;color:#fff;">🖨️ Cetak / PDF</button>' +
+    '</div>' + pagesHtml;
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+}
+
+// 2. Fungsi untuk membuat 1 halaman PDF (diambil dari index.html)
+function buildProlanisPrintPage(keg, peserta) {
+  var cols = getProlanisPrintCols(peserta.diagnosa);
+  var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
+  var tglTampil = fmtTanggalKeg(keg.tanggal);
+  var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
+  
+  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:6px;">' +
+  '<div style="width:140px; height:140px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><img src="' + esc(CLINIC.logoKiri) + '" style="width:80px; height:80px; object-fit:contain;"></div>' +
+  '<div style="flex:1; text-align:center; padding: 0 10px;">' +
+  '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+  '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
+  '<div style="font-size:17px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
+  '<div style="font-size:10px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+  '</div>' +
+  '<div style="width:140px; height:140px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;"></div>' +
+  '</div>' +
+  '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
+  '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
+  
+  var judulHtml = '<div style="text-align:center; margin-top:12px; margin-bottom:8px;">' +
+    '<div style="font-size:18px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
+    '</div>';
+
+  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; color:#000; line-height:1.5;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+    '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
+    '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
+    '<div style="clear:both;"></div></div>' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+    '<div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div>' +
+    '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
+    '<div style="clear:both;"></div></div>' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
+    '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
+    '<div style="clear:both;"></div></div>' +
+    '</div>';
+
+  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000;">' +
+    '<div style="width:30%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
+    '<div style="width:35%; text-align:center;">HASIL</div>' +
+    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
+    '</div>';
+    
+  var grup = {};
+  var urutanKategori = [];
+  cols.forEach(function(c) {
+    var kat = c.kategori || 'LAINNYA';
+    if (!grup[kat]) { grup[kat] = []; urutanKategori.push(kat); }
+    grup[kat].push(c);
+  });
+
+  var rowsHtml = '';
+  urutanKategori.forEach(function(kat) {
+    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; color:#000;">' + esc(kat) + '</div>';
+    grup[kat].forEach(function(c) {
+      var val = peserta[c.key];
+      if (val === undefined || val === null || val === '') val = '-';
+      var rujukanLengkap = c.rujukan + ' ' + c.satuan;
+      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; color:#000;">' +
+    '<div style="width:30%; text-align:left; padding-right:15px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
+    '<div style="width:35%; text-align:center;">' + esc(val) + '</div>' +
+    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
+    '</div>';
+    });
+  });
+
+  var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
+  return { content: content, footer: '' };
+}
+
+// 3. Helper Data Laboratorium
+function getProlanisPrintCols(diagnosa) {
+  var base = [
+    { key:'chol',    kode:'LAB-014', label:'Cholesterol',  kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 200' },
+    { key:'trig',    kode:'LAB-015', label:'Trigliserida', kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 150' },
+    { key:'hdl',     kode:'LAB-016', label:'HDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'> 40' },
+    { key:'ldl',     kode:'LAB-017', label:'LDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 130' },
+    { key:'creatin', kode:'LAB-018', label:'Kreatinin',    kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'0.6-1.3' },
+    { key:'ureum',   kode:'LAB-019', label:'Ureum',        kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'15-45' },
+    { key:'hba1c',   kode:'LAB-061', label:'HbA1c',        kategori:'KIMIA',          fbSatuan:'%',     fbRujukan:'4.0-6.0' },
+    { key:'mikro',   kode:'LAB-062', label:'Mikroalbumin', kategori:'URIN',           fbSatuan:'mg/L',  fbRujukan:'< 20' }
+  ];
+  var d = String(diagnosa || '').toUpperCase();
+  if (d === 'HT') return base.filter(function(c) { return c.key !== 'hba1c'; });
+  return base;
+}
+
+function getTanggalKode(t) {
+  if (!t) return '';
+  var s = String(t);
+  if (s.indexOf('T') > 0) s = s.split('T')[0];
+  return s.replace(/[^0-9]/g, '');
+}
+function fmtTanggalKeg(tgl) {
+  if (!tgl) return '-';
+  var s = String(tgl);
+  if (s.indexOf('T') > 0) s = s.split('T')[0];
+  return s;
+}
+function umur(tglLahir) {
+  if (!tglLahir) return '-';
+  var d = new Date(tglLahir), n = new Date();
+  var y = n.getFullYear() - d.getFullYear();
+  var m = n.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < d.getDate())) y--;
+  return y + ' th';
+}
+
+// 4. Fungsi Export Excel
+function exportExcel(idx) {
+  var keg = currentKegiatan[idx];
+  if (!keg || !keg.peserta || keg.peserta.length === 0) {
+    toastMsg('Tidak ada data peserta untuk diexport', 'err');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    toastMsg('Library Excel belum siap', 'err');
+    return;
+  }
+
+  var header = ['No','Nama','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro'];
+  var aoa = [header];
+  
+  keg.peserta.forEach(function(p, i) {
+    aoa.push([
+      i + 1,
+      p.nama || '',
+      p.tgl_lahir || '',
+      p.alamat || '',
+      p.diagnosa || '',
+      p.chol || '', p.trig || '', p.hdl || '', p.ldl || '',
+      p.creatin || '', p.ureum || '', p.hba1c || '', p.mikro || ''
+    ]);
+  });
+
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
+  
+  var namaFile = 'Prolanis_' + (keg.nama_kegiatan || 'Kegiatan').replace(/[^a-zA-Z0-9]+/g, '_') + '.xlsx';
+  XLSX.writeFile(wb, namaFile);
+  toastMsg('📥 File Excel ter-download', 'ok');
 }
 </script>
 </body>
