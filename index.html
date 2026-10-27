@@ -284,6 +284,7 @@ var NAV_ITEMS = [
   { view: 'master',      label: '🧬 Master Lab' }
 ];
 var patients = []; var view = 'dashboard'; var mobileNavOpen = false; var editKode = null; var editKaryawanId = null; var stempelUrl = '';
+var masterPuskesmasList = [];
 window._pickedTests = window._pickedTests || {};
 window._katFilter = window._katFilter || 'semua';
 window._pickSearch = window._pickSearch || '';
@@ -367,6 +368,7 @@ async function syncAllFromServer(silent) {
   if (Array.isArray(r.pemeriksaan) && r.pemeriksaan.length) TESTS = r.pemeriksaan;
   if (Array.isArray(r.analis)) analisList = r.analis;
   if (Array.isArray(r.dokter)) dokterList = r.dokter;
+  if (Array.isArray(r.master_puskesmas)) masterPuskesmasList = r.master_puskesmas;
   if (Array.isArray(r.prolanis_kegiatan)) {
   var kegList = r.prolanis_kegiatan || [];
   var pesList = r.prolanis_peserta || [];
