@@ -166,6 +166,9 @@ var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATA
 var currentPuskesmas = '';
 var currentKegiatan = [];
 var MASTER_TESTS = [];
+var GLOBAL_ANALIS = [];
+var GLOBAL_DOKTER = [];
+var GLOBAL_STEMPEL = '';
 
 function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
 function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
@@ -173,20 +176,41 @@ function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g,
 
 // Load daftar puskesmas saat pertama kali buka
 document.addEventListener('DOMContentLoaded', async function() {
-  try {
+    try {
     var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
     var json = await res.json();
-     if (json && json.ok && Array.isArray(json.pemeriksaan)) {
-        MASTER_TESTS = json.pemeriksaan;
-        console.log("Master Lab berhasil dimuat:", MASTER_TESTS.length);
-      }
+    
+    if (json && json.ok && Array.isArray(json.pemeriksaan)) {
+      MASTER_TESTS = json.pemeriksaan;
+      console.log("Master Lab berhasil dimuat:", MASTER_TESTS.length);
+    }
+    
+    // --- TAMBAHKAN UNTUK MENGAMBIL TTD ANALIS & DOKTER ---
+    if (json && json.ok && Array.isArray(json.analis)) {
+      GLOBAL_ANALIS = json.analis;
+    }
+    if (json && json.ok && Array.isArray(json.dokter)) {
+      GLOBAL_DOKTER = json.dokter;
+    }
+    // ------------------------------------------------------
+
     if (json && json.ok && json.master_puskesmas) {
       var sel = document.getElementById('loginPusk');
       sel.innerHTML = '<option value="">— Pilih Puskesmas —</option>' + 
         json.master_puskesmas.map(function(p) { return '<option value="' + esc(p.nama_puskesmas) + '">' + esc(p.nama_puskesmas) + '</option>'; }).join('');
     }
-  } catch (e) { console.log('Gagal load puskesmas:', e); }
-});
+
+    // --- TAMBAHKAN UNTUK MENGAMBIL URL STEMPEL ---
+    try {
+      var resStempel = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getStempel', data: {} }) });
+      var jsonStempel = await resStempel.json();
+      if (jsonStempel && jsonStempel.ok && jsonStempel.url) {
+        GLOBAL_STEMPEL = jsonStempel.url;
+      }
+    } catch (e) { console.log('Gagal load stempel:', e); }
+    // ----------------------------------------------
+
+  } catch (e) { console.log('Gagal load data:', e); }
 
 async function doLogin() {
   var nama = document.getElementById('loginPusk').value;
@@ -388,7 +412,43 @@ function buildProlanisPrintPage(keg, peserta) {
   });
 
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
-  return { content: content, footer: '' }; 
+   // --- BAGIAN TANDA TANGAN & STEMPEL ---
+  var pemeriksaData = GLOBAL_ANALIS.find(function(a) {
+    return a.nama && a.nama.toLowerCase().indexOf('linda') >= 0;
+  }) || { nama: 'Linda Hardiyanti Putri, A.Md.Kes', kode: 'NIP. 19980128 202521 2 008', ttd: '' };
+  
+  var dokterData = GLOBAL_DOKTER.find(function(d) {
+    return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0;
+  }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
+
+  var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+  var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+  var stempelHtml = GLOBAL_STEMPEL ? '<img src="' + GLOBAL_STEMPEL + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
+
+  var footerHtml =
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
+      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') +
+      '</div>' +
+      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
+        (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') +
+        stempelHtml +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div>' +
+    '</div>' +
+    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</div>' +
+      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</div>' +
+    '</div>';
+
+  return { content: content, footer: footerHtml }; 
 }
 // 3. Helper Data Laboratorium
 function getProlanisPrintCols(diagnosa) {
