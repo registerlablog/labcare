@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tes Login Puskesmas</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f1f5f9; }
+    button { display: block; width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; }
+    .btn-benar { background: #16a34a; }
+    .btn-salah { background: #dc2626; }
+    pre { background: #0f172a; color: #4ade80; padding: 16px; border-radius: 8px; font-size: 12px; white-space: pre-wrap; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Tes Login Puskesmas</h2>
+  
+  <button class="btn-benar" onclick="tes('Puskesmas Curahdami', '111111')">✅ Tes PIN Benar (111111)</button>
+  <button class="btn-salah" onclick="tes('Puskesmas Curahdami', '999999')">❌ Tes PIN Salah (999999)</button>
+  <button class="btn-salah" onclick="tesGetAll()">📋 Tes Ambil Semua Data</button>
+
+  <h3>Hasil:</h3>
+  <pre id="hasil">Klik tombol di atas untuk tes...</pre>
+
+  <script>
+    var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+
+    async function tes(nama, pin) {
+      var el = document.getElementById('hasil');
+      el.textContent = 'Menghubungi server...';
+      
+      try {
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'text/plain;charset=utf-8'},
+          body: JSON.stringify({ 
+            action: 'loginPuskesmas', 
+            data: { nama_pusk: nama, pin: pin } 
+          })
+        });
+        var json = await res.json();
+        el.textContent = JSON.stringify(json, null, 2);
+      } catch (e) {
+        el.textContent = '❌ ERROR KONEKSI:\n' + e.toString();
+      }
+    }
+
+    async function tesGetAll() {
+      var el = document.getElementById('hasil');
+      el.textContent = 'Mengambil data...';
+      
+      try {
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'text/plain;charset=utf-8'},
+          body: JSON.stringify({ action: 'getAll', data: {} })
+        });
+        var json = await res.json();
+        el.textContent = JSON.stringify(json, null, 2);
+      } catch (e) {
+        el.textContent = '❌ ERROR KONEKSI:\n' + e.toString();
+      }
+    }
+  </script>
+</body>
+</html>
