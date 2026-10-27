@@ -128,22 +128,51 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 <!-- TAMPILAN LOGIN -->
 <div id="loginView">
   <div class="login-card">
-    <h1>🔬 LabCare Prolanis Akses</h1>
-    <p>Portal Khusus Puskesmas</p>
-    <div class="input-group">
-      <label>Pilih Puskesmas</label>
-      <select id="loginPusk">
-        <option value="">— Memuat data... —</option>
-      </select>
+    
+    <!-- FORM LOGIN (Tampil Default) -->
+    <div id="formLogin">
+      <h1>🔬 LabCare Prolanis Akses</h1>
+      <p>Portal Khusus Puskesmas</p>
+      <div class="input-group">
+        <label>Pilih Puskesmas</label>
+        <select id="loginPusk">
+          <option value="">— Memuat data... —</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>PIN Akses</label>
+        <input type="password" id="loginPin" inputmode="numeric" placeholder="••••••" maxlength="10">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Masuk ke Dashboard</button>
+      <div style="text-align: center; margin-top: 15px;">
+        <a href="javascript:void(0)" onclick="toggleDaftar()" style="font-size: 13px; color: var(--primary); text-decoration: none;">Belum punya akun? Daftar Puskesmas</a>
+      </div>
     </div>
-    <div class="input-group">
-      <label>PIN Akses</label>
-      <input type="password" id="loginPin" inputmode="numeric" placeholder="••••••" maxlength="10">
+
+    <!-- FORM DAFTAR (Tersembunyi di awal) -->
+    <div id="formDaftar" style="display: none;">
+      <h1>📝 Daftar Puskesmas</h1>
+      <p>Buat akun akses baru</p>
+      <div class="input-group">
+        <label>Nama Puskesmas</label>
+        <input type="text" id="regNama" placeholder="Contoh: Pusk. Curahdamai">
+      </div>
+      <div class="input-group">
+        <label>Buat PIN (Min. 6 Angka)</label>
+        <input type="password" id="regPin" inputmode="numeric" placeholder="••••••" maxlength="10">
+      </div>
+      <div class="input-group">
+        <label>Ulangi PIN</label>
+        <input type="password" id="regPinUlang" inputmode="numeric" placeholder="••••••" maxlength="10">
+      </div>
+      <button class="btn-login" onclick="doRegister()">Daftar Sekarang</button>
+      <div style="text-align: center; margin-top: 15px;">
+        <a href="javascript:void(0)" onclick="toggleDaftar()" style="font-size: 13px; color: var(--primary); text-decoration: none;">Kembali ke Halaman Login</a>
+      </div>
     </div>
-    <button class="btn-login" onclick="doLogin()">Masuk ke Dashboard</button>
+
   </div>
 </div>
-
 <!-- TAMPILAN DASHBOARD -->
 <div id="dashboardView">
   <div class="header">
@@ -212,7 +241,73 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   } catch (e) { console.log('Gagal load data:', e); }
 });
+// Fungsi untuk beralih antara form Login dan Daftar
+function toggleDaftar() {
+  var fLogin = document.getElementById('formLogin');
+  var fDaftar = document.getElementById('formDaftar');
+  if (fLogin.style.display === 'none') {
+    fLogin.style.display = 'block';
+    fDaftar.style.display = 'none';
+  } else {
+    fLogin.style.display = 'none';
+    fDaftar.style.display = 'block';
+  }
+}
 
+// Fungsi untuk mengirim data pendaftaran ke API
+async function doRegister() {
+  var nama = document.getElementById('regNama').value.trim();
+  var pin = document.getElementById('regPin').value.trim();
+  var pinUlang = document.getElementById('regPinUlang').value.trim();
+
+  if (!nama || !pin || !pinUlang) {
+    toastMsg('Semua kolom wajib diisi!', 'err'); return;
+  }
+  if (pin.length < 6 || isNaN(pin)) {
+    toastMsg('PIN minimal 6 digit angka!', 'err'); return;
+  }
+  if (pin !== pinUlang) {
+    toastMsg('PIN dan Ulangi PIN tidak cocok!', 'err'); return;
+  }
+
+  showLoading(true);
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ 
+        action: 'registerPuskesmas', 
+        data: { nama_pusk: nama, pin: pin } 
+      })
+    });
+    var json = await res.json();
+    showLoading(false);
+
+    if (json && json.ok) {
+      toastMsg('Pendaftaran berhasil! Silakan login.', 'ok');
+      
+      // Kembali ke form login dan isi otomatis namanya
+      toggleDaftar();
+      document.getElementById('regNama').value = '';
+      document.getElementById('regPin').value = '';
+      document.getElementById('regPinUlang').value = '';
+      
+      // Tambahkan ke dropdown agar langsung bisa dipilih
+      var sel = document.getElementById('loginPusk');
+      var opt = document.createElement('option');
+      opt.value = nama;
+      opt.text = nama;
+      sel.appendChild(opt);
+      sel.value = nama;
+      
+    } else {
+      toastMsg(json.error || 'Gagal mendaftar', 'err');
+    }
+  } catch (e) {
+    showLoading(false);
+    toastMsg('Error koneksi: ' + e.message, 'err');
+  }
+}
 async function doLogin() {
   var nama = document.getElementById('loginPusk').value;
   var pin = document.getElementById('loginPin').value.trim();
