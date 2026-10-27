@@ -62,27 +62,61 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 .toast.err { background: #dc2626; }
 .toast.ok { background: var(--success); }
-   /* --- PERBAIKAN CSS CETAK UNTUK AKSES.HTML --- */
+  /* --- PERBAIKAN CSS CETAK UNTUK AKSES.HTML --- */
   @media print {
     @page { size: A4 portrait; margin: 0; }
-    body > *:not(#printOverlayAkses):not(#printArea) { display: none !important; }
-    #printOverlayAkses { display: block !important; position: static; background: #fff; overflow: visible; }
     
-    /* Menyembunyikan toolbar hitam (Tutup/Cetak) */
-    #printOverlayAkses > div:first-child { display: none !important; } 
+    /* Paksa html dan body agar bisa memanjang ke bawah */
+    html, body { 
+      height: auto !important; 
+      overflow: visible !important; 
+      background: #fff !important; 
+    }
     
+    /* Sembunyikan semua elemen kecuali area cetak */
+    body > *:not(#printOverlayAkses) { 
+      display: none !important; 
+    }
+    
+    /* KUNCI UTAMA: Paksa overlay menjadi static, bukan fixed */
+    #printOverlayAkses { 
+      display: block !important; 
+      position: static !important; 
+      height: auto !important;
+      width: 100% !important;
+      overflow: visible !important; 
+      background: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    /* Sembunyikan toolbar hitam (Tutup/Cetak) */
+    #printOverlayAkses > div:first-child { 
+      display: none !important; 
+    } 
+    
+    /* Paksa setiap halaman untuk di-break per lembar A4 */
     #printOverlayAkses .print-page {
+      display: block !important;
       box-shadow: none !important;
       margin: 0 !important;
       padding: 0 !important;
       width: 210mm !important;
-      height: 287mm !important;
+      height: 297mm !important; 
       position: relative !important;
       box-sizing: border-box !important;
       overflow: hidden !important;
-      page-break-after: always;
+      
+      page-break-after: always !important;
+      break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
     }
-    #printOverlayAkses .print-page:last-child { page-break-after: auto; }
+    
+    #printOverlayAkses .print-page:last-child { 
+      page-break-after: auto !important; 
+      break-after: auto !important; 
+    }
   }
   /* ------------------------------------------- */
 </style>
@@ -240,7 +274,6 @@ function renderDashboard() {
 }
 /* ===== FUNGSI CETAK PDF & EXCEL UNTUK PUSKESMAS ===== */
 
-// 1. Fungsi untuk Cetak PDF
 function cetakKegiatan(idx) {
   var keg = currentKegiatan[idx];
   if (!keg || !keg.peserta || keg.peserta.length === 0) {
@@ -260,9 +293,10 @@ function cetakKegiatan(idx) {
   
   var pagesHtml = pages.map(function(p, i) {
     var isLast = (i === pages.length - 1);
-    var breakStyle = isLast ? '' : 'page-break-after:always;';
-    return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:287mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
-      '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:287mm;object-fit:fill;z-index:0;pointer-events:none;">' +
+    // Menambahkan break-after:page untuk cadangan
+    var breakStyle = isLast ? '' : 'page-break-after:always; break-after:page;';
+    return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
+      '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none;">' +
       '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + p.content + '</div>' +
       (p.footer ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + p.footer + '</div>' : '') +
       '</div>';
@@ -277,7 +311,6 @@ function cetakKegiatan(idx) {
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
 }
-
 function buildProlanisPrintPage(keg, peserta) {
   var cols = getProlanisPrintCols(peserta.diagnosa);
   var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
