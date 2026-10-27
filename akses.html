@@ -317,7 +317,7 @@ function buildProlanisPrintPage(keg, peserta) {
   var tglTampil = fmtTanggalKeg(keg.tanggal);
   var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
   
-  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:85px; max-height:85px; object-fit:contain;">' : '';
   var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
 
   // KOP (Logo Kanan 130px, Teks Arial)
