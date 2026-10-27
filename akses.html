@@ -108,6 +108,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQT
 var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
 var currentPuskesmas = '';
 var currentKegiatan = [];
+var MASTER_TESTS = [];
 
 function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
 function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
@@ -118,6 +119,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   try {
     var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
     var json = await res.json();
+     if (json && json.ok && Array.isArray(json.pemeriksaan)) {
+        MASTER_TESTS = json.pemeriksaan;
+        console.log("Master Lab berhasil dimuat:", MASTER_TESTS.length);
+      }
     if (json && json.ok && json.master_puskesmas) {
       var sel = document.getElementById('loginPusk');
       sel.innerHTML = '<option value="">— Pilih Puskesmas —</option>' + 
@@ -321,26 +326,35 @@ function buildProlanisPrintPage(keg, peserta) {
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
   return { content: content, footer: '' };
 }
-
 // 3. Helper Data Laboratorium
 function getProlanisPrintCols(diagnosa) {
-  // Data ini ditulis langsung agar tidak error "undefined" di akses.html
   var base = [
-    { key:'chol',    label:'Cholesterol',  kategori:'LEMAK LENGKAP',  satuan:'mg/dL', rujukan:'< 200' },
-    { key:'trig',    label:'Trigliserida', kategori:'LEMAK LENGKAP',  satuan:'mg/dL', rujukan:'< 150' },
-    { key:'hdl',     label:'HDL',          kategori:'LEMAK LENGKAP',  satuan:'mg/dL', rujukan:'> 40' },
-    { key:'ldl',     label:'LDL',          kategori:'LEMAK LENGKAP',  satuan:'mg/dL', rujukan:'< 130' },
-    { key:'creatin', label:'Kreatinin',    kategori:'GINJAL LENGKAP', satuan:'mg/dL', rujukan:'0.6-1.3' },
-    { key:'ureum',   label:'Ureum',        kategori:'GINJAL LENGKAP', satuan:'mg/dL', rujukan:'15-45' },
-    { key:'hba1c',   label:'HbA1c',        kategori:'KIMIA',          satuan:'%',     rujukan:'4.0-6.0' },
-    { key:'mikro',   label:'Mikroalbumin', kategori:'URIN',           satuan:'mg/L',  rujukan:'< 20' }
+    { key:'chol',    kode:'LAB-014', label:'Cholesterol',  kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 200' },
+    { key:'trig',    kode:'LAB-015', label:'Trigliserida', kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 150' },
+    { key:'hdl',     kode:'LAB-016', label:'HDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'> 40' },
+    { key:'ldl',     kode:'LAB-017', label:'LDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 130' },
+    { key:'creatin', kode:'LAB-018', label:'Kreatinin',    kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'0.6-1.3' },
+    { key:'ureum',   kode:'LAB-019', label:'Ureum',        kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'15-45' },
+    { key:'hba1c',   kode:'LAB-061', label:'HbA1c',        kategori:'KIMIA',          fbSatuan:'%',     fbRujukan:'4.0-6.0' },
+    { key:'mikro',   kode:'LAB-062', label:'Mikroalbumin', kategori:'URIN',           fbSatuan:'mg/L',  fbRujukan:'< 20' }
   ];
   
+  // CARI DATA DARI MASTER_TESTS (DATABASE), JIKA TIDAK ADA BARU PAKAI DEFAULT
+  var all = base.map(function(b) {
+    var master = MASTER_TESTS.find(function(t) { return t.kode === b.kode; });
+    return {
+      key: b.key,
+      label: (master && master.nama) ? master.nama : b.label,
+      satuan: (master && master.satuan) ? master.satuan : b.fbSatuan,
+      rujukan: (master && master.rujukan) ? master.rujukan : b.fbRujukan,
+      kategori: b.kategori
+    };
+  });
+  
   var d = String(diagnosa || '').toUpperCase();
-  if (d === 'HT') return base.filter(function(c) { return c.key !== 'hba1c'; });
-  return base;
+  if (d === 'HT') return all.filter(function(c) { return c.key !== 'hba1c'; });
+  return all;
 }
-
 function getTanggalKode(t) {
   if (!t) return '';
   var s = String(t);
