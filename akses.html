@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LabCare Prolanis Akses</title>
+<link rel="icon" type="image/jpeg" href="icon.jpg">
+<link rel="manifest" href="manifest.json">
+<!-- Library Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #2563eb; --primary-dark: #1d4ed8;
+  --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+  --slate-500: #64748b; --slate-800: #1e293b; --slate-900: #0f172a;
+  --success: #16a34a; --success-light: #dcfce7;
+  --radius: 12px;
+}
+html, body { height: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--slate-100); color: var(--slate-800); line-height: 1.5; }
+
+/* ===== LOGIN ===== */
+#loginView { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: linear-gradient(135deg, #1e40af, #2563eb); }
+.login-card { background: #fff; border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,.2); }
+.login-card h1 { text-align: center; color: var(--slate-900); font-size: 22px; margin-bottom: 6px; }
+.login-card p { text-align: center; color: var(--slate-500); font-size: 13px; margin-bottom: 24px; }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--slate-500); margin-bottom: 6px; text-transform: uppercase; }
+.input-group input, .input-group select { width: 100%; padding: 12px 14px; border: 2px solid var(--slate-200); border-radius: 10px; font-size: 16px; font-family: inherit; outline: none; transition: .15s; }
+.input-group input:focus, .input-group select:focus { border-color: var(--primary); }
+.btn-login { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 10px; }
+.btn-login:active { transform: scale(.98); }
+
+/* ===== DASHBOARD ===== */
+#dashboardView { display: none; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 12px rgba(37,99,235,.25); display: flex; justify-content: space-between; align-items: flex-start; }
+.header h1 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.header p { font-size: 12px; opacity: .9; margin-top: 4px; }
+.btn-logout { background: rgba(255,255,255,.2); color: #fff; border: none; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.container { padding: 16px; max-width: 800px; margin: 0 auto; }
+.patient-grid { display: grid; gap: 14px; }
+@media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
+.card { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,.06); border-left: 4px solid var(--primary); display: flex; flex-direction: column; }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.card-title { font-size: 15px; font-weight: 800; color: var(--slate-800); }
+.card-date { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
+.badge { padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--primary-light); color: var(--primary); }
+.progress-bg { background: var(--slate-100); border-radius: 999px; height: 6px; overflow: hidden; margin-top: 10px; }
+.progress-bar { background: var(--primary); height: 100%; transition: .3s; }
+.card-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--slate-500); margin-top: 6px; font-weight: 600; }
+.card-actions { display: flex; gap: 8px; padding-top: 14px; margin-top: auto; border-top: 1px solid var(--slate-100); }
+.btn-action { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-pdf { background: #dbeafe; color: #1d4ed8; }
+.btn-excel { background: #dcfce7; color: #15803d; }
+.empty-state { text-align: center; padding: 40px; color: var(--slate-500); }
+.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 9999; align-items: center; justify-content: center; }
+.loading-overlay.show { display: flex; }
+.spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.err { background: #dc2626; }
+.toast.ok { background: var(--success); }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+
+<!-- TAMPILAN LOGIN -->
+<div id="loginView">
+  <div class="login-card">
+    <h1>🔬 LabCare Prolanis Akses</h1>
+    <p>Portal Khusus Puskesmas</p>
+    <div class="input-group">
+      <label>Pilih Puskesmas</label>
+      <select id="loginPusk">
+        <option value="">— Memuat data... —</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>PIN Akses</label>
+      <input type="password" id="loginPin" inputmode="numeric" placeholder="••••••" maxlength="10">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Masuk ke Dashboard</button>
+  </div>
+</div>
+
+<!-- TAMPILAN DASHBOARD -->
+<div id="dashboardView">
+  <div class="header">
+    <div>
+      <h1>🏥 <span id="headerPusk">—</span></h1>
+      <p>Portal Hasil Laboratorium Prolanis</p>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Keluar</button>
+  </div>
+  <div class="container">
+    <div class="patient-grid" id="kegiatanList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+var currentPuskesmas = '';
+var currentKegiatan = [];
+
+function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
+function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
+function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+// Load daftar puskesmas saat pertama kali buka
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
+    var json = await res.json();
+    if (json && json.ok && json.master_puskesmas) {
+      var sel = document.getElementById('loginPusk');
+      sel.innerHTML = '<option value="">— Pilih Puskesmas —</option>' + 
+        json.master_puskesmas.map(function(p) { return '<option value="' + esc(p.nama_puskesmas) + '">' + esc(p.nama_puskesmas) + '</option>'; }).join('');
+    }
+  } catch (e) { console.log('Gagal load puskesmas:', e); }
+});
+
+async function doLogin() {
+  var nama = document.getElementById('loginPusk').value;
+  var pin = document.getElementById('loginPin').value.trim();
+  
+  if (!nama || !pin) { toastMsg('Pilih Puskesmas dan masukkan PIN', 'err'); return; }
+  
+  showLoading(true);
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action: 'loginPuskesmas', data: { nama_pusk: nama, pin: pin } })
+    });
+    var json = await res.json();
+    showLoading(false);
+    
+    if (json && json.ok) {
+      currentPuskesmas = json.puskesmas;
+      currentKegiatan = json.kegiatan || [];
+      
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+      document.getElementById('headerPusk').textContent = currentPuskesmas;
+      
+      renderDashboard();
+      toastMsg('Login berhasil!', 'ok');
+    } else {
+      toastMsg(json.error || 'Login gagal', 'err');
+    }
+  } catch (e) {
+    showLoading(false);
+    toastMsg('Error koneksi: ' + e.message, 'err');
+  }
+}
+
+function doLogout() {
+  currentPuskesmas = '';
+  currentKegiatan = [];
+  document.getElementById('loginPin').value = '';
+  document.getElementById('dashboardView').style.display = 'none';
+  document.getElementById('loginView').style.display = 'flex';
+}
+
+function getColsProlanis(d) {
+  var all = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
+  if (String(d || '').toUpperCase() === 'HT') return all.filter(function(c) { return c !== 'hba1c'; });
+  return all;
+}
+
+function renderDashboard() {
+  var list = document.getElementById('kegiatanList');
+  if (currentKegiatan.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h2>📭 Belum ada kegiatan</h2><p>Belum ada data kegiatan Prolanis untuk Puskesmas Anda saat ini.</p></div>';
+    return;
+  }
+  
+  list.innerHTML = currentKegiatan.map(function(k, idx) {
+    var peserta = k.peserta || [];
+    var totalFilled = 0, totalAll = 0;
+    
+    peserta.forEach(function(p) {
+      var cols = getColsProlanis(p.diagnosa);
+      totalAll += cols.length;
+      cols.forEach(function(c) { if (p[c]) totalFilled++; });
+    });
+    
+    var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
+    var tgl = String(k.tanggal || '').indexOf('T') > 0 ? k.tanggal.split('T')[0] : k.tanggal;
+    
+    return '<div class="card">' +
+      '<div class="card-head">' +
+        '<div><div class="card-title">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
+        '<div class="card-date">🗓️ ' + esc(tgl) + '</div></div>' +
+        '<span class="badge">' + peserta.length + ' Peserta</span>' +
+      '</div>' +
+      '<div class="progress-bg"><div class="progress-bar" style="width:' + persen + '%"></div></div>' +
+      '<div class="card-meta"><span>Progress: ' + totalFilled + '/' + totalAll + '</span><span>' + persen + '%</span></div>' +
+      '<div class="card-actions">' +
+        '<button class="btn-action btn-pdf" onclick="cetakKegiatan(' + idx + ')">🖨️ Cetak PDF</button>' +
+        '<button class="btn-action btn-excel" onclick="exportExcel(' + idx + ')">📥 Export Excel</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
