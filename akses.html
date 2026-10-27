@@ -255,49 +255,53 @@ function cetakKegiatan(idx) {
   document.body.style.overflow = 'hidden';
 }
 
-// 2. Fungsi untuk membuat 1 halaman PDF (diambil dari index.html)
 function buildProlanisPrintPage(keg, peserta) {
   var cols = getProlanisPrintCols(peserta.diagnosa);
   var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
   var tglTampil = fmtTanggalKeg(keg.tanggal);
   var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
   
-  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:6px;">' +
-  '<div style="width:140px; height:140px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><img src="' + esc(CLINIC.logoKiri) + '" style="width:80px; height:80px; object-fit:contain;"></div>' +
+  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+  var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+
+  // KOP DIPERKECIL (80px)
+  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
+  '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
   '<div style="flex:1; text-align:center; padding: 0 10px;">' +
-  '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
-  '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
-  '<div style="font-size:17px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
-  '<div style="font-size:10px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+  '<div style="font-size:11.5px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+  '<div style="font-size:11.5px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
+  '<div style="font-size:15px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
+  '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+  '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
   '</div>' +
-  '<div style="width:140px; height:140px; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;"></div>' +
+  '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
   '</div>' +
-  '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
+  '<div style="border-top:2px solid #000; margin:0;"></div>' +
   '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
   
-  var judulHtml = '<div style="text-align:center; margin-top:12px; margin-bottom:8px;">' +
-    '<div style="font-size:18px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
+  var judulHtml = '<div style="text-align:center; margin-top:10px; margin-bottom:6px;">' +
+    '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
     '</div>';
 
-  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; color:#000; line-height:1.5;">' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+  var infoHtml = '<div style="margin-top:0; margin-bottom:10px; font-size:11.5px; color:#000; line-height:1.4;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
     '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
     '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
     '<div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div>' +
     '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
     '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
+    '<div style="width:100%; overflow:hidden; margin-bottom:2px;">' +
     '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
     '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '</div>';
 
-  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000;">' +
-    '<div style="width:30%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
-    '<div style="width:35%; text-align:center;">HASIL</div>' +
-    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
+  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:4px; margin-bottom:4px; font-weight:bold; font-size:11.5px; color:#000;">' +
+    '<div style="width:35%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
+    '<div style="width:20%; text-align:center;">HASIL</div>' +
+    '<div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
     '</div>';
     
   var grup = {};
@@ -310,21 +314,23 @@ function buildProlanisPrintPage(keg, peserta) {
 
   var rowsHtml = '';
   urutanKategori.forEach(function(kat) {
-    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; color:#000;">' + esc(kat) + '</div>';
+    rowsHtml += '<div style="width:100%; margin-top:6px; margin-bottom:3px; font-weight:bold; font-size:11.5px; color:#000;">' + esc(kat) + '</div>';
     grup[kat].forEach(function(c) {
       var val = peserta[c.key];
       if (val === undefined || val === null || val === '') val = '-';
       var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; color:#000;">' +
-    '<div style="width:30%; text-align:left; padding-right:15px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
-    '<div style="width:35%; text-align:center;">' + esc(val) + '</div>' +
-    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
-    '</div>';
+      
+      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:2px; font-size:11.5px; color:#000;">' +
+        '<div style="width:35%; text-align:left; padding-right:10px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
+        '<div style="width:20%; text-align:center;">' + esc(val) + '</div>' +
+        '<div style="width:45%; text-align:left; padding-left:15px; padding-right:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
+        '</div>';
     });
   });
 
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
-  return { content: content, footer: '' };
+  
+  return { content: content, footer: '' }; 
 }
 // 3. Helper Data Laboratorium
 function getProlanisPrintCols(diagnosa) {
