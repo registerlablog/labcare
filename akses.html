@@ -431,21 +431,33 @@
           } catch (e) { showLoading(false); toastMsg('Error koneksi: ' + e.message, 'err'); }
         }
 
-        // --- FUNGSI DASHBOARD, GRAFIK, PDF, EXCEL (Sesuai kode sebelumnya) ---
+        // --- FUNGSI FILTER TANGGAL ---
+function applyDateFilter() {
+  window._dashStartDate = document.getElementById('dashStartDate').value;
+  window._dashEndDate = document.getElementById('dashEndDate').value;
+  renderDashboard();
+}
+
+function resetDateFilter() {
+  window._dashStartDate = '';
+  window._dashEndDate = '';
+  renderDashboard();
+}// --- FUNGSI DASHBOARD, GRAFIK, PDF, EXCEL (Sesuai kode sebelumnya) ---
         function renderDashboard() {
           var listContainer = document.getElementById('kegiatanList');
-          var filter = window._dashTimeFilter;
-          var now = new Date();
-          var currentMonth = now.toISOString().slice(0, 7);
-          var currentYear = now.toISOString().slice(0, 4);
+// --- LOGIKA FILTER RENTANG TANGGAL ---
+var startDate = window._dashStartDate || '';
+var endDate = window._dashEndDate || '';
 
-          var filteredKeg = currentKegiatan.filter(function(k) {
-            if (filter === 'semua') return true;
-            var tgl = String(k.tanggal || '');
-            if (filter === 'bulan') return tgl.indexOf(currentMonth) === 0;
-            if (filter === 'tahun') return tgl.indexOf(currentYear) === 0;
-            return true;
-          });
+var filteredKeg = currentKegiatan.filter(function(k) {
+  var tglKeg = String(k.tanggal || '').split('T')[0]; // Format YYYY-MM-DD
+  if (!tglKeg) return false;
+
+  if (!startDate && !endDate) return true;
+  if (startDate && !endDate) return tglKeg >= startDate;
+  if (!startDate && endDate) return tglKeg <= endDate;
+  return tglKeg >= startDate && tglKeg <= endDate;
+});
 var totalPasien = 0; var countHT = 0; var countDM = 0;
 
 // Data untuk Grafik Kunjungan (Bar Chart)
@@ -468,11 +480,18 @@ filteredKeg.forEach(function(k) {
     if (diag === 'DM') countDM++;
   });
 });
-          var filterHtml = '<div class="filter-row">' +
-            '<button class="filter-pill ' + (filter === 'semua' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'semua\'; renderDashboard();">📅 Semua Waktu</button>' +
-            '<button class="filter-pill ' + (filter === 'bulan' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'bulan\'; renderDashboard();">📅 Bulan Ini</button>' +
-            '<button class="filter-pill ' + (filter === 'tahun' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'tahun\'; renderDashboard();">📅 Tahun Ini</button>' +
-            '</div>';
+         var filterHtml = '<div class="filter-row" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:15px;">' +
+  '<div style="display:flex; align-items:center; gap:6px; background:#fff; padding:6px 12px; border-radius:8px; border:1px solid var(--slate-300);">' +
+    '<span style="font-size:13px; color:var(--slate-500); font-weight:600;">Dari:</span>' +
+    '<input type="date" id="dashStartDate" style="padding:6px; border:none; outline:none; font-family:inherit; font-size:13px;" value="' + startDate + '">' +
+  '</div>' +
+  '<div style="display:flex; align-items:center; gap:6px; background:#fff; padding:6px 12px; border-radius:8px; border:1px solid var(--slate-300);">' +
+    '<span style="font-size:13px; color:var(--slate-500); font-weight:600;">S/d:</span>' +
+    '<input type="date" id="dashEndDate" style="padding:6px; border:none; outline:none; font-family:inherit; font-size:13px;" value="' + endDate + '">' +
+  '</div>' +
+  '<button class="filter-pill active" onclick="applyDateFilter()" style="padding:10px 18px;">🔍 Terapkan</button>' +
+  '<button class="filter-pill" onclick="resetDateFilter()" style="padding:10px 18px; background:var(--slate-200); color:var(--slate-800);">🔄 Reset</button>' +
+'</div>';
 
           var statsHtml = '<div class="stat-grid">' +
             '<div class="stat-card"><div class="title">Total Peserta</div><div class="value">' + totalPasien + '</div></div>' +
