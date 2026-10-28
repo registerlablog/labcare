@@ -1,990 +1,681 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LabCare Prolanis Akses</title>
-<link rel="icon" type="image/jpeg" href="icon.jpg">
-<link rel="manifest" href="manifest.json">
-<!-- Library Excel -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-/* --- CSS GRAFIK --- */
-.chart-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
-@media (min-width: 768px) { .chart-grid { grid-template-columns: 1fr 1fr; } }
-.chart-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); height: 260px; display: flex; justify-content: center; align-items: center; position: relative; }
-/* --- CSS KARTU STATISTIK & FILTER --- */
-.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-@media (min-width: 600px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
-.stat-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); display: flex; flex-direction: column; border-left: 4px solid var(--primary); }
-.stat-card.ht { border-left-color: #f59e0b; }
-.stat-card.dm { border-left-color: #dc2626; }
-.stat-card .title { font-size: 11px; color: var(--slate-500); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-.stat-card .value { font-size: 24px; font-weight: 800; color: var(--slate-800); }
-.filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
-.filter-row::-webkit-scrollbar { display: none; }
-.filter-pill { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--slate-200); background: #fff; color: var(--slate-600); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: .15s; }
-.filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-:root {
-  --primary: #2563eb; --primary-dark: #1d4ed8;
-  --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
-  --slate-500: #64748b; --slate-800: #1e293b; --slate-900: #0f172a;
-  --success: #16a34a; --success-light: #dcfce7;
-  --radius: 12px;
-}
-html, body { height: 100%; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--slate-100); color: var(--slate-800); line-height: 1.5; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LabCare Prolanis Akses - Portal Khusus Puskesmas</title>
+    
+    <!-- Library Excel & Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: { 50: '#eef6ff', 100: '#e0edff', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Glowing Background Effects */
+        .bg-mesh {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.4) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.25) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.5) 0px, transparent 50%);
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+        .animate-pulse-glow { animation: pulse-slow 4s ease-in-out infinite; }
 
-/* ===== LOGIN ===== */
-#loginView { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: linear-gradient(135deg, #1e40af, #2563eb); }
-.login-card { background: #fff; border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,.2); }
-.login-card h1 { text-align: center; color: var(--slate-900); font-size: 22px; margin-bottom: 6px; }
-.login-card p { text-align: center; color: var(--slate-500); font-size: 13px; margin-bottom: 24px; }
-.input-group { margin-bottom: 16px; }
-.input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--slate-500); margin-bottom: 6px; text-transform: uppercase; }
-.input-group input, .input-group select { width: 100%; padding: 12px 14px; border: 2px solid var(--slate-200); border-radius: 10px; font-size: 16px; font-family: inherit; outline: none; transition: .15s; }
-.input-group input:focus, .input-group select:focus { border-color: var(--primary); }
-.btn-login { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 10px; }
-.btn-login:active { transform: scale(.98); }
+        /* --- CSS DASHBOARD LAMA --- */
+        :root { --primary: #2563eb; --primary-dark: #1d4ed8; --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-500: #64748b; --slate-800: #1e293b; --radius: 12px; --success: #16a34a; }
+        .container-dash { padding: 16px; max-width: 1200px; margin: 0 auto; }
+        .header-dash { background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 12px rgba(37,99,235,.25); display: flex; justify-content: space-between; align-items: flex-start; }
+        .btn-logout { background: rgba(255,255,255,.2); color: #fff; border: none; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-logout:hover { background: rgba(255,255,255,.3); }
+        .patient-grid { display: grid; gap: 14px; }
+        @media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
+        .card-dash { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,.06); border-left: 4px solid var(--primary); display: flex; flex-direction: column; }
+        .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .card-title { font-size: 15px; font-weight: 800; color: var(--slate-800); }
+        .card-date { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
+        .badge-dash { padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #e0edff; color: var(--primary); }
+        .progress-bg { background: var(--slate-100); border-radius: 999px; height: 6px; overflow: hidden; margin-top: 10px; }
+        .progress-bar { background: var(--primary); height: 100%; transition: .3s; }
+        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--slate-500); margin-top: 6px; font-weight: 600; }
+        .card-actions { display: flex; gap: 8px; padding-top: 14px; margin-top: auto; border-top: 1px solid var(--slate-100); }
+        .btn-action { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-pdf { background: #dbeafe; color: #1d4ed8; } .btn-excel { background: #dcfce7; color: #15803d; }
+        
+        /* CSS STATISTIK & GRAFIK */
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        @media (min-width: 600px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+        .stat-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); display: flex; flex-direction: column; border-left: 4px solid var(--primary); }
+        .stat-card.ht { border-left-color: #f59e0b; } .stat-card.dm { border-left-color: #dc2626; }
+        .stat-card .title { font-size: 11px; color: var(--slate-500); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-card .value { font-size: 24px; font-weight: 800; color: var(--slate-800); }
+        .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-pill { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--slate-200); background: #fff; color: var(--slate-500); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: .15s; }
+        .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+        @media (min-width: 768px) { .chart-grid { grid-template-columns: 1fr 1fr; } }
+        .chart-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); height: 260px; display: flex; justify-content: center; align-items: center; position: relative; }
 
-/* ===== DASHBOARD ===== */
-#dashboardView { display: none; min-height: 100vh; }
-.header { background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 12px rgba(37,99,235,.25); display: flex; justify-content: space-between; align-items: flex-start; }
-.header h1 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-.header p { font-size: 12px; opacity: .9; margin-top: 4px; }
-.btn-logout { background: rgba(255,255,255,.2); color: #fff; border: none; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
-.container { padding: 16px; max-width: 800px; margin: 0 auto; }
-.patient-grid { display: grid; gap: 14px; }
-@media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
-.card { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,.06); border-left: 4px solid var(--primary); display: flex; flex-direction: column; }
-.card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.card-title { font-size: 15px; font-weight: 800; color: var(--slate-800); }
-.card-date { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
-.badge { padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--primary-light); color: var(--primary); }
-.progress-bg { background: var(--slate-100); border-radius: 999px; height: 6px; overflow: hidden; margin-top: 10px; }
-.progress-bar { background: var(--primary); height: 100%; transition: .3s; }
-.card-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--slate-500); margin-top: 6px; font-weight: 600; }
-.card-actions { display: flex; gap: 8px; padding-top: 14px; margin-top: auto; border-top: 1px solid var(--slate-100); }
-.btn-action { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.btn-pdf { background: #dbeafe; color: #1d4ed8; }
-.btn-excel { background: #dcfce7; color: #15803d; }
-.empty-state { text-align: center; padding: 40px; color: var(--slate-500); }
-.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 9999; align-items: center; justify-content: center; }
-.loading-overlay.show { display: flex; }
-.spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none; }
-.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-.toast.err { background: #dc2626; }
-.toast.ok { background: var(--success); }
-  /* --- PERBAIKAN CSS CETAK UNTUK AKSES.HTML --- */
-  @media print {
-    @page { size: A4 portrait; margin: 0; }
-    
-    /* Paksa html dan body agar bisa memanjang ke bawah */
-    html, body { 
-      height: auto !important; 
-      overflow: visible !important; 
-      background: #fff !important; 
-    }
-    
-    /* Sembunyikan semua elemen kecuali area cetak */
-    body > *:not(#printOverlayAkses) { 
-      display: none !important; 
-    }
-    
-    /* KUNCI UTAMA: Paksa overlay menjadi static, bukan fixed */
-    #printOverlayAkses { 
-      display: block !important; 
-      position: static !important; 
-      height: auto !important;
-      width: 100% !important;
-      overflow: visible !important; 
-      background: #fff !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    
-    /* Sembunyikan toolbar hitam (Tutup/Cetak) */
-    #printOverlayAkses > div:first-child { 
-      display: none !important; 
-    } 
-    
-    /* Paksa setiap halaman untuk di-break per lembar A4 */
-    #printOverlayAkses .print-page {
-      display: block !important;
-      box-shadow: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 210mm !important;
-      height: 297mm !important; 
-      position: relative !important;
-      box-sizing: border-box !important;
-      overflow: hidden !important;
-      
-      page-break-after: always !important;
-      break-after: page !important;
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    
-    #printOverlayAkses .print-page:last-child { 
-      page-break-after: auto !important; 
-      break-after: auto !important; 
-    }
-  }
-  /* ------------------------------------------- */
-  /* ===== MODAL GANTI PIN ===== */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
-.modal-overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 16px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.25); }
-.modal-body { padding: 24px; }
-.modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--slate-200); margin-bottom: 16px; }
-.modal-head h3 { font-size: 17px; font-weight: 700; }
-.modal-head p { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
-.modal-close { background: none; border: none; font-size: 28px; line-height: 1; color: var(--slate-400); cursor: pointer; padding: 0 4px; }
-.form-row { display: grid; gap: 16px; grid-template-columns: 1fr; }
-.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--slate-500); margin-bottom: 6px; }
-.inp { width: 100%; padding: 10px 12px; border: 2px solid var(--slate-200); border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
-.inp:focus { border-color: var(--primary); }
-.btn-row { display: flex; gap: 12px; margin-top: 20px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; flex: 1; padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-.btn-primary { background: var(--primary); color: #fff; }
-.btn-secondary { background: var(--slate-200); color: var(--slate-800); }
-</style>
+        /* --- CSS MODAL & TOAST & PRINT (Dari kode lama) --- */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; } .toast.err { background: #dc2626; } .toast.ok { background: var(--success); }
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 9999; align-items: center; justify-content: center; }
+        .loading-overlay.show { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .modal-overlay-dash { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
+        .modal-overlay-dash.open { display: flex; }
+        .modal-dash { background: #fff; border-radius: 16px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.25); }
+        .modal-body { padding: 24px; }
+        .modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--slate-200); margin-bottom: 16px; }
+        .modal-head h3 { font-size: 17px; font-weight: 700; }
+        .form-row { display: grid; gap: 16px; grid-template-columns: 1fr; }
+        .lbl { display: block; font-size: 12px; font-weight: 600; color: var(--slate-500); margin-bottom: 6px; }
+        .inp-dash { width: 100%; padding: 10px 12px; border: 2px solid var(--slate-200); border-radius: 8px; font-size: 14px; outline: none; }
+        .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-dash { display: inline-flex; align-items: center; justify-content: center; flex: 1; padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-primary-dash { background: var(--primary); color: #fff; }
+        .btn-secondary-dash { background: var(--slate-200); color: var(--slate-800); }
+
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+            body > *:not(#printOverlayAkses):not(#printArea) { display: none !important; }
+            #printOverlayAkses { display: block !important; position: static !important; height: auto !important; width: 100% !important; background: #fff !important; overflow: visible !important; }
+            #printOverlayAkses > div:first-child { display: none !important; } 
+            #printOverlayAkses .print-page { display: block !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 210mm !important; height: 297mm !important; position: relative !important; box-sizing: border-box !important; overflow: hidden !important; page-break-after: always !important; }
+            #printOverlayAkses .print-page:last-child { page-break-after: auto !important; }
+        }
+    </style>
 </head>
-<body>
+<body class="font-sans antialiased bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
 
-<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    <!-- ======================= TAMPILAN LOGIN BARU ======================= -->
+    <div id="loginView" class="flex-grow flex flex-col lg:flex-row min-h-screen w-full">
+        
+        <!-- SISI KIRI: BRANDING (55%) -->
+        <div class="lg:w-[55%] bg-mesh text-white p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden select-none">
+            <div class="absolute -right-20 -bottom-20 opacity-10 pointer-events-none">
+                <i class="fa-solid fa-microscope text-[320px] text-white"></i>
+            </div>
+            <div class="absolute top-1/4 right-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-glow pointer-events-none"></div>
 
-<!-- TAMPILAN LOGIN -->
-<div id="loginView">
-  <div class="login-card">
-    
-    <!-- FORM LOGIN (Tampil Default) -->
-    <div id="formLogin">
-      <h1>🔬 LabCare Prolanis Akses</h1>
-      <p>Portal Khusus Puskesmas</p>
-      <div class="input-group">
-        <label>Pilih Puskesmas</label>
-        <select id="loginPusk">
-          <option value="">— Memuat data... —</option>
-        </select>
+            <div class="relative z-10 flex items-center space-x-3 mb-8 lg:mb-0">
+                <div class="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-cyan-300 shadow-lg">
+                    <i class="fa-solid fa-microscope text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-heading font-extrabold text-2xl tracking-tight text-white flex items-center gap-2">
+                        LabCare <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-300 font-medium">Prolanis</span>
+                    </h1>
+                    <p class="text-xs text-slate-300 tracking-wider font-semibold uppercase">Portal Layanan Kesehatan Puskesmas</p>
+                </div>
+            </div>
+
+            <div class="relative z-10 my-auto py-8">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-cyan-200 mb-6 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Sistem Pelayanan Laboratorium Prolanis Terpadu
+                </div>
+
+                <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">
+                    Kelola Pemeriksaan Lab Prolanis Lebih <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300">Cepat & Akurat</span>
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base max-w-xl mb-10 leading-relaxed font-light">
+                    Solusi terintegrasi untuk petugas Puskesmas dalam pengelolaan sampel, input hasil tes laboratorium, hingga pelaporan berkala peserta Prolanis secara akurat.
+                </p>
+            </div>
+
+            <div class="relative z-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+                <p>&copy; 2026 LabCare Prolanis. Hak Cipta Dilindungi.</p>
+            </div>
+        </div>
+
+        <!-- SISI KANAN: FORM LOGIN (45%) -->
+        <div class="lg:w-[45%] bg-white p-8 sm:p-12 lg:p-16 flex flex-col justify-center items-center relative">
+            <div class="w-full max-w-md">
+                
+                <div class="text-left mb-8">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold mb-3">
+                        <i class="fa-solid fa-clinic-medical"></i> Portal Akses Puskesmas
+                    </div>
+                    <h2 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Masuk ke Dashboard</h2>
+                    <p class="text-sm text-slate-500 mt-1">Silakan pilih Puskesmas dan masukkan PIN Akses Anda.</p>
+                </div>
+
+                <!-- Form Login -->
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                    
+                    <!-- Input 1: Dropdown Pilih Puskesmas (ID disesuaikan dengan fungsi lama) -->
+                    <div>
+                        <label for="loginPusk" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            Pilih Puskesmas <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-house-medical text-sm"></i>
+                            </div>
+                            <select id="loginPusk" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all duration-200 appearance-none cursor-pointer">
+                                <option value="">— Memuat data... —</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input 2: PIN Akses (ID disesuaikan) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="loginPin" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                PIN Akses <span class="text-rose-500">*</span>
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-key text-sm"></i>
+                            </div>
+                            <input type="password" id="loginPin" maxlength="10" placeholder="••••••" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all duration-200 tracking-widest font-mono">
+                            <button type="button" onclick="togglePinVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                                <i id="pinToggleIcon" class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn" class="w-full py-3.5 px-6 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 focus:ring-4 focus:ring-brand-500/20 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 group">
+                        <span>Masuk ke Dashboard</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <!-- Register Link -->
+                <div class="text-center p-4 mt-6 rounded-xl bg-slate-50 border border-slate-100">
+                    <p class="text-xs text-slate-600">
+                        Belum memiliki akses layanan? 
+                        <a href="#" onclick="showRegisterModal()" class="font-semibold text-brand-600 hover:text-brand-800 hover:underline transition ml-1 inline-flex items-center gap-1">
+                            Daftar Puskesmas <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= TAMPILAN DASHBOARD (Dari kode lama) ======================= -->
+    <div id="dashboardView" style="display: none; min-height: 100vh; background-color: var(--slate-50);">
+      <div class="header-dash">
+        <div>
+          <h1 style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">🏥 <span id="headerPusk">—</span></h1>
+          <p style="font-size: 12px; opacity: .9; margin-top: 4px;">Portal Hasil Laboratorium Prolanis</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-logout" style="background:rgba(255,255,255,.15);" onclick="showGantiPinModal()">🔑 Ganti PIN</button>
+          <button class="btn-logout" onclick="doLogout()">Keluar</button>
+        </div>
       </div>
-      <div class="input-group">
-        <label>PIN Akses</label>
-        <input type="password" id="loginPin" inputmode="numeric" placeholder="••••••" maxlength="10">
-      </div>
-      <button class="btn-login" onclick="doLogin()">Masuk ke Dashboard</button>
-      <div style="text-align: center; margin-top: 15px;">
-        <a href="javascript:void(0)" onclick="toggleDaftar()" style="font-size: 13px; color: var(--primary); text-decoration: none;">Belum punya akun? Daftar Puskesmas</a>
+      <div class="container-dash">
+        <div id="kegiatanList"></div>
       </div>
     </div>
 
-    <!-- FORM DAFTAR (Tersembunyi di awal) -->
-    <div id="formDaftar" style="display: none;">
-      <h1>📝 Daftar Puskesmas</h1>
-      <p>Buat akun akses baru</p>
-      <div class="input-group">
-        <label>Nama Puskesmas</label>
-        <input type="text" id="regNama" placeholder="Contoh: Pusk. Curahdamai">
-      </div>
-      <div class="input-group">
-        <label>Buat PIN (Min. 6 Angka)</label>
-        <input type="password" id="regPin" inputmode="numeric" placeholder="••••••" maxlength="10">
-      </div>
-      <div class="input-group">
-        <label>Ulangi PIN</label>
-        <input type="password" id="regPinUlang" inputmode="numeric" placeholder="••••••" maxlength="10">
-      </div>
-      <button class="btn-login" onclick="doRegister()">Daftar Sekarang</button>
-      <div style="text-align: center; margin-top: 15px;">
-        <a href="javascript:void(0)" onclick="toggleDaftar()" style="font-size: 13px; color: var(--primary); text-decoration: none;">Kembali ke Halaman Login</a>
-      </div>
-    </div>
+    <!-- WADAH MODAL (GANTI PIN / DAFTAR) -->
+    <div class="modal-overlay-dash" id="modal"><div class="modal-dash" id="modalContent"></div></div>
 
-  </div>
-</div>
-<!-- TAMPILAN DASHBOARD -->
-<div id="dashboardView">
-  <div class="header">
-    <div>
-      <h1>🏥 <span id="headerPusk">—</span></h1>
-      <p>Portal Hasil Laboratorium Prolanis</p>
-    </div>
-    <div style="display:flex; gap:8px;">
-  <button class="btn-logout" style="background:rgba(255,255,255,.15);" onclick="showGantiPinModal()">🔑 Ganti PIN</button>
-  <button class="btn-logout" onclick="doLogout()">Keluar</button>
-</div>
-  </div>
-  <div class="container">
-    <div id="kegiatanList"></div>
-  </div>
-</div>
+    <!-- TOAST & LOADING -->
+    <div class="toast" id="toast"></div>
+    <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
 
-<div class="toast" id="toast"></div>
-<div class="modal-overlay" id="modal"><div class="modal" id="modalContent"></div></div>
+    <!-- ======================= JAVASCRIPT LOGIC ======================= -->
+    <script>
+        // --- KONFIGURASI & VARIABEL GLOBAL ---
+        var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
+        var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
+        var currentPuskesmas = '';
+        var currentKegiatan = [];
+        var MASTER_TESTS = [];   
+        var GLOBAL_ANALIS = [];   
+        var GLOBAL_DOKTER = [];   
+        var GLOBAL_STEMPEL = '';  
+        window._dashTimeFilter = window._dashTimeFilter || 'semua';
 
-<script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
-var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
-var currentPuskesmas = '';
-var currentKegiatan = [];
-var MASTER_TESTS = [];
-var GLOBAL_ANALIS = [];
-var GLOBAL_DOKTER = [];
-var GLOBAL_STEMPEL = '';
-
-function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
-function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
-function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-
-// Load daftar puskesmas saat pertama kali buka
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-    var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
-    var json = await res.json();
-    
-    if (json && json.ok && Array.isArray(json.pemeriksaan)) {
-      MASTER_TESTS = json.pemeriksaan;
-      console.log("Master Lab berhasil dimuat:", MASTER_TESTS.length);
-    }
-    
-    // --- TAMBAHKAN UNTUK MENGAMBIL TTD ANALIS & DOKTER ---
-    if (json && json.ok && Array.isArray(json.analis)) {
-      GLOBAL_ANALIS = json.analis;
-    }
-    if (json && json.ok && Array.isArray(json.dokter)) {
-      GLOBAL_DOKTER = json.dokter;
-    }
-    // ------------------------------------------------------
-
-    if (json && json.ok && json.master_puskesmas) {
-      var sel = document.getElementById('loginPusk');
-      sel.innerHTML = '<option value="">— Pilih Puskesmas —</option>' + 
-        json.master_puskesmas.map(function(p) { return '<option value="' + esc(p.nama_puskesmas) + '">' + esc(p.nama_puskesmas) + '</option>'; }).join('');
-    }
-
-    // --- TAMBAHKAN UNTUK MENGAMBIL URL STEMPEL ---
-    try {
-      var resStempel = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getStempel', data: {} }) });
-      var jsonStempel = await resStempel.json();
-      if (jsonStempel && jsonStempel.ok && jsonStempel.url) {
-        GLOBAL_STEMPEL = jsonStempel.url;
-      }
-    } catch (e) { console.log('Gagal load stempel:', e); }
-    // ----------------------------------------------
-
-  } catch (e) { console.log('Gagal load data:', e); }
-});
-// Fungsi untuk beralih antara form Login dan Daftar
-function toggleDaftar() {
-  var fLogin = document.getElementById('formLogin');
-  var fDaftar = document.getElementById('formDaftar');
-  if (fLogin.style.display === 'none') {
-    fLogin.style.display = 'block';
-    fDaftar.style.display = 'none';
-  } else {
-    fLogin.style.display = 'none';
-    fDaftar.style.display = 'block';
-  }
-}
-
-// Fungsi untuk mengirim data pendaftaran ke API
-async function doRegister() {
-  var nama = document.getElementById('regNama').value.trim();
-  var pin = document.getElementById('regPin').value.trim();
-  var pinUlang = document.getElementById('regPinUlang').value.trim();
-
-  if (!nama || !pin || !pinUlang) {
-    toastMsg('Semua kolom wajib diisi!', 'err'); return;
-  }
-  if (pin.length < 6 || isNaN(pin)) {
-    toastMsg('PIN minimal 6 digit angka!', 'err'); return;
-  }
-  if (pin !== pinUlang) {
-    toastMsg('PIN dan Ulangi PIN tidak cocok!', 'err'); return;
-  }
-
-  showLoading(true);
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ 
-        action: 'registerPuskesmas', 
-        data: { nama_pusk: nama, pin: pin } 
-      })
-    });
-    var json = await res.json();
-    showLoading(false);
-
-    if (json && json.ok) {
-      toastMsg('Pendaftaran berhasil! Silakan login.', 'ok');
-      
-      // Kembali ke form login dan isi otomatis namanya
-      toggleDaftar();
-      document.getElementById('regNama').value = '';
-      document.getElementById('regPin').value = '';
-      document.getElementById('regPinUlang').value = '';
-      
-      // Tambahkan ke dropdown agar langsung bisa dipilih
-      var sel = document.getElementById('loginPusk');
-      var opt = document.createElement('option');
-      opt.value = nama;
-      opt.text = nama;
-      sel.appendChild(opt);
-      sel.value = nama;
-      
-    } else {
-      toastMsg(json.error || 'Gagal mendaftar', 'err');
-    }
-  } catch (e) {
-    showLoading(false);
-    toastMsg('Error koneksi: ' + e.message, 'err');
-  }
-}
-  // --- FUNGSI GANTI PIN ---
-function showGantiPinModal() {
-  var html = '<div class="modal-body">' +
-    '<div class="modal-head"><div><h3>🔑 Ganti PIN</h3><p>Keamanan akun Anda</p></div>' +
-    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
-    '<div class="form-row">' +
-    '<div><label class="lbl">PIN Lama *</label><input type="password" id="pinLama" class="inp" placeholder="Masukkan PIN saat ini"></div>' +
-    '<div><label class="lbl">PIN Baru *</label><input type="password" id="pinBaru" class="inp" placeholder="Minimal 6 digit angka"></div>' +
-    '<div><label class="lbl">Ulangi PIN Baru *</label><input type="password" id="pinBaruUlang" class="inp" placeholder="Ketik ulang PIN baru"></div>' +
-    '</div>' +
-    '<div class="btn-row"><button class="btn btn-primary" onclick="doChangePin()">💾 Simpan PIN Baru</button>' +
-    '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
-  document.getElementById('modalContent').innerHTML = html;
-  document.getElementById('modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
-
-async function doChangePin() {
-  var oldPin = document.getElementById('pinLama').value.trim();
-  var newPin = document.getElementById('pinBaru').value.trim();
-  var confirmPin = document.getElementById('pinBaruUlang').value.trim();
-
-  if (!oldPin || !newPin || !confirmPin) { toastMsg('Semua kolom wajib diisi!', 'err'); return; }
-  if (newPin.length < 6 || isNaN(newPin)) { toastMsg('PIN baru minimal 6 digit angka!', 'err'); return; }
-  if (newPin !== confirmPin) { toastMsg('PIN baru dan ulangi PIN tidak cocok!', 'err'); return; }
-
-  showLoading(true);
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ action: 'changePinPuskesmas', data: { nama_pusk: currentPuskesmas, old_pin: oldPin, new_pin: newPin } })
-    });
-    var json = await res.json();
-    showLoading(false);
-
-    if (json && json.ok) {
-      toastMsg('✅ PIN berhasil diubah! Silakan login kembali.', 'ok');
-      closeModal();
-      // Paksa logout setelah 2 detik agar login pakai PIN baru
-      setTimeout(function() { doLogout(); }, 2000);
-    } else {
-      toastMsg(json.error || 'Gagal mengubah PIN', 'err');
-    }
-  } catch (e) {
-    showLoading(false);
-    toastMsg('Error koneksi: ' + e.message, 'err');
-  }
-}
-async function doLogin() {
-  var nama = document.getElementById('loginPusk').value;
-  var pin = document.getElementById('loginPin').value.trim();
-  
-  if (!nama || !pin) { toastMsg('Pilih Puskesmas dan masukkan PIN', 'err'); return; }
-  
-  showLoading(true);
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ action: 'loginPuskesmas', data: { nama_pusk: nama, pin: pin } })
-    });
-    var json = await res.json();
-    showLoading(false);
-    
-    if (json && json.ok) {
-      currentPuskesmas = json.puskesmas;
-      currentKegiatan = json.kegiatan || [];
-      
-      document.getElementById('loginView').style.display = 'none';
-      document.getElementById('dashboardView').style.display = 'block';
-      document.getElementById('headerPusk').textContent = currentPuskesmas;
-      
-      renderDashboard();
-      toastMsg('Login berhasil!', 'ok');
-    } else {
-      toastMsg(json.error || 'Login gagal', 'err');
-    }
-  } catch (e) {
-    showLoading(false);
-    toastMsg('Error koneksi: ' + e.message, 'err');
-  }
-}
-
-function doLogout() {
-  currentPuskesmas = '';
-  currentKegiatan = [];
-  document.getElementById('loginPin').value = '';
-  document.getElementById('dashboardView').style.display = 'none';
-  document.getElementById('loginView').style.display = 'flex';
-}
-
-function getColsProlanis(d) {
-  var all = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
-  if (String(d || '').toUpperCase() === 'HT') return all.filter(function(c) { return c !== 'hba1c'; });
-  return all;
-}
-
-// State untuk menyimpan pilihan filter waktu
-window._dashTimeFilter = window._dashTimeFilter || 'semua';
-
-function renderDashboard() {
-  var listContainer = document.getElementById('kegiatanList');
-  
-  // 1. FILTER DATA BERDASARKAN WAKTU
-  var filter = window._dashTimeFilter;
-  var now = new Date();
-  var currentMonth = now.toISOString().slice(0, 7);
-  var currentYear = now.toISOString().slice(0, 4);
-
-  var filteredKeg = currentKegiatan.filter(function(k) {
-    if (filter === 'semua') return true;
-    var tgl = String(k.tanggal || '');
-    if (filter === 'bulan') return tgl.indexOf(currentMonth) === 0;
-    if (filter === 'tahun') return tgl.indexOf(currentYear) === 0;
-    return true;
-  });
-
-  // 2. HITUNG STATISTIK & RATA-RATA LAB
-  var totalPasien = 0;
-  var countHT = 0;
-  var countDM = 0;
-  
-  // Variabel untuk menghitung rata-rata lab
-  var labKeys = ['chol', 'trig', 'hdl', 'ldl', 'hba1c'];
-  var labLabels = ['Kolesterol', 'Trigliserida', 'HDL', 'LDL', 'HbA1c'];
-  var labSums = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
-  var labCounts = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
-
-  filteredKeg.forEach(function(k) {
-    var peserta = k.peserta || [];
-    totalPasien += peserta.length;
-    peserta.forEach(function(p) {
-      var diag = String(p.diagnosa || '').toUpperCase();
-      if (diag === 'HT') countHT++;
-      if (diag === 'DM') countDM++;
-      
-      // Hitung total nilai lab untuk rata-rata
-      labKeys.forEach(function(key) {
-        var val = parseFloat(p[key]);
-        if (!isNaN(val)) {
-          labSums[key] += val;
-          labCounts[key]++;
+        // --- FUNGSI UTILITAS ---
+        function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
+        function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
+        function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+        function fmtTanggalKeg(tgl) { if (!tgl) return '-'; var s = String(tgl); if (s.indexOf('T') > 0) s = s.split('T')[0]; var parts = s.split('-'); if (parts.length === 3) { return parts[2] + '-' + parts[1] + '-' + parts[0]; } return s; }
+        function getColsProlanis(d) { var all = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro']; if (String(d || '').toUpperCase() === 'HT') return all.filter(function(c) { return c !== 'hba1c'; }); return all; }
+        
+        function togglePinVisibility() {
+            var pinInput = document.getElementById('loginPin');
+            var pinIcon = document.getElementById('pinToggleIcon');
+            if (pinInput.type === 'password') { pinInput.type = 'text'; pinIcon.classList.remove('fa-eye'); pinIcon.classList.add('fa-eye-slash'); } 
+            else { pinInput.type = 'password'; pinIcon.classList.remove('fa-eye-slash'); pinIcon.classList.add('fa-eye'); }
         }
-      });
-    });
-  });
 
-  // Hitung nilai rata-rata
-  var labAverages = labKeys.map(function(key) {
-    return labCounts[key] > 0 ? (labSums[key] / labCounts[key]).toFixed(1) : 0;
-  });
+        // --- INIT DATA (DOMContentLoaded) ---
+        document.addEventListener('DOMContentLoaded', async function() {
+          try {
+            var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
+            var json = await res.json();
+             if (json && json.ok && Array.isArray(json.pemeriksaan)) { MASTER_TESTS = json.pemeriksaan; }
+             if (json && json.ok && Array.isArray(json.analis)) { GLOBAL_ANALIS = json.analis; }
+             if (json && json.ok && Array.isArray(json.dokter)) { GLOBAL_DOKTER = json.dokter; }
+            
+            try {
+              var resStempel = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getStempel', data: {} }) });
+              var jsonStempel = await resStempel.json();
+              if (jsonStempel && jsonStempel.ok && jsonStempel.url) { GLOBAL_STEMPEL = jsonStempel.url; }
+            } catch (e) { console.log('Gagal load stempel:', e); }
 
-  // 3. RENDER HTML FILTER & KARTU
-  var filterHtml = '<div class="filter-row">' +
-    '<button class="filter-pill ' + (filter === 'semua' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'semua\'; renderDashboard();">📅 Semua Waktu</button>' +
-    '<button class="filter-pill ' + (filter === 'bulan' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'bulan\'; renderDashboard();">📅 Bulan Ini</button>' +
-    '<button class="filter-pill ' + (filter === 'tahun' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'tahun\'; renderDashboard();">📅 Tahun Ini</button>' +
-    '</div>';
+            if (json && json.ok && json.master_puskesmas) {
+              var sel = document.getElementById('loginPusk');
+              sel.innerHTML = '<option value="">— Pilih Puskesmas —</option>' + 
+                json.master_puskesmas.map(function(p) { return '<option value="' + esc(p.nama_puskesmas) + '">' + esc(p.nama_puskesmas) + '</option>'; }).join('');
+            }
+          } catch (e) { console.log('Gagal load data:', e); }
+        });
 
-  var statsHtml = '<div class="stat-grid">' +
-    '<div class="stat-card"><div class="title">Total Peserta</div><div class="value">' + totalPasien + '</div></div>' +
-    '<div class="stat-card ht"><div class="title">Pasien HT</div><div class="value">' + countHT + '</div></div>' +
-    '<div class="stat-card dm"><div class="title">Pasien DM</div><div class="value">' + countDM + '</div></div>' +
-    '<div class="stat-card"><div class="title">Total Kegiatan</div><div class="value">' + filteredKeg.length + '</div></div>' +
-  '</div>';
+        // --- LOGIN & LOGOUT ---
+        async function handleLogin(event) {
+          event.preventDefault();
+          var nama = document.getElementById('loginPusk').value;
+          var pin = document.getElementById('loginPin').value.trim();
+          if (!nama || !pin) { toastMsg('Pilih Puskesmas dan masukkan PIN', 'err'); return; }
+          
+          var btn = document.getElementById('submitBtn');
+          var originalHtml = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>Memproses...</span>';
+          showLoading(true);
 
-  // 4. RENDER WADAH GRAFIK (Canvas)
-  var chartsHtml = '<div class="chart-grid">' +
-    '<div class="chart-card"><canvas id="pieChart"></canvas></div>' +
-    '<div class="chart-card"><canvas id="barChart"></canvas></div>' +
-  '</div>';
-
-  // 5. RENDER DAFTAR KEGIATAN
-  var kegiatanCards = filteredKeg.map(function(k, idx) {
-    var originalIdx = currentKegiatan.indexOf(k); 
-    var peserta = k.peserta || [];
-    var totalFilled = 0, totalAll = 0;
-    peserta.forEach(function(p) {
-      var cols = getColsProlanis(p.diagnosa);
-      totalAll += cols.length;
-      cols.forEach(function(c) { if (p[c]) totalFilled++; });
-    });
-    var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
-    var tgl = String(k.tanggal || '').indexOf('T') > 0 ? k.tanggal.split('T')[0] : k.tanggal;
-    
-    return '<div class="card">' +
-      '<div class="card-head">' +
-        '<div><div class="card-title">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
-        '<div class="card-date">🗓️ ' + esc(tgl) + '</div></div>' +
-        '<span class="badge">' + peserta.length + ' Peserta</span>' +
-      '</div>' +
-      '<div class="progress-bg"><div class="progress-bar" style="width:' + persen + '%"></div></div>' +
-      '<div class="card-meta"><span>Progress: ' + totalFilled + '/' + totalAll + '</span><span>' + persen + '%</span></div>' +
-      '<div class="card-actions">' +
-        '<button class="btn-action btn-pdf" onclick="cetakKegiatan(' + originalIdx + ')">🖨️ Cetak PDF</button>' +
-        '<button class="btn-action btn-excel" onclick="exportExcel(' + originalIdx + ')">📥 Rekap Excel</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-
-  if (filteredKeg.length === 0) {
-    kegiatanCards = '<div class="empty-state" style="grid-column:1/-1;"><h2>📭 Tidak ada kegiatan</h2><p>Tidak ada data kegiatan pada periode ini.</p></div>';
-  }
-
-  // 6. GABUNGKAN SEMUA
-  listContainer.innerHTML = filterHtml + statsHtml + chartsHtml + '<div class="patient-grid">' + kegiatanCards + '</div>';
-
-  // 7. GAMBAR GRAFIK DENGAN CHART.JS
-  setTimeout(function() {
-    if (window.myPieChart) window.myPieChart.destroy();
-    if (window.myBarChart) window.myBarChart.destroy();
-
-    var ctxPie = document.getElementById('pieChart');
-    var ctxBar = document.getElementById('barChart');
-    if (!ctxPie || !ctxBar) return;
-
-    // --- Pie Chart (HT vs DM) ---
-    window.myPieChart = new Chart(ctxPie, {
-      type: 'pie',
-      data: {
-        labels: ['Hipertensi (HT)', 'Diabetes (DM)'],
-        datasets: [{
-          data: [countHT, countDM],
-          backgroundColor: ['#f59e0b', '#dc2626'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: { display: true, text: 'Distribusi Penyakit', font: { size: 14 } },
-          legend: { position: 'bottom' }
+          try {
+            var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'loginPuskesmas', data: { nama_pusk: nama, pin: pin } }) });
+            var json = await res.json();
+            showLoading(false);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            
+            if (json && json.ok) {
+              currentPuskesmas = json.puskesmas;
+              currentKegiatan = json.kegiatan || [];
+              
+              document.getElementById('loginView').style.display = 'none';
+              document.getElementById('dashboardView').style.display = 'block';
+              document.getElementById('headerPusk').textContent = currentPuskesmas;
+              document.body.className = "font-sans antialiased bg-slate-50 text-slate-800 min-h-screen"; 
+              
+              renderDashboard();
+              toastMsg('Login berhasil!', 'ok');
+            } else {
+              toastMsg(json.error || 'Login gagal', 'err');
+            }
+          } catch (e) {
+            showLoading(false);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            toastMsg('Error koneksi: ' + e.message, 'err');
+          }
         }
-      }
-    });
 
-    // --- Bar Chart (Rata-rata Lab) ---
-    window.myBarChart = new Chart(ctxBar, {
-      type: 'bar',
-      data: {
-        labels: labLabels,
-        datasets: [{
-          label: 'Rata-rata Hasil',
-          data: labAverages,
-          backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: { display: true, text: 'Rata-rata Hasil Lab', font: { size: 14 } },
-          legend: { display: false }
-        },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }, 100);
-}
-/* ===== FUNGSI CETAK PDF & EXCEL UNTUK PUSKESMAS ===== */
+        function doLogout() {
+          currentPuskesmas = '';
+          currentKegiatan = [];
+          document.getElementById('loginPin').value = '';
+          document.getElementById('dashboardView').style.display = 'none';
+          document.getElementById('loginView').style.display = 'flex';
+          document.body.className = "font-sans antialiased bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between";
+        }
 
-function cetakKegiatan(idx) {
-  var keg = currentKegiatan[idx];
-  if (!keg || !keg.peserta || keg.peserta.length === 0) {
-    toastMsg('Tidak ada data peserta untuk dicetak', 'err');
-    return;
-  }
+        // --- FUNGSI MODAL DASHBOARD & DAFTAR ---
+        function showGantiPinModal() {
+          var html = '<div class="modal-body">' +
+            '<div class="modal-head"><div><h3>🔑 Ganti PIN</h3><p>Keamanan akun Anda</p></div>' +
+            '<button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
+            '<div class="form-row">' +
+            '<div><label class="lbl">PIN Lama *</label><input type="password" id="pinLama" class="inp-dash" placeholder="Masukkan PIN saat ini"></div>' +
+            '<div><label class="lbl">PIN Baru *</label><input type="password" id="pinBaru" class="inp-dash" placeholder="Minimal 6 digit angka"></div>' +
+            '<div><label class="lbl">Ulangi PIN Baru *</label><input type="password" id="pinBaruUlang" class="inp-dash" placeholder="Ketik ulang PIN baru"></div>' +
+            '</div>' +
+            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doChangePin()">💾 Simpan PIN Baru</button>' +
+            '<button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
+          document.getElementById('modalContent').innerHTML = html;
+          document.getElementById('modal').classList.add('open');
+        }
 
-  var pages = keg.peserta.map(function(p) {
-    return buildProlanisPrintPage(keg, p);
-  });
-  
-  var title = 'Cetak ' + keg.peserta.length + ' halaman — ' + (keg.nama_kegiatan || 'Prolanis');
-  
-  var overlay = document.createElement('div');
-  overlay.id = 'printOverlayAkses';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#e2e8f0;overflow-y:auto;display:block;';
-  
-  var pagesHtml = pages.map(function(p, i) {
-    var isLast = (i === pages.length - 1);
-    // Menambahkan break-after:page untuk cadangan
-    var breakStyle = isLast ? '' : 'page-break-after:always; break-after:page;';
-    return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
-      '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none;">' +
-      '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + p.content + '</div>' +
-      (p.footer ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + p.footer + '</div>' : '') +
-      '</div>';
-  }).join('');
+        function showRegisterModal() {
+          var html = '<div class="modal-body">' +
+            '<div class="modal-head"><div><h3>📝 Daftar Puskesmas</h3><p>Buat akun akses baru</p></div>' +
+            '<button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
+            '<div class="form-row">' +
+            '<div><label class="lbl">Nama Puskesmas *</label><input type="text" id="regNama" class="inp-dash" placeholder="Contoh: Pusk. Curahdamai"></div>' +
+            '<div><label class="lbl">Buat PIN (Min. 6 Angka) *</label><input type="password" id="regPin" class="inp-dash" placeholder="••••••" maxlength="10"></div>' +
+            '<div><label class="lbl">Ulangi PIN *</label><input type="password" id="regPinUlang" class="inp-dash" placeholder="••••••" maxlength="10"></div>' +
+            '</div>' +
+            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doRegister()">Daftar Sekarang</button>' +
+            '<button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
+          document.getElementById('modalContent').innerHTML = html;
+          document.getElementById('modal').classList.add('open');
+        }
 
-  overlay.innerHTML = '<div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#0f172a;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.2);">' +
-    '<button onclick="document.getElementById(\'printOverlayAkses\').remove();document.body.style.overflow=\'\';" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.15);color:#fff;">✕ Tutup</button>' +
-    '<div style="font-size:13px;font-weight:600;flex:1;text-align:center;">' + esc(title) + '</div>' +
-    '<button onclick="window.print()" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:#2563eb;color:#fff;">🖨️ Cetak / PDF</button>' +
-    '</div>' + pagesHtml;
+        function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-}
-function buildProlanisPrintPage(keg, peserta) {
-  var cols = getProlanisPrintCols(peserta.diagnosa);
-  var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
-  var tglTampil = fmtTanggalKeg(keg.tanggal);
-  var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
-  
-  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:85px; max-height:85px; object-fit:contain;">' : '';
-  var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+        async function doChangePin() {
+          var oldPin = document.getElementById('pinLama').value.trim();
+          var newPin = document.getElementById('pinBaru').value.trim();
+          var confirmPin = document.getElementById('pinBaruUlang').value.trim();
+          if (!oldPin || !newPin || !confirmPin) { toastMsg('Semua kolom wajib diisi!', 'err'); return; }
+          if (newPin.length < 6 || isNaN(newPin)) { toastMsg('PIN baru minimal 6 digit angka!', 'err'); return; }
+          if (newPin !== confirmPin) { toastMsg('PIN baru dan ulangi PIN tidak cocok!', 'err'); return; }
+          showLoading(true);
+          try {
+            var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'changePinPuskesmas', data: { nama_pusk: currentPuskesmas, old_pin: oldPin, new_pin: newPin } }) });
+            var json = await res.json();
+            showLoading(false);
+            if (json && json.ok) { toastMsg('✅ PIN berhasil diubah! Silakan login kembali.', 'ok'); closeModal(); setTimeout(function() { doLogout(); }, 2000); } 
+            else { toastMsg(json.error || 'Gagal mengubah PIN', 'err'); }
+          } catch (e) { showLoading(false); toastMsg('Error koneksi: ' + e.message, 'err'); }
+        }
 
-  // KOP (Logo Kanan 130px, Teks Arial)
-  var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
-  '<div style="width:130px; height:130px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
-  '<div style="flex:1; text-align:center; padding: 0 10px; font-family: Arial, sans-serif;">' +
-  '<div style="font-size:11.5px; font-weight:normal; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
-  '<div style="font-size:11.5px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
-  '<div style="font-size:15px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
-  '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
-  '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
-  '</div>' +
-  '<div style="width:130px; height:130px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
-  '</div>' +
-  '<div style="border-top:2px solid #000; margin:0;"></div>' +
-  '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
-  
-  var judulHtml = '<div style="text-align:center; margin-top:10px; margin-bottom:6px;">' +
-    '<div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
-    '</div>';
+        async function doRegister() {
+          var nama = document.getElementById('regNama').value.trim();
+          var pin = document.getElementById('regPin').value.trim();
+          var pinUlang = document.getElementById('regPinUlang').value.trim();
+          if (!nama || !pin || !pinUlang) { toastMsg('Semua kolom wajib diisi!', 'err'); return; }
+          if (pin.length < 6 || isNaN(pin)) { toastMsg('PIN minimal 6 digit angka!', 'err'); return; }
+          if (pin !== pinUlang) { toastMsg('PIN dan Ulangi PIN tidak cocok!', 'err'); return; }
+          showLoading(true);
+          try {
+            var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'registerPuskesmas', data: { nama_pusk: nama, pin: pin } }) });
+            var json = await res.json();
+            showLoading(false);
+            if (json && json.ok) {
+              toastMsg('Pendaftaran berhasil! Mohon tunggu persetujuan Admin.', 'ok');
+              closeModal();
+              var sel = document.getElementById('loginPusk');
+              var opt = document.createElement('option');
+              opt.value = nama; opt.text = nama;
+              sel.appendChild(opt); sel.value = nama;
+            } else { toastMsg(json.error || 'Gagal mendaftar', 'err'); }
+          } catch (e) { showLoading(false); toastMsg('Error koneksi: ' + e.message, 'err'); }
+        }
 
-  // INFO PASIEN (Font 13px Arial)
-  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; font-family: Arial, sans-serif; color:#000; line-height:1.5;">' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
-    '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
-    '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
-    '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
-    '<div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div>' +
-    '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
-    '<div style="clear:both;"></div></div>' +
-    '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
-    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
-    '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
-    '<div style="clear:both;"></div></div>' +
-    '</div>';
+        // --- FUNGSI DASHBOARD, GRAFIK, PDF, EXCEL (Sesuai kode sebelumnya) ---
+        function renderDashboard() {
+          var listContainer = document.getElementById('kegiatanList');
+          var filter = window._dashTimeFilter;
+          var now = new Date();
+          var currentMonth = now.toISOString().slice(0, 7);
+          var currentYear = now.toISOString().slice(0, 4);
 
-  // HEADER TABEL (Font 13px Arial)
-  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:6px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
-    '<div style="width:32%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
-    '<div style="width:35%; text-align:center;">HASIL</div>' +
-    '<div style="width:33%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
-    '</div>';
-    
-  var grup = {};
-  var urutanKategori = [];
-  cols.forEach(function(c) {
-    var kat = c.kategori || 'LAINNYA';
-    if (!grup[kat]) { grup[kat] = []; urutanKategori.push(kat); }
-    grup[kat].push(c);
-  });
+          var filteredKeg = currentKegiatan.filter(function(k) {
+            if (filter === 'semua') return true;
+            var tgl = String(k.tanggal || '');
+            if (filter === 'bulan') return tgl.indexOf(currentMonth) === 0;
+            if (filter === 'tahun') return tgl.indexOf(currentYear) === 0;
+            return true;
+          });
 
-  // ISI TABEL (Font 13px Arial)
-  var rowsHtml = '';
-  urutanKategori.forEach(function(kat) {
-    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' + esc(kat) + '</div>';
-    grup[kat].forEach(function(c) {
-      var val = peserta[c.key];
-      if (val === undefined || val === null || val === '') val = '-';
-      var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-      
-      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
-        '<div style="width:32%; text-align:left; padding-right:10px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
-        '<div style="width:35%; text-align:center;">' + esc(val) + '</div>' +
-        '<div style="width:33%; text-align:left; padding-left:15px; padding-right:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
-        '</div>';
-    });
-  });
+          var totalPasien = 0; var countHT = 0; var countDM = 0;
+          var labKeys = ['chol', 'trig', 'hdl', 'ldl', 'hba1c'];
+          var labLabels = ['Kolesterol', 'Trigliserida', 'HDL', 'LDL', 'HbA1c'];
+          var labSums = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
+          var labCounts = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
 
-  var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
-   // --- BAGIAN TANDA TANGAN & STEMPEL ---
-  var pemeriksaData = GLOBAL_ANALIS.find(function(a) {
-    return a.nama && a.nama.toLowerCase().indexOf('linda') >= 0;
-  }) || { nama: 'Linda Hardiyanti Putri, A.Md.Kes', kode: 'NIP. 19980128 202521 2 008', ttd: '' };
-  
-  var dokterData = GLOBAL_DOKTER.find(function(d) {
-    return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0;
-  }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
+          filteredKeg.forEach(function(k) {
+            var peserta = k.peserta || [];
+            totalPasien += peserta.length;
+            peserta.forEach(function(p) {
+              var diag = String(p.diagnosa || '').toUpperCase();
+              if (diag === 'HT') countHT++;
+              if (diag === 'DM') countDM++;
+              labKeys.forEach(function(key) {
+                var val = parseFloat(p[key]);
+                if (!isNaN(val)) { labSums[key] += val; labCounts[key]++; }
+              });
+            });
+          });
 
-  var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
-  var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
-  var stempelHtml = GLOBAL_STEMPEL ? '<img src="' + GLOBAL_STEMPEL + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
+          var labAverages = labKeys.map(function(key) { return labCounts[key] > 0 ? (labSums[key] / labCounts[key]).toFixed(1) : 0; });
 
-  var footerHtml =
-    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
-      '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
-    '</div>' +
-    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
-      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
-        (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') +
-      '</div>' +
-      '<div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' +
-        (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') +
-        stempelHtml +
-      '</div>' +
-    '</div>' +
-    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div>' +
-      '<div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div>' +
-    '</div>' +
-    '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
-      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</div>' +
-      '<div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</div>' +
-    '</div>';
+          var filterHtml = '<div class="filter-row">' +
+            '<button class="filter-pill ' + (filter === 'semua' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'semua\'; renderDashboard();">📅 Semua Waktu</button>' +
+            '<button class="filter-pill ' + (filter === 'bulan' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'bulan\'; renderDashboard();">📅 Bulan Ini</button>' +
+            '<button class="filter-pill ' + (filter === 'tahun' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'tahun\'; renderDashboard();">📅 Tahun Ini</button>' +
+            '</div>';
 
-  return { content: content, footer: footerHtml }; 
-}
-// 3. Helper Data Laboratorium
-function getProlanisPrintCols(diagnosa) {
-  var base = [
-    { key:'chol',    kode:'LAB-014', label:'Cholesterol',  kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 200' },
-    { key:'trig',    kode:'LAB-015', label:'Trigliserida', kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 150' },
-    { key:'hdl',     kode:'LAB-016', label:'HDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'> 40' },
-    { key:'ldl',     kode:'LAB-017', label:'LDL',          kategori:'LEMAK LENGKAP',  fbSatuan:'mg/dL', fbRujukan:'< 130' },
-    { key:'creatin', kode:'LAB-018', label:'Kreatinin',    kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'0.6-1.3' },
-    { key:'ureum',   kode:'LAB-019', label:'Ureum',        kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'15-45' },
-    { key:'hba1c',   kode:'LAB-061', label:'HbA1c',        kategori:'KIMIA',          fbSatuan:'%',     fbRujukan:'4.0-6.0' },
-    { key:'mikro',   kode:'LAB-062', label:'Mikroalbumin', kategori:'URIN',           fbSatuan:'mg/L',  fbRujukan:'< 20' }
-  ];
-  
-  // CARI DATA DARI MASTER_TESTS (DATABASE), JIKA TIDAK ADA BARU PAKAI DEFAULT
-  var all = base.map(function(b) {
-    var master = MASTER_TESTS.find(function(t) { return t.kode === b.kode; });
-    return {
-      key: b.key,
-      label: (master && master.nama) ? master.nama : b.label,
-      satuan: (master && master.satuan) ? master.satuan : b.fbSatuan,
-      rujukan: (master && master.rujukan) ? master.rujukan : b.fbRujukan,
-      kategori: b.kategori
-    };
-  });
-  
-  var d = String(diagnosa || '').toUpperCase();
-  if (d === 'HT') return all.filter(function(c) { return c.key !== 'hba1c'; });
-  return all;
-}
-function getTanggalKode(t) {
-  if (!t) return '';
-  var s = String(t);
-  if (s.indexOf('T') > 0) s = s.split('T')[0];
-  return s.replace(/[^0-9]/g, '');
-}
-function fmtTanggalKeg(tgl) {
-  if (!tgl) return '-';
-  var s = String(tgl);
-  if (s.indexOf('T') > 0) s = s.split('T')[0];
-  
-  // Format YYYY-MM-DD menjadi DD-MM-YYYY
-  var parts = s.split('-');
-  if (parts.length === 3) {
-    return parts[2] + '-' + parts[1] + '-' + parts[0];
-  }
-  return s;
-}
-function umur(tglLahir) {
-  if (!tglLahir) return '-';
-  var d = new Date(tglLahir), n = new Date();
-  var y = n.getFullYear() - d.getFullYear();
-  var m = n.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && n.getDate() < d.getDate())) y--;
-  return y + ' th';
-}
-/* ===== FUNGSI REKAP EXCEL DENGAN STYLING (DARI INDEX.HTML) ===== */
-function exportExcel(idx) {
-  // Ambil data kegiatan (sesuaikan dengan variabel di akses.html)
-  var keg = currentKegiatan[idx]; 
-  
-  if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
-  
-  var peserta = keg.peserta || [];
-  if (peserta.length === 0) {
-    toastMsg('Belum ada peserta di kegiatan ini', 'err');
-    return;
-  }
-  if (typeof XLSX === 'undefined') {
-    toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err');
-    return;
-  }
-  
-  // === 1. Susun data mentah ===
-  var aoa = [];
-  aoa.push(['LAPORAN HASIL PEMERIKSAAN PROLANIS', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push([]);
-  aoa.push(['Nama Kegiatan', keg.nama_kegiatan || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push(['Tanggal', keg.tanggal || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push(['Pengirim', keg.pengirim || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push(['Alamat', keg.alamat || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push(['Petugas', keg.petugas || '-', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-  aoa.push([]);
-  
-  var header = ['No','Nama','NIK','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro','Kesimpulan'];
-  aoa.push(header);
-  
-  var dataStartRow = aoa.length;
-  peserta.forEach(function(p, i) {
-    aoa.push([
-      i + 1,
-      p.nama || '',
-      p.nik || '',
-      p.tgl_lahir || '',
-      p.alamat || '',
-      p.diagnosa || '',
-      p.chol || '',
-      p.trig || '',
-      p.hdl || '',
-      p.ldl || '',
-      p.creatin || '',
-      p.ureum || '',
-      p.hba1c || '',
-      p.mikro || '',
-      p.kesimpulan || ''
-    ]);
-  });
-  
-  var ws = XLSX.utils.aoa_to_sheet(aoa);
-  
-  // === 2. Styling warna & font (Sesuai index.html) ===
-  var C = {
-    biruTua:  '1E40AF',
-    biruMuda: 'EFF6FF',
-    abuMuda:  'F1F5F9',
-    abuTua:   '334155',
-    putih:    'FFFFFF',
-    hitam:    '000000',
-    merah:    'DC2626',
-    ungu:     '7E22CE'
-  };
-  
-  var B = {
-    top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
-    bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
-    left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
-    right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
-  };
-  
-  function setStyle(r, c, s) {
-    var addr = XLSX.utils.encode_cell({ r: r, c: c });
-    if (!ws[addr]) ws[addr] = { v: '', t: 's' };
-    ws[addr].s = s;
-  }
-  
-  // Judul besar (row 0)
-  setStyle(0, 0, {
-    font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: C.putih } },
-    fill: { fgColor: { rgb: C.biruTua } },
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: B
-  });
-  for (var i = 1; i < 15; i++) setStyle(0, i, { fill: { fgColor: { rgb: C.biruTua } }, border: B });
-  
-  // Info kegiatan (row 2-6)
-  for (var r = 2; r <= 6; r++) {
-    setStyle(r, 0, {
-      font: { sz: 11, bold: true, color: { rgb: C.abuTua } },
-      fill: { fgColor: { rgb: C.abuMuda } },
-      alignment: { horizontal: 'left', vertical: 'center' },
-      border: B
-    });
-    setStyle(r, 1, {
-      font: { sz: 11, color: { rgb: C.hitam } },
-      alignment: { horizontal: 'left', vertical: 'center' },
-      border: B
-    });
-    for (var j = 2; j < 15; j++) setStyle(r, j, { border: B });
-  }
-  
-  // Header tabel (baris dataStartRow - 1)
-  var headerRow = dataStartRow - 1;
-  for (var c = 0; c < 15; c++) {
-    setStyle(headerRow, c, {
-      font: { sz: 11, bold: true, color: { rgb: C.putih } },
-      fill: { fgColor: { rgb: C.biruTua } },
-      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-      border: B
-    });
-  }
-  
-  // Data rows (selang-seling)
-  for (var r2 = dataStartRow; r2 < dataStartRow + peserta.length; r2++) {
-    var isEven = (r2 - dataStartRow) % 2 === 0;
-    for (var c2 = 0; c2 < 15; c2++) {
-      var style = {
-        font: { sz: 10, color: { rgb: C.hitam } },
-        fill: { fgColor: { rgb: isEven ? C.putih : C.biruMuda } },
-        alignment: { horizontal: c2 === 0 ? 'center' : 'left', vertical: 'center', wrapText: false },
-        border: B
-      };
-      if (c2 === 5) { // Warna diagnosa
-        var diag = String(ws[XLSX.utils.encode_cell({ r: r2, c: 5 })] && ws[XLSX.utils.encode_cell({ r: r2, c: 5 })].v || '').toUpperCase();
-        if (diag === 'DM') style.font = { sz: 10, bold: true, color: { rgb: C.merah } };
-        else if (diag === 'HT') style.font = { sz: 10, bold: true, color: { rgb: C.ungu } };
-        else style.alignment = { horizontal: 'center', vertical: 'center' };
-      }
-      if (c2 >= 6 && c2 <= 13) style.alignment = { horizontal: 'center', vertical: 'center' };
-      setStyle(r2, c2, style);
-    }
-  }
-  
-  // Merge cells
-  ws['!merges'] = [
-    { s: { r: 0, c: 0 },  e: { r: 0, c: 14 } },
-    { s: { r: 2, c: 1 },  e: { r: 2, c: 14 } },
-    { s: { r: 3, c: 1 },  e: { r: 3, c: 14 } },
-    { s: { r: 4, c: 1 },  e: { r: 4, c: 14 } },
-    { s: { r: 5, c: 1 },  e: { r: 5, c: 14 } },
-    { s: { r: 6, c: 1 },  e: { r: 6, c: 14 } }
-  ];
-  
-  // Lebar kolom
-  ws['!cols'] = [
-    { wch: 5 }, { wch: 24 }, { wch: 18 }, { wch: 11 }, { wch: 26 },
-    { wch: 9 }, { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 7 },
-    { wch: 9 }, { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 30 }
-  ];
-  
-  ws['!rows'] = [{ hpt: 32 }];
-  
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
-  
-  var namaSafe = (keg.nama_kegiatan || 'kegiatan').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  var tglSafe = String(keg.tanggal || new Date().toISOString()).replace(/[^0-9]/g, '-');
-  var namaFile = 'Prolanis_' + namaSafe + '_' + tglSafe + '.xlsx';
-  
-  XLSX.writeFile(wb, namaFile);
-  toastMsg('📥 Rekap Excel berhasil diunduh', 'ok');
-}
-</script>
+          var statsHtml = '<div class="stat-grid">' +
+            '<div class="stat-card"><div class="title">Total Peserta</div><div class="value">' + totalPasien + '</div></div>' +
+            '<div class="stat-card ht"><div class="title">Pasien HT</div><div class="value">' + countHT + '</div></div>' +
+            '<div class="stat-card dm"><div class="title">Pasien DM</div><div class="value">' + countDM + '</div></div>' +
+            '<div class="stat-card"><div class="title">Total Kegiatan</div><div class="value">' + filteredKeg.length + '</div></div>' +
+          '</div>';
+
+          var chartsHtml = '<div class="chart-grid">' +
+            '<div class="chart-card"><canvas id="pieChart"></canvas></div>' +
+            '<div class="chart-card"><canvas id="barChart"></canvas></div>' +
+          '</div>';
+
+          var kegiatanCards = filteredKeg.map(function(k, idx) {
+            var originalIdx = currentKegiatan.indexOf(k); 
+            var peserta = k.peserta || [];
+            var totalFilled = 0, totalAll = 0;
+            peserta.forEach(function(p) {
+              var cols = getColsProlanis(p.diagnosa);
+              totalAll += cols.length;
+              cols.forEach(function(c) { if (p[c]) totalFilled++; });
+            });
+            var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
+            var tgl = String(k.tanggal || '').indexOf('T') > 0 ? k.tanggal.split('T')[0] : k.tanggal;
+            
+            return '<div class="card-dash">' +
+              '<div class="card-head">' +
+                '<div><div class="card-title">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
+                '<div class="card-date">🗓️ ' + esc(tgl) + '</div></div>' +
+                '<span class="badge-dash">' + peserta.length + ' Peserta</span>' +
+              '</div>' +
+              '<div class="progress-bg"><div class="progress-bar" style="width:' + persen + '%"></div></div>' +
+              '<div class="card-meta"><span>Progress: ' + totalFilled + '/' + totalAll + '</span><span>' + persen + '%</span></div>' +
+              '<div class="card-actions">' +
+                '<button class="btn-action btn-pdf" onclick="cetakKegiatan(' + originalIdx + ')">🖨️ Cetak PDF</button>' +
+                '<button class="btn-action btn-excel" onclick="exportExcel(' + originalIdx + ')">📥 Rekap Excel</button>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+
+          if (filteredKeg.length === 0) { kegiatanCards = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;"><h2>📭 Tidak ada kegiatan</h2><p>Tidak ada data kegiatan pada periode ini.</p></div>'; }
+
+          listContainer.innerHTML = filterHtml + statsHtml + chartsHtml + '<div class="patient-grid">' + kegiatanCards + '</div>';
+
+          setTimeout(function() {
+            if (window.myPieChart) window.myPieChart.destroy();
+            if (window.myBarChart) window.myBarChart.destroy();
+            var ctxPie = document.getElementById('pieChart'); var ctxBar = document.getElementById('barChart');
+            if (!ctxPie || !ctxBar) return;
+
+            window.myPieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Hipertensi (HT)', 'Diabetes (DM)'], datasets: [{ data: [countHT, countDM], backgroundColor: ['#f59e0b', '#dc2626'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribusi Penyakit', font: { size: 14 } }, legend: { position: 'bottom' } } } });
+            window.myBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: labLabels, datasets: [{ label: 'Rata-rata Hasil', data: labAverages, backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Rata-rata Hasil Lab', font: { size: 14 } }, legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+          }, 100);
+        }
+
+        // --- FUNGSI CETAK PDF & EXCEL (Sama persis dengan kode Anda sebelumnya) ---
+        function cetakKegiatan(idx) {
+          var keg = currentKegiatan[idx];
+          if (!keg || !keg.peserta || keg.peserta.length === 0) { toastMsg('Tidak ada data peserta untuk dicetak', 'err'); return; }
+          var pages = keg.peserta.map(function(p) { return buildProlanisPrintPage(keg, p); });
+          var title = 'Cetak ' + keg.peserta.length + ' halaman — ' + (keg.nama_kegiatan || 'Prolanis');
+          
+          var overlay = document.createElement('div');
+          overlay.id = 'printOverlayAkses';
+          overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#e2e8f0;overflow-y:auto;display:block;';
+          
+          var pagesHtml = pages.map(function(p, i) {
+            var isLast = (i === pages.length - 1);
+            var breakStyle = isLast ? '' : 'page-break-after:always; break-after:page;';
+            return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
+              '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none;">' +
+              '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + p.content + '</div>' +
+              (p.footer ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + p.footer + '</div>' : '') +
+              '</div>';
+          }).join('');
+
+          overlay.innerHTML = '<div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#0f172a;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.2);">' +
+            '<button onclick="document.getElementById(\'printOverlayAkses\').remove();document.body.style.overflow=\'\';" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.15);color:#fff;">✕ Tutup</button>' +
+            '<div style="font-size:13px;font-weight:600;flex:1;text-align:center;">' + esc(title) + '</div>' +
+            '<button onclick="window.print()" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:#2563eb;color:#fff;">🖨️ Cetak / PDF</button>' +
+            '</div>' + pagesHtml;
+
+          document.body.appendChild(overlay);
+          document.body.style.overflow = 'hidden';
+        }
+
+        function buildProlanisPrintPage(keg, peserta) {
+          var cols = getProlanisPrintCols(peserta.diagnosa);
+          var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
+          var tglTampil = fmtTanggalKeg(keg.tanggal);
+          var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
+          
+          var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+          var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
+
+          var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:4px;">' +
+          '<div style="width:80px; height:80px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
+          '<div style="flex:1; text-align:center; padding: 0 10px; font-family: Arial, sans-serif;">' +
+          '<div style="font-size:11.5px; font-weight:normal; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+          '<div style="font-size:11.5px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
+          '<div style="font-size:15px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
+          '<div style="font-size:9px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
+          '<div style="font-size:9px; color:#000;">Website :' + esc(CLINIC.website) + '</div>' +
+          '</div>' +
+          '<div style="width:110px; height:110px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKananHtml + '</div>' +
+          '</div>' +
+          '<div style="border-top:2px solid #000; margin:0;"></div>' +
+          '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
+          
+          var judulHtml = '<div style="text-align:center; margin-top:10px; margin-bottom:6px;"><div style="font-size:16px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div></div>';
+
+          var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; font-family: Arial, sans-serif; color:#000; line-height:1.5;">' +
+            '<div style="width:100%; overflow:hidden; margin-bottom:3px;"><div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div><div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div><div style="clear:both;"></div></div>' +
+            '<div style="width:100%; overflow:hidden; margin-bottom:3px;"><div style="float:left; width:15%;">Umur</div><div style="float:left; width:45%;">: ' + esc(umurStr) + '</div><div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div><div style="clear:both;"></div></div>' +
+            '<div style="width:100%; overflow:hidden; margin-bottom:3px;"><div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div><div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div><div style="clear:both;"></div></div>' +
+            '</div>';
+
+          var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:6px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;"><div style="width:35%; text-align:left;">PEMERIKSAAN LABORATORIUM</div><div style="width:20%; text-align:center;">HASIL</div><div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div></div>';
+            
+          var grup = {}; var urutanKategori = [];
+          cols.forEach(function(c) { var kat = c.kategori || 'LAINNYA'; if (!grup[kat]) { grup[kat] = []; urutanKategori.push(kat); } grup[kat].push(c); });
+
+          var rowsHtml = '';
+          urutanKategori.forEach(function(kat) {
+            rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' + esc(kat) + '</div>';
+            grup[kat].forEach(function(c) {
+              var val = peserta[c.key]; if (val === undefined || val === null || val === '') val = '-';
+              var rujukanLengkap = c.rujukan + ' ' + c.satuan;
+              rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; font-family: Arial, sans-serif; color:#000;"><div style="width:35%; text-align:left; padding-right:10px; box-sizing:border-box;">' + esc(c.label) + '</div><div style="width:20%; text-align:center;">' + esc(val) + '</div><div style="width:45%; text-align:left; padding-left:15px; padding-right:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div></div>';
+            });
+          });
+
+          var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
+          
+          // FOOTER TTD
+          var pemeriksaData = GLOBAL_ANALIS.find(function(a) { return a.nama && a.nama.toLowerCase().indexOf('linda') >= 0; }) || { nama: 'Linda Hardiyanti Putri, A.Md.Kes', kode: 'NIP. 19980128 202521 2 008', ttd: '' };
+          var dokterData = GLOBAL_DOKTER.find(function(d) { return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0; }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
+          var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+          var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+          var stempelHtml = GLOBAL_STEMPEL ? '<img src="' + GLOBAL_STEMPEL + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
+
+          var footerHtml = 
+            '<div style="display:flex; width:100%; font-size:12px; color:#000;"><div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div><div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div></div>' +
+            '<div style="display:flex; width:100%; font-size:12px; color:#000;"><div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' + (ttdPemeriksa ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdPemeriksa + '</div>' : '') + '</div><div style="width:50%; text-align:center; position:relative; height:80px; padding:0 12px;">' + (ttdDokter ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:95%; text-align:center;">' + ttdDokter + '</div>' : '') + stempelHtml + '</div></div>' +
+            '<div style="display:flex; width:100%; font-size:12px; color:#000;"><div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(pemeriksaData.nama || '-') + '</div><div style="width:50%; text-align:center; padding:0 12px; font-weight:bold;">' + esc(dokterData.nama || '-') + '</div></div>' +
+            '<div style="display:flex; width:100%; font-size:12px; color:#000;"><div style="width:50%; text-align:center; padding:0 12px;">' + esc(pemeriksaData.kode || '-') + '</div><div style="width:50%; text-align:center; padding:0 12px;">' + esc(dokterData.kode || '-') + '</div></div>';
+
+          return { content: content, footer: footerHtml }; 
+        }
+
+        function getProlanisPrintCols(diagnosa) {
+          var base = [ { key:'chol', kode:'LAB-014', label:'Cholesterol', kategori:'LEMAK LENGKAP', fbSatuan:'mg/dL', fbRujukan:'< 200' }, { key:'trig', kode:'LAB-015', label:'Trigliserida', kategori:'LEMAK LENGKAP', fbSatuan:'mg/dL', fbRujukan:'< 150' }, { key:'hdl', kode:'LAB-016', label:'HDL', kategori:'LEMAK LENGKAP', fbSatuan:'mg/dL', fbRujukan:'> 40' }, { key:'ldl', kode:'LAB-017', label:'LDL', kategori:'LEMAK LENGKAP', fbSatuan:'mg/dL', fbRujukan:'< 130' }, { key:'creatin', kode:'LAB-018', label:'Kreatinin', kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'0.6-1.3' }, { key:'ureum', kode:'LAB-019', label:'Ureum', kategori:'GINJAL LENGKAP', fbSatuan:'mg/dL', fbRujukan:'15-45' }, { key:'hba1c', kode:'LAB-061', label:'HbA1c', kategori:'KIMIA', fbSatuan:'%', fbRujukan:'4.0-6.0' }, { key:'mikro', kode:'LAB-062', label:'Mikroalbumin', kategori:'URIN', fbSatuan:'mg/L', fbRujukan:'< 20' } ];
+          var all = base.map(function(b) { var master = MASTER_TESTS.find(function(t) { return t.kode === b.kode; }); return { key: b.key, label: (master && master.nama) ? master.nama : b.label, satuan: (master && master.satuan) ? master.satuan : b.fbSatuan, rujukan: (master && master.rujukan) ? master.rujukan : b.fbRujukan, kategori: b.kategori }; });
+          var d = String(diagnosa || '').toUpperCase(); if (d === 'HT') return all.filter(function(c) { return c.key !== 'hba1c'; }); return all;
+        }
+
+        function getTanggalKode(t) { if (!t) return ''; var s = String(t); if (s.indexOf('T') > 0) s = s.split('T')[0]; return s.replace(/[^0-9]/g, ''); }
+        function umur(tglLahir) { if (!tglLahir) return '-'; var d = new Date(tglLahir), n = new Date(); var y = n.getFullYear() - d.getFullYear(); var m = n.getMonth() - d.getMonth(); if (m < 0 || (m === 0 && n.getDate() < d.getDate())) y--; return y + ' th'; }
+
+        function exportExcel(idx) {
+          var keg = currentKegiatan[idx]; if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
+          var peserta = keg.peserta || []; if (peserta.length === 0) { toastMsg('Belum ada peserta di kegiatan ini', 'err'); return; }
+          if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err'); return; }
+          
+          var aoa = [ ['LAPORAN HASIL PEMERIKSAAN PROLANIS', '', '', '', '', '', '', '', '', '', '', '', '', '', ''], [], ['Nama Kegiatan', keg.nama_kegiatan || '-', '', '', '', '', '', '', '', '', '', '', '', '', ''], ['Tanggal', fmtTanggalKeg(keg.tanggal), '', '', '', '', '', '', '', '', '', '', '', '', ''], ['Pengirim', keg.pengirim || '-', '', '', '', '', '', '', '', '', '', '', '', '', ''], ['Alamat', keg.alamat || '-', '', '', '', '', '', '', '', '', '', '', '', '', ''], ['Petugas', keg.petugas || '-', '', '', '', '', '', '', '', '', '', '', '', '', ''], [] ];
+          var header = ['No','Nama','NIK','Tgl Lahir','Alamat','Diagnosa','Chol','Trig','HDL','LDL','Creatinin','Ureum','HbA1c','Mikro','Kesimpulan']; aoa.push(header);
+          var dataStartRow = aoa.length;
+          peserta.forEach(function(p, i) { aoa.push([ i + 1, p.nama || '', p.nik || '', fmtTglLahir(p.tgl_lahir) || '', p.alamat || '', p.diagnosa || '', p.chol || '', p.trig || '', p.hdl || '', p.ldl || '', p.creatin || '', p.ureum || '', p.hba1c || '', p.mikro || '', p.kesimpulan || '' ]); });
+          
+          var ws = XLSX.utils.aoa_to_sheet(aoa);
+          var C = { biruTua: '1E40AF', biruMuda: 'EFF6FF', abuMuda: 'F1F5F9', abuTua: '334155', putih: 'FFFFFF', hitam: '000000', merah: 'DC2626', ungu: '7E22CE' };
+          var B = { top: { style: 'thin', color: { rgb: 'CBD5E1' } }, bottom: { style: 'thin', color: { rgb: 'CBD5E1' } }, left: { style: 'thin', color: { rgb: 'CBD5E1' } }, right: { style: 'thin', color: { rgb: 'CBD5E1' } } };
+          
+          function setStyle(r, c, s) { var addr = XLSX.utils.encode_cell({ r: r, c: c }); if (!ws[addr]) ws[addr] = { v: '', t: 's' }; ws[addr].s = s; }
+          
+          setStyle(0, 0, { font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: C.putih } }, fill: { fgColor: { rgb: C.biruTua } }, alignment: { horizontal: 'center', vertical: 'center' }, border: B });
+          for (var i = 1; i < 15; i++) setStyle(0, i, { fill: { fgColor: { rgb: C.biruTua } }, border: B });
+          for (var r = 2; r <= 6; r++) { setStyle(r, 0, { font: { sz: 11, bold: true, color: { rgb: C.abuTua } }, fill: { fgColor: { rgb: C.abuMuda } }, alignment: { horizontal: 'left', vertical: 'center' }, border: B }); setStyle(r, 1, { font: { sz: 11, color: { rgb: C.hitam } }, alignment: { horizontal: 'left', vertical: 'center' }, border: B }); for (var j = 2; j < 15; j++) setStyle(r, j, { border: B }); }
+          
+          var headerRow = dataStartRow - 1;
+          for (var c = 0; c < 15; c++) { setStyle(headerRow, c, { font: { sz: 11, bold: true, color: { rgb: C.putih } }, fill: { fgColor: { rgb: C.biruTua } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: B }); }
+          
+          for (var r2 = dataStartRow; r2 < dataStartRow + peserta.length; r2++) {
+            var isEven = (r2 - dataStartRow) % 2 === 0;
+            for (var c2 = 0; c2 < 15; c2++) {
+              var style = { font: { sz: 10, color: { rgb: C.hitam } }, fill: { fgColor: { rgb: isEven ? C.putih : C.biruMuda } }, alignment: { horizontal: c2 === 0 ? 'center' : 'left', vertical: 'center', wrapText: false }, border: B };
+              if (c2 === 5) { var diag = String(ws[XLSX.utils.encode_cell({ r: r2, c: 5 })]?.v || '').toUpperCase(); if (diag === 'DM') { style.font = { sz: 10, bold: true, color: { rgb: C.merah } }; } else if (diag === 'HT') { style.font = { sz: 10, bold: true, color: { rgb: C.ungu } }; } else { style.alignment = { horizontal: 'center', vertical: 'center' }; } }
+              if (c2 >= 6 && c2 <= 13) { style.alignment = { horizontal: 'center', vertical: 'center' }; }
+              setStyle(r2, c2, style);
+            }
+          }
+          
+          ws['!merges'] = [ { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }, { s: { r: 2, c: 1 }, e: { r: 2, c: 14 } }, { s: { r: 3, c: 1 }, e: { r: 3, c: 14 } }, { s: { r: 4, c: 1 }, e: { r: 4, c: 14 } }, { s: { r: 5, c: 1 }, e: { r: 5, c: 14 } }, { s: { r: 6, c: 1 }, e: { r: 6, c: 14 } } ];
+          ws['!cols'] = [ { wch: 5 }, { wch: 24 }, { wch: 18 }, { wch: 11 }, { wch: 26 }, { wch: 9 }, { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 9 }, { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 30 } ];
+          ws['!rows'] = [{ hpt: 32 }];
+          
+          var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Prolanis');
+          var namaSafe = (keg.nama_kegiatan || 'kegiatan').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+          var tglSafe = String(keg.tanggal || new Date().toISOString()).replace(/[^0-9]/g, '-');
+          var namaFile = 'Prolanis_' + namaSafe + '_' + tglSafe + '.xlsx';
+          XLSX.writeFile(wb, namaFile); toastMsg('📥 File Excel ter-download', 'ok');
+        }
+    </script>
 </body>
 </html>
