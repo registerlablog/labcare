@@ -446,29 +446,28 @@
             if (filter === 'tahun') return tgl.indexOf(currentYear) === 0;
             return true;
           });
+var totalPasien = 0; var countHT = 0; var countDM = 0;
 
-          var totalPasien = 0; var countHT = 0; var countDM = 0;
-          var labKeys = ['chol', 'trig', 'hdl', 'ldl', 'hba1c'];
-          var labLabels = ['Kolesterol', 'Trigliserida', 'HDL', 'LDL', 'HbA1c'];
-          var labSums = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
-          var labCounts = { chol: 0, trig: 0, hdl: 0, ldl: 0, hba1c: 0 };
+// Data untuk Grafik Kunjungan (Bar Chart)
+var chartLabels = [];
+var chartData = [];
 
-          filteredKeg.forEach(function(k) {
-            var peserta = k.peserta || [];
-            totalPasien += peserta.length;
-            peserta.forEach(function(p) {
-              var diag = String(p.diagnosa || '').toUpperCase();
-              if (diag === 'HT') countHT++;
-              if (diag === 'DM') countDM++;
-              labKeys.forEach(function(key) {
-                var val = parseFloat(p[key]);
-                if (!isNaN(val)) { labSums[key] += val; labCounts[key]++; }
-              });
-            });
-          });
+filteredKeg.forEach(function(k) {
+  var peserta = k.peserta || [];
+  totalPasien += peserta.length;
+  
+  // Masukkan data untuk grafik batang
+  var labelKeg = k.nama_kegiatan || 'Kegiatan';
+  if (labelKeg.length > 15) labelKeg = labelKeg.substring(0, 15) + '...';
+  chartLabels.push(labelKeg);
+  chartData.push(peserta.length);
 
-          var labAverages = labKeys.map(function(key) { return labCounts[key] > 0 ? (labSums[key] / labCounts[key]).toFixed(1) : 0; });
-
+  peserta.forEach(function(p) {
+    var diag = String(p.diagnosa || '').toUpperCase();
+    if (diag === 'HT') countHT++;
+    if (diag === 'DM') countDM++;
+  });
+});
           var filterHtml = '<div class="filter-row">' +
             '<button class="filter-pill ' + (filter === 'semua' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'semua\'; renderDashboard();">📅 Semua Waktu</button>' +
             '<button class="filter-pill ' + (filter === 'bulan' ? 'active' : '') + '" onclick="window._dashTimeFilter=\'bulan\'; renderDashboard();">📅 Bulan Ini</button>' +
@@ -525,7 +524,29 @@
             if (!ctxPie || !ctxBar) return;
 
             window.myPieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Hipertensi (HT)', 'Diabetes (DM)'], datasets: [{ data: [countHT, countDM], backgroundColor: ['#f59e0b', '#dc2626'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribusi Penyakit', font: { size: 14 } }, legend: { position: 'bottom' } } } });
-            window.myBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: labLabels, datasets: [{ label: 'Rata-rata Hasil', data: labAverages, backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Rata-rata Hasil Lab', font: { size: 14 } }, legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+            window.myBarChart = new Chart(ctxBar, { 
+  type: 'bar', 
+  data: { 
+    labels: chartLabels, 
+    datasets: [{ 
+      label: 'Jumlah Peserta', 
+      data: chartData, 
+      backgroundColor: '#3b82f6', 
+      borderRadius: 4 
+    }] 
+  }, 
+  options: { 
+    responsive: true, 
+    maintainAspectRatio: false, 
+    plugins: { 
+      title: { display: true, text: 'Jumlah Peserta per Kegiatan', font: { size: 14 } }, 
+      legend: { display: false } 
+    }, 
+    scales: { 
+      y: { beginAtZero: true, ticks: { stepSize: 1 } } 
+    } 
+  } 
+});
           }, 100);
         }
 
