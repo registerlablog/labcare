@@ -24,89 +24,48 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: { 50: '#eef6ff', 100: '#e0edff', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Outfit', 'sans-serif'] },
+                    colors: { brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' } }
                 }
             }
         }
     </script>
     <style>
-        /* Custom Glowing Background Effects */
+        /* --- CUSTOM CSS LOGIN & DASHBOARD --- */
         .bg-mesh {
             background-color: #0f172a;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.4) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.3) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.25) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.5) 0px, transparent 50%);
+            background-image: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.4) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.3) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.25) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.5) 0px, transparent 50%);
         }
         @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
         .animate-float { animation: float 6s ease-in-out infinite; }
         @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
         .animate-pulse-glow { animation: pulse-slow 4s ease-in-out infinite; }
 
-        /* --- CSS DASHBOARD LAMA --- */
-        :root { --primary: #2563eb; --primary-dark: #1d4ed8; --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-500: #64748b; --slate-800: #1e293b; --radius: 12px; --success: #16a34a; }
-        .container-dash { padding: 16px; max-width: 1200px; margin: 0 auto; }
-        .header-dash { background: linear-gradient(135deg, #1e40af, #2563eb); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 12px rgba(37,99,235,.25); display: flex; justify-content: space-between; align-items: flex-start; }
-        .btn-logout { background: rgba(255,255,255,.2); color: #fff; border: none; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-logout:hover { background: rgba(255,255,255,.3); }
-        .patient-grid { display: grid; gap: 14px; }
-        @media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
-        .card-dash { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 8px rgba(15,23,42,.06); border-left: 4px solid var(--primary); display: flex; flex-direction: column; }
-        .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .card-title { font-size: 15px; font-weight: 800; color: var(--slate-800); }
-        .card-date { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
-        .badge-dash { padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #e0edff; color: var(--primary); }
-        .progress-bg { background: var(--slate-100); border-radius: 999px; height: 6px; overflow: hidden; margin-top: 10px; }
-        .progress-bar { background: var(--primary); height: 100%; transition: .3s; }
-        .card-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--slate-500); margin-top: 6px; font-weight: 600; }
-        .card-actions { display: flex; gap: 8px; padding-top: 14px; margin-top: auto; border-top: 1px solid var(--slate-100); }
-        .btn-action { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-pdf { background: #dbeafe; color: #1d4ed8; } .btn-excel { background: #dcfce7; color: #15803d; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
         
-        /* CSS STATISTIK & GRAFIK */
-        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        @media (min-width: 600px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
-        .stat-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); display: flex; flex-direction: column; border-left: 4px solid var(--primary); }
-        .stat-card.ht { border-left-color: #f59e0b; } .stat-card.dm { border-left-color: #dc2626; }
-        .stat-card .title { font-size: 11px; color: var(--slate-500); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .stat-card .value { font-size: 24px; font-weight: 800; color: var(--slate-800); }
-        .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
-        .filter-row::-webkit-scrollbar { display: none; }
-        .filter-pill { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--slate-200); background: #fff; color: var(--slate-500); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: .15s; }
-        .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .chart-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
-        @media (min-width: 768px) { .chart-grid { grid-template-columns: 1fr 1fr; } }
-        .chart-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(15,23,42,.06); height: 260px; display: flex; justify-content: center; align-items: center; position: relative; }
-
-        /* --- CSS MODAL & TOAST & PRINT (Dari kode lama) --- */
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none; }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; } .toast.err { background: #dc2626; } .toast.ok { background: var(--success); }
+        /* Toast & Loading */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; } .toast.err { background: #dc2626; } .toast.ok { background: #16a34a; }
         .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 9999; align-items: center; justify-content: center; }
         .loading-overlay.show { display: flex; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
+        /* Modal Ganti PIN */
         .modal-overlay-dash { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); z-index: 100; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px); }
         .modal-overlay-dash.open { display: flex; }
         .modal-dash { background: #fff; border-radius: 16px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.25); }
         .modal-body { padding: 24px; }
-        .modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--slate-200); margin-bottom: 16px; }
-        .modal-head h3 { font-size: 17px; font-weight: 700; }
+        .modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0; margin-bottom: 16px; }
         .form-row { display: grid; gap: 16px; grid-template-columns: 1fr; }
-        .lbl { display: block; font-size: 12px; font-weight: 600; color: var(--slate-500); margin-bottom: 6px; }
-        .inp-dash { width: 100%; padding: 10px 12px; border: 2px solid var(--slate-200); border-radius: 8px; font-size: 14px; outline: none; }
+        .lbl { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+        .inp-dash { width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
         .btn-row { display: flex; gap: 12px; margin-top: 20px; }
         .btn-dash { display: inline-flex; align-items: center; justify-content: center; flex: 1; padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .btn-primary-dash { background: var(--primary); color: #fff; }
-        .btn-secondary-dash { background: var(--slate-200); color: var(--slate-800); }
+        .btn-primary-dash { background: #2563eb; color: #fff; }
+        .btn-secondary-dash { background: #e2e8f0; color: #1e293b; }
 
+        /* CSS PRINT (PDF) */
         @media print {
             @page { size: A4 portrait; margin: 0; }
             html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
@@ -120,139 +79,216 @@
 </head>
 <body class="font-sans antialiased bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- ======================= TAMPILAN LOGIN BARU ======================= -->
+    <!-- ======================= TAMPILAN LOGIN (SPLIT SCREEN) ======================= -->
     <div id="loginView" class="flex-grow flex flex-col lg:flex-row min-h-screen w-full">
-        
-        <!-- SISI KIRI: BRANDING (55%) -->
+        <!-- SISI KIRI: BRANDING -->
         <div class="lg:w-[55%] bg-mesh text-white p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden select-none">
-            <div class="absolute -right-20 -bottom-20 opacity-10 pointer-events-none">
-                <i class="fa-solid fa-microscope text-[320px] text-white"></i>
-            </div>
+            <div class="absolute -right-20 -bottom-20 opacity-10 pointer-events-none"><i class="fa-solid fa-microscope text-[320px] text-white"></i></div>
             <div class="absolute top-1/4 right-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-glow pointer-events-none"></div>
-
             <div class="relative z-10 flex items-center space-x-3 mb-8 lg:mb-0">
-                <div class="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-cyan-300 shadow-lg">
-                    <i class="fa-solid fa-microscope text-2xl"></i>
-                </div>
+                <div class="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-cyan-300 shadow-lg"><i class="fa-solid fa-microscope text-2xl"></i></div>
                 <div>
-                    <h1 class="font-heading font-extrabold text-2xl tracking-tight text-white flex items-center gap-2">
-                        LabCare <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-300 font-medium">Prolanis</span>
-                    </h1>
+                    <h1 class="font-heading font-extrabold text-2xl tracking-tight text-white flex items-center gap-2">LabCare <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-300 font-medium">Prolanis</span></h1>
                     <p class="text-xs text-slate-300 tracking-wider font-semibold uppercase">Portal Layanan Kesehatan Puskesmas</p>
                 </div>
             </div>
-
             <div class="relative z-10 my-auto py-8">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-cyan-200 mb-6 font-medium">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    Sistem Pelayanan Laboratorium Prolanis Terpadu
-                </div>
-
-                <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">
-                    Kelola Pemeriksaan Lab Prolanis Lebih <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300">Cepat & Akurat</span>
-                </h2>
-                <p class="text-slate-300 text-sm sm:text-base max-w-xl mb-10 leading-relaxed font-light">
-                    Solusi terintegrasi untuk petugas Puskesmas dalam pengelolaan sampel, input hasil tes laboratorium, hingga pelaporan berkala peserta Prolanis secara akurat.
-                </p>
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-cyan-200 mb-6 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Sistem Pelayanan Laboratorium Prolanis Terpadu</div>
+                <h2 class="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">Kelola Pemeriksaan Lab Prolanis Lebih <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300">Cepat & Akurat</span></h2>
+                <p class="text-slate-300 text-sm sm:text-base max-w-xl mb-10 leading-relaxed font-light">Solusi terintegrasi untuk petugas Puskesmas dalam pengelolaan sampel, input hasil tes laboratorium, hingga pelaporan berkala peserta Prolanis secara akurat.</p>
             </div>
-
-            <div class="relative z-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
-                <p>&copy; 2026 LabCare Prolanis. Hak Cipta Dilindungi.</p>
-            </div>
+            <div class="relative z-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2"><p>&copy; 2026 LabCare Prolanis. Hak Cipta Dilindungi.</p></div>
         </div>
-
-        <!-- SISI KANAN: FORM LOGIN (45%) -->
+        <!-- SISI KANAN: FORM LOGIN -->
         <div class="lg:w-[45%] bg-white p-8 sm:p-12 lg:p-16 flex flex-col justify-center items-center relative">
             <div class="w-full max-w-md">
-                
                 <div class="text-left mb-8">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold mb-3">
-                        <i class="fa-solid fa-clinic-medical"></i> Portal Akses Puskesmas
-                    </div>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold mb-3"><i class="fa-solid fa-clinic-medical"></i> Portal Akses Puskesmas</div>
                     <h2 class="font-heading text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Masuk ke Dashboard</h2>
                     <p class="text-sm text-slate-500 mt-1">Silakan pilih Puskesmas dan masukkan PIN Akses Anda.</p>
                 </div>
-
-                <!-- Form Login -->
                 <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
-                    
-                    <!-- Input 1: Dropdown Pilih Puskesmas (ID disesuaikan dengan fungsi lama) -->
                     <div>
-                        <label for="loginPusk" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                            Pilih Puskesmas <span class="text-rose-500">*</span>
-                        </label>
+                        <label for="loginPusk" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Pilih Puskesmas <span class="text-rose-500">*</span></label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-house-medical text-sm"></i>
-                            </div>
-                            <select id="loginPusk" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all duration-200 appearance-none cursor-pointer">
-                                <option value="">— Memuat data... —</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </div>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-house-medical text-sm"></i></div>
+                            <select id="loginPusk" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"><option value="">— Memuat data... —</option></select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                         </div>
                     </div>
-
-                    <!-- Input 2: PIN Akses (ID disesuaikan) -->
                     <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label for="loginPin" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                                PIN Akses <span class="text-rose-500">*</span>
-                            </label>
-                        </div>
+                        <div class="flex items-center justify-between mb-2"><label for="loginPin" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">PIN Akses <span class="text-rose-500">*</span></label></div>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-key text-sm"></i>
-                            </div>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-key text-sm"></i></div>
                             <input type="password" id="loginPin" maxlength="10" placeholder="••••••" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all duration-200 tracking-widest font-mono">
-                            <button type="button" onclick="togglePinVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
-                                <i id="pinToggleIcon" class="fa-solid fa-eye text-sm"></i>
-                            </button>
+                            <button type="button" onclick="togglePinVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"><i id="pinToggleIcon" class="fa-solid fa-eye text-sm"></i></button>
                         </div>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="submitBtn" class="w-full py-3.5 px-6 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 focus:ring-4 focus:ring-brand-500/20 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 group">
-                        <span>Masuk ke Dashboard</span>
-                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
-                    </button>
+                    <button type="submit" id="submitBtn" class="w-full py-3.5 px-6 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 focus:ring-4 focus:ring-brand-500/20 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 group"><span>Masuk ke Dashboard</span><i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i></button>
                 </form>
-
-                <!-- Register Link -->
                 <div class="text-center p-4 mt-6 rounded-xl bg-slate-50 border border-slate-100">
-                    <p class="text-xs text-slate-600">
-                        Belum memiliki akses layanan? 
-                        <a href="#" onclick="showRegisterModal()" class="font-semibold text-brand-600 hover:text-brand-800 hover:underline transition ml-1 inline-flex items-center gap-1">
-                            Daftar Puskesmas <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                        </a>
-                    </p>
+                    <p class="text-xs text-slate-600">Belum memiliki akses layanan? <a href="#" onclick="showRegisterModal()" class="font-semibold text-brand-600 hover:text-brand-800 hover:underline transition ml-1 inline-flex items-center gap-1">Daftar Puskesmas <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a></p>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- ======================= TAMPILAN DASHBOARD (Dari kode lama) ======================= -->
-    <div id="dashboardView" style="display: none; min-height: 100vh; background-color: var(--slate-50);">
-      <div class="header-dash">
-        <div>
-          <h1 style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">🏥 <span id="headerPusk">—</span></h1>
-          <p style="font-size: 12px; opacity: .9; margin-top: 4px;">Portal Hasil Laboratorium Prolanis</p>
+    <!-- ======================= TAMPILAN DASHBOARD (DESAIN BARU) ======================= -->
+    <div id="dashboardView" class="hidden flex-col min-h-screen w-full">
+        
+        <!-- HEADER -->
+        <header class="bg-gradient-to-r from-brand-900 to-brand-700 text-white shadow-md sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md"><i class="fa-solid font-bold fa-hospital-user text-2xl text-blue-200"></i></div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+                            <span id="headerPusk">Puskesmas...</span>
+                            <span class="text-xs bg-blue-500/30 text-blue-100 px-2 py-0.5 rounded-full border border-blue-300/30 font-normal">Prolanis LabCare</span>
+                        </h1>
+                        <p class="text-xs text-blue-100/80">Portal Hasil & Monitoring Laboratorium Regional</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="showGantiPinModal()" class="text-xs font-medium bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 border border-white/10"><i class="fa-solid fa-key text-amber-300"></i><span class="hidden sm:inline">Ganti PIN</span></button>
+                    <button onclick="doLogout()" class="text-xs font-medium bg-red-500/80 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition duration-200 flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-right-from-bracket"></i><span class="hidden sm:inline">Keluar</span></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- FILTER BAR -->
+        <div class="bg-white border-b border-slate-200 sticky top-16 z-20 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-2 text-sm font-semibold text-slate-700"><i class="fa-solid fa-filter text-brand-600"></i><span>Filter Periode:</span></div>
+                <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                    <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-md border border-slate-200">
+                        <label for="dashStartDate" class="text-slate-500 pl-1">Dari:</label>
+                        <input type="date" id="dashStartDate" class="bg-transparent border-0 focus:ring-0 text-slate-700 font-medium">
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-md border border-slate-200">
+                        <label for="dashEndDate" class="text-slate-500 pl-1">S/D:</label>
+                        <input type="date" id="dashEndDate" class="bg-transparent border-0 focus:ring-0 text-slate-700 font-medium">
+                    </div>
+                    <button onclick="applyDateFilter()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-md font-medium text-xs transition flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-magnifying-glass"></i> Terapkan</button>
+                    <button onclick="resetDateFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-md font-medium text-xs transition flex items-center gap-1 border border-slate-200"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                </div>
+            </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-logout" style="background:rgba(255,255,255,.15);" onclick="showGantiPinModal()">🔑 Ganti PIN</button>
-          <button class="btn-logout" onclick="doLogout()">Keluar</button>
-        </div>
-      </div>
-      <div class="container-dash">
-        <div id="kegiatanList"></div>
-      </div>
+
+        <!-- MAIN CONTENT -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+            
+            <!-- TABS NAVIGATION -->
+            <div class="border-b border-slate-200 mb-6 bg-white rounded-t-xl px-4 pt-2 shadow-sm">
+                <nav class="flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                    <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn tab-active py-3 px-1 text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i><span>Dashboard & Grafik</span></button>
+                    <button onclick="switchTab('kegiatan')" id="tab-btn-kegiatan" class="tab-btn text-slate-500 hover:text-slate-700 py-3 px-1 text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2"><i class="fa-solid fa-list-check"></i><span>Daftar Kegiatan & Laporan</span><span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-semibold" id="tabCountKegiatan">0</span></button>
+                </nav>
+            </div>
+
+            <!-- TAB 1: DASHBOARD & GRAFIK -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Peserta</p>
+                                <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="stat-total">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-brand-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pasien HT</p>
+                                <h3 class="text-3xl font-extrabold text-amber-600 mt-1" id="stat-ht">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-heart-pulse"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pasien DM</p>
+                                <h3 class="text-3xl font-extrabold text-rose-600 mt-1" id="stat-dm">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-syringe"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Kegiatan</p>
+                                <h3 class="text-3xl font-extrabold text-emerald-600 mt-1" id="stat-kegiatan">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-calendar-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARTS -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base flex items-center gap-2"><i class="fa-solid fa-chart-pie text-brand-600"></i> Distribusi Penyakit</h2>
+                            <p class="text-xs text-slate-500 mb-4">Perbandingan rasio peserta Hipertensi dan Diabetes Mellitus.</p>
+                        </div>
+                        <div class="relative flex items-center justify-center my-2 h-56"><canvas id="pieChart"></canvas></div>
+                    </div>
+                    <div class="lg:col-span-7 bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base flex items-center gap-2"><i class="fa-solid fa-chart-column text-brand-600"></i> Jumlah Peserta per Kegiatan</h2>
+                            <p class="text-xs text-slate-500 mb-4">Rincian kehadiran peserta pada setiap lokasi posko pemeriksaan.</p>
+                        </div>
+                        <div class="relative h-64 w-full"><canvas id="barChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: DAFTAR KEGIATAN & LAPORAN -->
+            <div id="tab-kegiatan" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base">Daftar Kegiatan Laboratorium Prolanis</h2>
+                            <p class="text-xs text-slate-500">Kelola dan unduh hasil rekapitulasi data pemeriksaan peserta.</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <div class="relative flex-1 sm:w-64">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                                <input type="text" id="search-activity" onkeyup="filterActivities()" placeholder="Cari kegiatan/posko..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 uppercase text-[11px] font-semibold tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">Nama Kegiatan / Posko</th>
+                                    <th class="py-3 px-4">Tanggal</th>
+                                    <th class="py-3 px-4">Jumlah Peserta</th>
+                                    <th class="py-3 px-4">Progress</th>
+                                    <th class="py-3 px-4 text-center">Aksi Laporan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-table-body" class="divide-y divide-slate-100 text-xs text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+            <p>© 2026 LabCare Portal Client - UPTD Laboratorium Kesehatan Daerah (Labkesda).</p>
+        </footer>
     </div>
 
     <!-- WADAH MODAL (GANTI PIN / DAFTAR) -->
     <div class="modal-overlay-dash" id="modal"><div class="modal-dash" id="modalContent"></div></div>
-
+    
     <!-- TOAST & LOADING -->
     <div class="toast" id="toast"></div>
     <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
@@ -262,15 +298,15 @@
         // --- KONFIGURASI & VARIABEL GLOBAL ---
         var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
         var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
-        var currentPuskesmas = '';
-        var currentKegiatan = [];
-        var MASTER_TESTS = [];   
-        var GLOBAL_ANALIS = [];   
-        var GLOBAL_DOKTER = [];   
-        var GLOBAL_STEMPEL = '';  
-        window._dashTimeFilter = window._dashTimeFilter || 'semua';
+        var currentPuskesmas = ''; var currentKegiatan = [];
+        var MASTER_TESTS = []; var GLOBAL_ANALIS = []; var GLOBAL_DOKTER = []; var GLOBAL_STEMPEL = '';
+        
+        window._dashStartDate = window._dashStartDate || '';
+        window._dashEndDate = window._dashEndDate || '';
+        
+        var myPieChart, myBarChart;
 
-        // --- FUNGSI UTILITAS ---
+        // --- UTILITAS ---
         function showLoading(s) { document.getElementById('loading').className = s ? 'loading-overlay show' : 'loading-overlay'; }
         function toastMsg(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type||''); setTimeout(function() { t.className = 'toast'; }, 3000); }
         function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -278,13 +314,20 @@
         function getColsProlanis(d) { var all = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro']; if (String(d || '').toUpperCase() === 'HT') return all.filter(function(c) { return c !== 'hba1c'; }); return all; }
         
         function togglePinVisibility() {
-            var pinInput = document.getElementById('loginPin');
-            var pinIcon = document.getElementById('pinToggleIcon');
+            var pinInput = document.getElementById('loginPin'); var pinIcon = document.getElementById('pinToggleIcon');
             if (pinInput.type === 'password') { pinInput.type = 'text'; pinIcon.classList.remove('fa-eye'); pinIcon.classList.add('fa-eye-slash'); } 
             else { pinInput.type = 'password'; pinIcon.classList.remove('fa-eye-slash'); pinIcon.classList.add('fa-eye'); }
         }
 
-        // --- INIT DATA (DOMContentLoaded) ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('tab-active'); btn.classList.add('text-slate-500'); });
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabName);
+            activeBtn.classList.add('tab-active'); activeBtn.classList.remove('text-slate-500');
+        }
+
+        // --- INIT DATA ---
         document.addEventListener('DOMContentLoaded', async function() {
           try {
             var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getAll', data: {} }) });
@@ -297,7 +340,7 @@
               var resStempel = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'getStempel', data: {} }) });
               var jsonStempel = await resStempel.json();
               if (jsonStempel && jsonStempel.ok && jsonStempel.url) { GLOBAL_STEMPEL = jsonStempel.url; }
-            } catch (e) { console.log('Gagal load stempel:', e); }
+            } catch (e) { }
 
             if (json && json.ok && json.master_puskesmas) {
               var sel = document.getElementById('loginPusk');
@@ -310,266 +353,183 @@
         // --- LOGIN & LOGOUT ---
         async function handleLogin(event) {
           event.preventDefault();
-          var nama = document.getElementById('loginPusk').value;
-          var pin = document.getElementById('loginPin').value.trim();
+          var nama = document.getElementById('loginPusk').value; var pin = document.getElementById('loginPin').value.trim();
           if (!nama || !pin) { toastMsg('Pilih Puskesmas dan masukkan PIN', 'err'); return; }
           
-          var btn = document.getElementById('submitBtn');
-          var originalHtml = btn.innerHTML;
-          btn.disabled = true;
-          btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>Memproses...</span>';
-          showLoading(true);
+          var btn = document.getElementById('submitBtn'); var originalHtml = btn.innerHTML;
+          btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>Memproses...</span>'; showLoading(true);
 
           try {
             var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'loginPuskesmas', data: { nama_pusk: nama, pin: pin } }) });
             var json = await res.json();
-            showLoading(false);
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
+            showLoading(false); btn.disabled = false; btn.innerHTML = originalHtml;
             
             if (json && json.ok) {
-              currentPuskesmas = json.puskesmas;
-              currentKegiatan = json.kegiatan || [];
-              
+              currentPuskesmas = json.puskesmas; currentKegiatan = json.kegiatan || [];
               document.getElementById('loginView').style.display = 'none';
-              document.getElementById('dashboardView').style.display = 'block';
+              document.getElementById('dashboardView').classList.remove('hidden');
+              document.getElementById('dashboardView').classList.add('flex');
               document.getElementById('headerPusk').textContent = currentPuskesmas;
-              document.body.className = "font-sans antialiased bg-slate-50 text-slate-800 min-h-screen"; 
+              document.getElementById('tabCountKegiatan').textContent = currentKegiatan.length;
               
               renderDashboard();
               toastMsg('Login berhasil!', 'ok');
-            } else {
-              toastMsg(json.error || 'Login gagal', 'err');
-            }
+            } else { toastMsg(json.error || 'Login gagal', 'err'); }
           } catch (e) {
-            showLoading(false);
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-            toastMsg('Error koneksi: ' + e.message, 'err');
+            showLoading(false); btn.disabled = false; btn.innerHTML = originalHtml; toastMsg('Error koneksi: ' + e.message, 'err');
           }
         }
 
         function doLogout() {
-          currentPuskesmas = '';
-          currentKegiatan = [];
+          currentPuskesmas = ''; currentKegiatan = [];
           document.getElementById('loginPin').value = '';
-          document.getElementById('dashboardView').style.display = 'none';
+          document.getElementById('dashboardView').classList.add('hidden');
+          document.getElementById('dashboardView').classList.remove('flex');
           document.getElementById('loginView').style.display = 'flex';
-          document.body.className = "font-sans antialiased bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between";
         }
 
-        // --- FUNGSI MODAL DASHBOARD & DAFTAR ---
+        // --- FUNGSI GANTI PIN & DAFTAR ---
+        function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
         function showGantiPinModal() {
           var html = '<div class="modal-body">' +
-            '<div class="modal-head"><div><h3>🔑 Ganti PIN</h3><p>Keamanan akun Anda</p></div>' +
-            '<button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
-            '<div class="form-row">' +
-            '<div><label class="lbl">PIN Lama *</label><input type="password" id="pinLama" class="inp-dash" placeholder="Masukkan PIN saat ini"></div>' +
-            '<div><label class="lbl">PIN Baru *</label><input type="password" id="pinBaru" class="inp-dash" placeholder="Minimal 6 digit angka"></div>' +
-            '<div><label class="lbl">Ulangi PIN Baru *</label><input type="password" id="pinBaruUlang" class="inp-dash" placeholder="Ketik ulang PIN baru"></div>' +
-            '</div>' +
-            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doChangePin()">💾 Simpan PIN Baru</button>' +
-            '<button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
-          document.getElementById('modalContent').innerHTML = html;
-          document.getElementById('modal').classList.add('open');
+            '<div class="modal-head"><div><h3>🔑 Ganti PIN</h3><p>Keamanan akun Anda</p></div><button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
+            '<div class="form-row"><div><label class="lbl">PIN Lama *</label><input type="password" id="pinLama" class="inp-dash" placeholder="Masukkan PIN saat ini"></div><div><label class="lbl">PIN Baru *</label><input type="password" id="pinBaru" class="inp-dash" placeholder="Minimal 6 digit angka"></div><div><label class="lbl">Ulangi PIN Baru *</label><input type="password" id="pinBaruUlang" class="inp-dash" placeholder="Ketik ulang PIN baru"></div></div>' +
+            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doChangePin()">💾 Simpan PIN Baru</button><button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
+          document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
         }
 
         function showRegisterModal() {
           var html = '<div class="modal-body">' +
-            '<div class="modal-head"><div><h3>📝 Daftar Puskesmas</h3><p>Buat akun akses baru</p></div>' +
-            '<button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
-            '<div class="form-row">' +
-            '<div><label class="lbl">Nama Puskesmas *</label><input type="text" id="regNama" class="inp-dash" placeholder="Contoh: Pusk. Curahdamai"></div>' +
-            '<div><label class="lbl">Buat PIN (Min. 6 Angka) *</label><input type="password" id="regPin" class="inp-dash" placeholder="••••••" maxlength="10"></div>' +
-            '<div><label class="lbl">Ulangi PIN *</label><input type="password" id="regPinUlang" class="inp-dash" placeholder="••••••" maxlength="10"></div>' +
-            '</div>' +
-            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doRegister()">Daftar Sekarang</button>' +
-            '<button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
-          document.getElementById('modalContent').innerHTML = html;
-          document.getElementById('modal').classList.add('open');
+            '<div class="modal-head"><div><h3>📝 Daftar Puskesmas</h3><p>Buat akun akses baru</p></div><button class="modal-close" onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button></div>' +
+            '<div class="form-row"><div><label class="lbl">Nama Puskesmas *</label><input type="text" id="regNama" class="inp-dash" placeholder="Contoh: Pusk. Curahdamai"></div><div><label class="lbl">Buat PIN (Min. 6 Angka) *</label><input type="password" id="regPin" class="inp-dash" placeholder="••••••" maxlength="10"></div><div><label class="lbl">Ulangi PIN *</label><input type="password" id="regPinUlang" class="inp-dash" placeholder="••••••" maxlength="10"></div></div>' +
+            '<div class="btn-row"><button class="btn-dash btn-primary-dash" onclick="doRegister()">Daftar Sekarang</button><button class="btn-dash btn-secondary-dash" onclick="closeModal()">Batal</button></div></div>';
+          document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
         }
 
-        function closeModal() { document.getElementById('modal').classList.remove('open'); }
-
         async function doChangePin() {
-          var oldPin = document.getElementById('pinLama').value.trim();
-          var newPin = document.getElementById('pinBaru').value.trim();
-          var confirmPin = document.getElementById('pinBaruUlang').value.trim();
+          var oldPin = document.getElementById('pinLama').value.trim(); var newPin = document.getElementById('pinBaru').value.trim(); var confirmPin = document.getElementById('pinBaruUlang').value.trim();
           if (!oldPin || !newPin || !confirmPin) { toastMsg('Semua kolom wajib diisi!', 'err'); return; }
           if (newPin.length < 6 || isNaN(newPin)) { toastMsg('PIN baru minimal 6 digit angka!', 'err'); return; }
           if (newPin !== confirmPin) { toastMsg('PIN baru dan ulangi PIN tidak cocok!', 'err'); return; }
           showLoading(true);
           try {
             var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'changePinPuskesmas', data: { nama_pusk: currentPuskesmas, old_pin: oldPin, new_pin: newPin } }) });
-            var json = await res.json();
-            showLoading(false);
+            var json = await res.json(); showLoading(false);
             if (json && json.ok) { toastMsg('✅ PIN berhasil diubah! Silakan login kembali.', 'ok'); closeModal(); setTimeout(function() { doLogout(); }, 2000); } 
             else { toastMsg(json.error || 'Gagal mengubah PIN', 'err'); }
           } catch (e) { showLoading(false); toastMsg('Error koneksi: ' + e.message, 'err'); }
         }
 
         async function doRegister() {
-          var nama = document.getElementById('regNama').value.trim();
-          var pin = document.getElementById('regPin').value.trim();
-          var pinUlang = document.getElementById('regPinUlang').value.trim();
+          var nama = document.getElementById('regNama').value.trim(); var pin = document.getElementById('regPin').value.trim(); var pinUlang = document.getElementById('regPinUlang').value.trim();
           if (!nama || !pin || !pinUlang) { toastMsg('Semua kolom wajib diisi!', 'err'); return; }
           if (pin.length < 6 || isNaN(pin)) { toastMsg('PIN minimal 6 digit angka!', 'err'); return; }
           if (pin !== pinUlang) { toastMsg('PIN dan Ulangi PIN tidak cocok!', 'err'); return; }
           showLoading(true);
           try {
             var res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({ action: 'registerPuskesmas', data: { nama_pusk: nama, pin: pin } }) });
-            var json = await res.json();
-            showLoading(false);
+            var json = await res.json(); showLoading(false);
             if (json && json.ok) {
-              toastMsg('Pendaftaran berhasil! Mohon tunggu persetujuan Admin.', 'ok');
-              closeModal();
-              var sel = document.getElementById('loginPusk');
-              var opt = document.createElement('option');
-              opt.value = nama; opt.text = nama;
-              sel.appendChild(opt); sel.value = nama;
+              toastMsg('Pendaftaran berhasil! Mohon tunggu persetujuan Admin.', 'ok'); closeModal();
+              var sel = document.getElementById('loginPusk'); var opt = document.createElement('option'); opt.value = nama; opt.text = nama; sel.appendChild(opt); sel.value = nama;
             } else { toastMsg(json.error || 'Gagal mendaftar', 'err'); }
           } catch (e) { showLoading(false); toastMsg('Error koneksi: ' + e.message, 'err'); }
         }
 
-        // --- FUNGSI FILTER TANGGAL ---
-function applyDateFilter() {
-  window._dashStartDate = document.getElementById('dashStartDate').value;
-  window._dashEndDate = document.getElementById('dashEndDate').value;
-  renderDashboard();
-}
+        // --- DASHBOARD & CHARTS ---
+        function applyDateFilter() {
+          window._dashStartDate = document.getElementById('dashStartDate').value;
+          window._dashEndDate = document.getElementById('dashEndDate').value;
+          renderDashboard();
+        }
 
-function resetDateFilter() {
-  window._dashStartDate = '';
-  window._dashEndDate = '';
-  renderDashboard();
-}// --- FUNGSI DASHBOARD, GRAFIK, PDF, EXCEL (Sesuai kode sebelumnya) ---
+        function resetDateFilter() {
+          window._dashStartDate = ''; window._dashEndDate = '';
+          document.getElementById('dashStartDate').value = ''; document.getElementById('dashEndDate').value = '';
+          renderDashboard();
+        }
+
         function renderDashboard() {
-          var listContainer = document.getElementById('kegiatanList');
-// --- LOGIKA FILTER RENTANG TANGGAL ---
-var startDate = window._dashStartDate || '';
-var endDate = window._dashEndDate || '';
+          var startDate = window._dashStartDate || ''; var endDate = window._dashEndDate || '';
+          var filteredKeg = currentKegiatan.filter(function(k) {
+            var tglKeg = String(k.tanggal || '').split('T')[0];
+            if (!tglKeg) return false;
+            if (!startDate && !endDate) return true;
+            if (startDate && !endDate) return tglKeg >= startDate;
+            if (!startDate && endDate) return tglKeg <= endDate;
+            return tglKeg >= startDate && tglKeg <= endDate;
+          });
 
-var filteredKeg = currentKegiatan.filter(function(k) {
-  var tglKeg = String(k.tanggal || '').split('T')[0]; // Format YYYY-MM-DD
-  if (!tglKeg) return false;
+          var totalPasien = 0; var countHT = 0; var countDM = 0;
+          var chartLabels = []; var chartData = [];
 
-  if (!startDate && !endDate) return true;
-  if (startDate && !endDate) return tglKeg >= startDate;
-  if (!startDate && endDate) return tglKeg <= endDate;
-  return tglKeg >= startDate && tglKeg <= endDate;
-});
-var totalPasien = 0; var countHT = 0; var countDM = 0;
-
-// Data untuk Grafik Kunjungan (Bar Chart)
-var chartLabels = [];
-var chartData = [];
-
-filteredKeg.forEach(function(k) {
-  var peserta = k.peserta || [];
-  totalPasien += peserta.length;
-  
-  // Masukkan data untuk grafik batang
-  var labelKeg = k.nama_kegiatan || 'Kegiatan';
-  if (labelKeg.length > 15) labelKeg = labelKeg.substring(0, 15) + '...';
-  chartLabels.push(labelKeg);
-  chartData.push(peserta.length);
-
-  peserta.forEach(function(p) {
-    var diag = String(p.diagnosa || '').toUpperCase();
-    if (diag === 'HT') countHT++;
-    if (diag === 'DM') countDM++;
-  });
-});
-         var filterHtml = '<div class="filter-row" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:15px;">' +
-  '<div style="display:flex; align-items:center; gap:6px; background:#fff; padding:6px 12px; border-radius:8px; border:1px solid var(--slate-300);">' +
-    '<span style="font-size:13px; color:var(--slate-500); font-weight:600;">Dari:</span>' +
-    '<input type="date" id="dashStartDate" style="padding:6px; border:none; outline:none; font-family:inherit; font-size:13px;" value="' + startDate + '">' +
-  '</div>' +
-  '<div style="display:flex; align-items:center; gap:6px; background:#fff; padding:6px 12px; border-radius:8px; border:1px solid var(--slate-300);">' +
-    '<span style="font-size:13px; color:var(--slate-500); font-weight:600;">S/d:</span>' +
-    '<input type="date" id="dashEndDate" style="padding:6px; border:none; outline:none; font-family:inherit; font-size:13px;" value="' + endDate + '">' +
-  '</div>' +
-  '<button class="filter-pill active" onclick="applyDateFilter()" style="padding:10px 18px;">🔍 Terapkan</button>' +
-  '<button class="filter-pill" onclick="resetDateFilter()" style="padding:10px 18px; background:var(--slate-200); color:var(--slate-800);">🔄 Reset</button>' +
-'</div>';
-
-          var statsHtml = '<div class="stat-grid">' +
-            '<div class="stat-card"><div class="title">Total Peserta</div><div class="value">' + totalPasien + '</div></div>' +
-            '<div class="stat-card ht"><div class="title">Pasien HT</div><div class="value">' + countHT + '</div></div>' +
-            '<div class="stat-card dm"><div class="title">Pasien DM</div><div class="value">' + countDM + '</div></div>' +
-            '<div class="stat-card"><div class="title">Total Kegiatan</div><div class="value">' + filteredKeg.length + '</div></div>' +
-          '</div>';
-
-          var chartsHtml = '<div class="chart-grid">' +
-            '<div class="chart-card"><canvas id="pieChart"></canvas></div>' +
-            '<div class="chart-card"><canvas id="barChart"></canvas></div>' +
-          '</div>';
-
-          var kegiatanCards = filteredKeg.map(function(k, idx) {
-            var originalIdx = currentKegiatan.indexOf(k); 
+          filteredKeg.forEach(function(k) {
             var peserta = k.peserta || [];
-            var totalFilled = 0, totalAll = 0;
+            totalPasien += peserta.length;
+            
+            var labelKeg = k.nama_kegiatan || 'Kegiatan';
+            if (labelKeg.length > 15) labelKeg = labelKeg.substring(0, 15) + '...';
+            chartLabels.push(labelKeg); chartData.push(peserta.length);
+
             peserta.forEach(function(p) {
-              var cols = getColsProlanis(p.diagnosa);
-              totalAll += cols.length;
-              cols.forEach(function(c) { if (p[c]) totalFilled++; });
+              var diag = String(p.diagnosa || '').toUpperCase();
+              if (diag === 'HT') countHT++; if (diag === 'DM') countDM++;
             });
+          });
+
+          // Update Stat Cards
+          document.getElementById('stat-total').textContent = totalPasien;
+          document.getElementById('stat-ht').textContent = countHT;
+          document.getElementById('stat-dm').textContent = countDM;
+          document.getElementById('stat-kegiatan').textContent = filteredKeg.length;
+
+          // Render Table
+          var tableHtml = filteredKeg.map(function(k, idx) {
+            var originalIdx = currentKegiatan.indexOf(k); 
+            var peserta = k.peserta || []; var totalFilled = 0, totalAll = 0;
+            peserta.forEach(function(p) { var cols = getColsProlanis(p.diagnosa); totalAll += cols.length; cols.forEach(function(c) { if (p[c]) totalFilled++; }); });
             var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
             var tgl = String(k.tanggal || '').indexOf('T') > 0 ? k.tanggal.split('T')[0] : k.tanggal;
             
-            return '<div class="card-dash">' +
-              '<div class="card-head">' +
-                '<div><div class="card-title">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
-                '<div class="card-date">🗓️ ' + esc(tgl) + '</div></div>' +
-                '<span class="badge-dash">' + peserta.length + ' Peserta</span>' +
-              '</div>' +
-              '<div class="progress-bg"><div class="progress-bar" style="width:' + persen + '%"></div></div>' +
-              '<div class="card-meta"><span>Progress: ' + totalFilled + '/' + totalAll + '</span><span>' + persen + '%</span></div>' +
-              '<div class="card-actions">' +
-                '<button class="btn-action btn-pdf" onclick="cetakKegiatan(' + originalIdx + ')">🖨️ Cetak PDF</button>' +
-                '<button class="btn-action btn-excel" onclick="exportExcel(' + originalIdx + ')">📥 Rekap Excel</button>' +
-              '</div>' +
-            '</div>';
+            return '<tr class="hover:bg-slate-50/80 transition">' +
+              '<td class="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-clipboard-check"></i></div><div><div>' + esc(k.nama_kegiatan) + '</div><span class="text-[10px] font-normal text-slate-400">Kode: ' + esc(k.id_kegiatan) + '</span></div></td>' +
+              '<td class="py-3.5 px-4 whitespace-nowrap"><span class="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded text-slate-600 font-medium"><i class="fa-regular fa-calendar text-slate-400"></i> ' + esc(tgl) + '</span></td>' +
+              '<td class="py-3.5 px-4"><span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-bold">' + peserta.length + ' Peserta</span></td>' +
+              '<td class="py-3.5 px-4 w-48"><div class="flex items-center justify-between text-[11px] mb-1"><span class="text-emerald-600 font-semibold">Selesai (' + totalFilled + '/' + totalAll + ')</span><span class="font-bold text-slate-600">' + persen + '%</span></div><div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: ' + persen + '%"></div></div></td>' +
+              '<td class="py-3.5 px-4 text-center whitespace-nowrap"><div class="flex items-center justify-center gap-2">' +
+                '<button onclick="cetakKegiatan(' + originalIdx + ')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-md font-medium transition flex items-center gap-1"><i class="fa-solid fa-file-pdf text-red-500"></i> Cetak PDF</button>' +
+                '<button onclick="exportExcel(' + originalIdx + ')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-md font-medium transition flex items-center gap-1"><i class="fa-solid fa-file-excel text-emerald-600"></i> Rekap Excel</button>' +
+              '</div></td></tr>';
           }).join('');
 
-          if (filteredKeg.length === 0) { kegiatanCards = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;"><h2>📭 Tidak ada kegiatan</h2><p>Tidak ada data kegiatan pada periode ini.</p></div>'; }
+          if (filteredKeg.length === 0) {
+            tableHtml = '<tr><td colspan="5" class="text-center py-8 text-slate-500"><i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i><br>Tidak ada kegiatan pada periode ini.</td></tr>';
+          }
+          document.getElementById('activity-table-body').innerHTML = tableHtml;
 
-          listContainer.innerHTML = filterHtml + statsHtml + chartsHtml + '<div class="patient-grid">' + kegiatanCards + '</div>';
-
+          // Draw Charts
           setTimeout(function() {
-            if (window.myPieChart) window.myPieChart.destroy();
-            if (window.myBarChart) window.myBarChart.destroy();
+            if (myPieChart) myPieChart.destroy(); if (myBarChart) myBarChart.destroy();
             var ctxPie = document.getElementById('pieChart'); var ctxBar = document.getElementById('barChart');
             if (!ctxPie || !ctxBar) return;
 
-            window.myPieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Hipertensi (HT)', 'Diabetes (DM)'], datasets: [{ data: [countHT, countDM], backgroundColor: ['#f59e0b', '#dc2626'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribusi Penyakit', font: { size: 14 } }, legend: { position: 'bottom' } } } });
-            window.myBarChart = new Chart(ctxBar, { 
-  type: 'bar', 
-  data: { 
-    labels: chartLabels, 
-    datasets: [{ 
-      label: 'Jumlah Peserta', 
-      data: chartData, 
-      backgroundColor: '#3b82f6', 
-      borderRadius: 4 
-    }] 
-  }, 
-  options: { 
-    responsive: true, 
-    maintainAspectRatio: false, 
-    plugins: { 
-      title: { display: true, text: 'Jumlah Peserta per Kegiatan', font: { size: 14 } }, 
-      legend: { display: false } 
-    }, 
-    scales: { 
-      y: { beginAtZero: true, ticks: { stepSize: 1 } } 
-    } 
-  } 
-});
+            myPieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Hipertensi (HT)', 'Diabetes (DM)'], datasets: [{ data: [countHT, countDM], backgroundColor: ['#f59e0b', '#dc2626'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+            myBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Jumlah Peserta', data: chartData, backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
           }, 100);
         }
 
-        // --- FUNGSI CETAK PDF & EXCEL (Sama persis dengan kode Anda sebelumnya) ---
+        // SEARCH TABLE
+        function filterActivities() {
+            const input = document.getElementById('search-activity').value.toLowerCase();
+            const rows = document.querySelectorAll('#activity-table-body tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        // --- FUNGSI CETAK PDF & EXCEL (Sama persis dengan kode Anda) ---
         function cetakKegiatan(idx) {
           var keg = currentKegiatan[idx];
           if (!keg || !keg.peserta || keg.peserta.length === 0) { toastMsg('Tidak ada data peserta untuk dicetak', 'err'); return; }
@@ -596,8 +556,7 @@ filteredKeg.forEach(function(k) {
             '<button onclick="window.print()" style="padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;background:#2563eb;color:#fff;">🖨️ Cetak / PDF</button>' +
             '</div>' + pagesHtml;
 
-          document.body.appendChild(overlay);
-          document.body.style.overflow = 'hidden';
+          document.body.appendChild(overlay); document.body.style.overflow = 'hidden';
         }
 
         function buildProlanisPrintPage(keg, peserta) {
@@ -648,7 +607,6 @@ filteredKeg.forEach(function(k) {
 
           var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
           
-          // FOOTER TTD
           var pemeriksaData = GLOBAL_ANALIS.find(function(a) { return a.nama && a.nama.toLowerCase().indexOf('linda') >= 0; }) || { nama: 'Linda Hardiyanti Putri, A.Md.Kes', kode: 'NIP. 19980128 202521 2 008', ttd: '' };
           var dokterData = GLOBAL_DOKTER.find(function(d) { return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0; }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
           var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
