@@ -391,6 +391,7 @@ function normalizePasien(p) { if (!p) return p; if (typeof p.tests === 'string')
 function manualSync() { if (!SYNC_ENABLED) { toastMsg('Mode offline: API belum dikonfigurasi'); return; } syncAllFromServer(false); }
 function save() { try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); } catch (e) {} }
 function load() { try { var raw = localStorage.getItem('labcare_patients'); if (raw) patients = (JSON.parse(raw) || []).map(normalizePasien); } catch (e) { patients = []; } }
+function loadKaryawan() { try { var a = localStorage.getItem('labcare_analis'); if (a) analisList = JSON.parse(a) || []; var d = localStorage.getItem('labcare_dokter'); if (d) dokterList = JSON.parse(d) || []; } catch (e) { analisList = []; dokterList = []; } }
 function loadTests() { try { var raw = localStorage.getItem('labcare_tests'); if (raw) { var parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) { TESTS = parsed; return; } } } catch (e) {} TESTS = DEFAULT_TESTS.slice(); }
 function saveTests() { 
   if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
