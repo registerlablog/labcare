@@ -380,7 +380,10 @@ async function syncAllFromServer(silent) {
   window._prolanisList = kegList;
 }
   try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); localStorage.setItem('labcare_analis', JSON.stringify(analisList)); localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {}
-  try { var sr = await apiCall('getStempel'); if (sr && sr.ok && sr.url) { stempelUrl = sr.url; try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {} } } catch (e) {}
+   try { var sr = await apiCall('getStempel'); if (sr && sr.ok && sr.url) { stempelUrl = sr.url; try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {} } } catch (e) {}
+  
+  window._isDataSynced = true; // <--- TAMBAHKAN BARIS INI
+  
   renderNav(); render();
   if (!silent) toastMsg('✅ Tersinkron dengan Spreadsheet', 'ok');
 }
@@ -389,11 +392,22 @@ function manualSync() { if (!SYNC_ENABLED) { toastMsg('Mode offline: API belum d
 function save() { try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); } catch (e) {} }
 function load() { try { var raw = localStorage.getItem('labcare_patients'); if (raw) patients = (JSON.parse(raw) || []).map(normalizePasien); } catch (e) { patients = []; } }
 function loadTests() { try { var raw = localStorage.getItem('labcare_tests'); if (raw) { var parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) { TESTS = parsed; return; } } } catch (e) {} TESTS = DEFAULT_TESTS.slice(); }
-function saveTests() { try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {} apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS }); }
-function resetTests() { if (!confirm('Reset master pemeriksaan ke pengaturan awal?')) return; TESTS = DEFAULT_TESTS.slice(); try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {} apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS }); render(); toastMsg('Master pemeriksaan direset'); }
-function loadKaryawan() { try { var a = localStorage.getItem('labcare_analis'); if (a) analisList = JSON.parse(a) || []; var d = localStorage.getItem('labcare_dokter'); if (d) dokterList = JSON.parse(d) || []; } catch (e) { analisList = []; dokterList = []; } }
-function saveAnalis() { try { localStorage.setItem('labcare_analis', JSON.stringify(analisList)); } catch (e) {} apiCall('saveMaster', { jenis: 'analis', list: analisList }); }
-function saveDokter() { try { localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {} apiCall('saveMaster', { jenis: 'dokter', list: dokterList }); }
+function saveTests() { 
+  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {} 
+  apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS }); 
+}
+
+function saveAnalis() { 
+  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  try { localStorage.setItem('labcare_analis', JSON.stringify(analisList)); } catch (e) {} 
+  apiCall('saveMaster', { jenis: 'analis', list: analisList }); 
+}
+function saveDokter() { 
+  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  try { localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {} 
+  apiCall('saveMaster', { jenis: 'dokter', list: dokterList }); 
+}
 function resetAnalis() { if (!confirm('Reset daftar analis?')) return; analisList = []; saveAnalis(); render(); toastMsg('Daftar analis direset'); }
 function resetDokter() { if (!confirm('Reset daftar dokter?')) return; dokterList = []; saveDokter(); render(); toastMsg('Daftar dokter direset'); }
 function renderNav() {
@@ -2449,6 +2463,7 @@ document.addEventListener('submit', function(e) {
 });
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target.id === 'modal') closeModal(); });
 try { var _s = localStorage.getItem('labcare_stempel_url'); if (_s) stempelUrl = _s; } catch (e) {}
+window._isDataSynced = false;
 loadTests(); loadKaryawan(); load(); renderNav();
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
