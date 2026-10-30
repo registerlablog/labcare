@@ -24,8 +24,7 @@
 html, body { height: 100%; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--slate-100); color: var(--slate-800); line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 .layout { display: flex; min-height: 100vh; }
-.sidebar { display: none; width: 240px; background: var(--slate-900); color: var(--slate-300); flex-direction: column; position: fixed; height: 100vh; z-index: 20; }
-.sidebar-brand { padding: 20px; border-bottom: 1px solid var(--slate-700); }
+.sidebar { display: none; width: 240px; background: var(--slate-900); color: var(--slate-300); flex-direction: column; position: fixed; height: 100vh; z-index: 20; overflow-y: auto; }.sidebar-brand { padding: 20px; border-bottom: 1px solid var(--slate-700); }
 .sidebar-brand h1 { color: #fff; font-size: 18px; font-weight: 700; }
 .sidebar-brand p { font-size: 11px; color: var(--slate-400); margin-top: 2px; }
 .sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
