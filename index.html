@@ -2046,7 +2046,7 @@ function cetakProlanisPeserta(kegId, idx) {
 function hapusKegiatanProlanis(id, nama) {
   if (!confirm('Hapus kegiatan "' + nama + '"? Semua peserta di dalamnya akan hilang.')) return;
   window._prolanisList = (window._prolanisList || []).filter(function(x) { return String(x.id_kegiatan) !== String(id); });
-  apiCall('deleteProlanisKegiatan', { id: id, nama: nama }).then(function() { ... });
+  apiCall('deleteProlanisKegiatan', { id: id, nama: nama }).then(function() {
     toastMsg('Kegiatan dihapus', 'ok');
   });
   render();
