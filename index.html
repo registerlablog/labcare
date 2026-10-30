@@ -2046,7 +2046,7 @@ function cetakProlanisPeserta(kegId, idx) {
 function hapusKegiatanProlanis(id, nama) {
   if (!confirm('Hapus kegiatan "' + nama + '"? Semua peserta di dalamnya akan hilang.')) return;
   window._prolanisList = (window._prolanisList || []).filter(function(x) { return String(x.id_kegiatan) !== String(id); });
-  apiCall('deleteProlanisKegiatan', { id: id }).then(function() {
+  apiCall('deleteProlanisKegiatan', { id: id, nama: nama }).then(function() { ... });
     toastMsg('Kegiatan dihapus', 'ok');
   });
   render();
@@ -2339,7 +2339,17 @@ async function simpanKaryawan(jenis) {
   else { list.push({ id: uidK(), nama: nama, kode: kode, ttd: ttdUrl || '' }); saveFn(); closeModal(); render(); toastMsg('Data ditambahkan'); }
 }
 function hapusKaryawan(jenis, id) { var list = jenis === 'analis' ? analisList : dokterList; var k = list.find(function(x) { return x.id === id; }); if (!k) return; if (!confirm('Hapus?')) return; if (jenis === 'analis') { analisList = analisList.filter(function(x) { return x.id !== id; }); saveAnalis(); } else { dokterList = dokterList.filter(function(x) { return x.id !== id; }); saveDokter(); } render(); toastMsg('Data dihapus'); }
-function hapusPasien(id) { if (!confirm('Hapus data pasien ini?')) return; patients = patients.filter(function(p) { return p.id !== id; }); save(); apiCall('deletePasien', { id: id }); render(); toastMsg('Pasien dihapus'); }
+function hapusPasien(id) { 
+  if (!confirm('Hapus data pasien ini?')) return; 
+  var p = patients.find(function(x) { return x.id === id; });
+  var namaPasien = p ? p.nama : 'Tidak Diketahui';
+  
+  patients = patients.filter(function(p) { return p.id !== id; }); 
+  save(); 
+  apiCall('deletePasien', { id: id, nama: namaPasien }); 
+  render(); 
+  toastMsg('Pasien dihapus'); 
+}
 function resetData() { if (!confirm('Hapus SEMUA data pasien?')) return; patients = []; save(); apiCall('resetPasien'); render(); toastMsg('Semua data pasien dihapus'); }
 function modalHasil(id) {
   var p = patients.find(function(x) { return x.id === id; }); if (!p) return;
