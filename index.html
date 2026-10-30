@@ -467,7 +467,10 @@ function resetDokter() { if (!confirm('Reset daftar dokter?')) return; dokterLis
 function renderNav() {
   var html = NAV_ITEMS.map(function(i) { return '<button class="nav-btn' + (view === i.view ? ' active' : '') + '" data-view="' + i.view + '">' + i.label + '</button>'; }).join('');
   document.getElementById('nav').innerHTML = html;
-  document.getElementById('mobileNav').innerHTML = html;
+  document.getElementById('mobileNav').innerHTML = html + 
+  '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #334155;">' +
+    '<button class="nav-btn" onclick="doLogoutAdmin()" style="color: #f87171; text-align: center; width: 100%;">🚪 Logout Admin</button>' +
+  '</div>';
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.onclick = function() { view = b.dataset.view; mobileNavOpen = false; document.getElementById('mobileNav').classList.remove('open'); renderNav(); render(); }; });
 }
 function toggleMobileNav() { mobileNavOpen = !mobileNavOpen; document.getElementById('mobileNav').classList.toggle('open', mobileNavOpen); }
