@@ -434,8 +434,19 @@ function setSyncState(state) { syncState = state; var badge = document.getElemen
 async function apiCall(action, data) {
   if (!SYNC_ENABLED) return null;
   setSyncState('syncing');
+  
+  // --- TAMBAHKAN KODE INI ---
+  var payloadData = data || {};
+  payloadData.operator = getOperatorName(); 
+  // ---------------------------
+
   try {
-    var res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, data: data || {} }), redirect: 'follow' });
+    var res = await fetch(API_URL, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+      body: JSON.stringify({ action: action, data: payloadData }), // <--- Gunakan payloadData
+      redirect: 'follow' 
+    });
     var json = await res.json();
     setSyncState(json && json.ok ? 'online' : 'offline');
     return json;
