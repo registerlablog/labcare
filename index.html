@@ -212,6 +212,42 @@ tbody tr:hover { background: var(--slate-50); }
 </style>
 </head>
 <body>
+<!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
+<div id="loginOverlay" style="position:fixed; inset:0; background:#0f172a; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
+  
+  <!-- TAHAP 1: PILIH KARTU -->
+  <div id="loginStep1" style="width:100%; max-width:600px; text-align:center;">
+    <h1 style="color:#fff; font-size:32px; margin-bottom:10px; font-weight:800;">LabCare</h1>
+    <p style="color:#94a3b8; font-size:14px; margin-bottom:40px;">Silakan pilih kartu petugas Anda untuk melanjutkan.</p>
+    
+    <div id="adminCardContainer" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+      <!-- Kartu petugas akan dimuat oleh JavaScript di sini -->
+      <p style="color:#fff;">Memuat daftar petugas...</p>
+    </div>
+  </div>
+
+  <!-- TAHAP 2: INPUT PIN -->
+  <div id="loginStep2" style="display:none; width:100%; max-width:400px; background:#1e293b; padding:35px 30px; border-radius:20px; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+    
+    <!-- Avatar -->
+    <div id="avatarSelected" style="width:80px; height:80px; background:linear-gradient(135deg, #3b82f6, #2563eb); color:#fff; font-size:32px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; box-shadow:0 10px 15px -3px rgba(59,130,246,0.5);"></div>
+    
+    <h2 style="color:#fff; font-size:22px; margin-bottom:5px; font-weight:700;" id="nameSelected">Nama Petugas</h2>
+    <p style="color:#94a3b8; font-size:13px; margin-bottom:25px;">Masukkan PIN Rahasia Anda</p>
+    
+    <!-- Input PIN -->
+    <input type="password" id="loginPinAdmin" placeholder="••••••" style="width:100%; padding:15px; font-size:24px; text-align:center; letter-spacing:8px; border-radius:12px; border:2px solid #334155; background:#0f172a; color:#fff; margin-bottom:15px; outline:none;">
+    
+    <p id="loginError" style="color:#ef4444; font-size:13px; margin-bottom:15px; display:none; font-weight:600;"></p>
+    
+    <!-- Tombol Aksi -->
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button onclick="backToStep1()" style="flex:1; padding:12px; background:#475569; color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:600;">Kembali</button>
+      <button id="btnLoginAdmin" onclick="doLoginAdmin()" style="flex:2; padding:12px; background:#3b82f6; color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700;">Masuk →</button>
+    </div>
+  </div>
+</div>
+<!-- ============================================================= -->
 <div class="loading" id="loading"><div class="spinner"></div></div>
 <div class="layout">
   <aside class="sidebar">
@@ -225,6 +261,7 @@ tbody tr:hover { background: var(--slate-50); }
       <p id="clock"></p>
       <button class="reset-btn sync-btn" onclick="manualSync()">🔄 Sinkron dari Spreadsheet</button>
       <button class="reset-btn" onclick="resetData()">🗑️ Reset data pasien</button>
+      <button class="reset-btn" style="color: #f87171; margin-top: 8px;" onclick="doLogoutAdmin()">🚪 Logout Admin</button>
     </div>
   </aside>
   <div class="main-wrapper">
@@ -347,6 +384,22 @@ function fmtTglLahir(v) {
   return s;
 }
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
+// --- FUNGSI OPERATOR (LOGIN & LOGOUT) ---
+function getOperatorName() {
+  return localStorage.getItem('labcare_operator') || 'Admin LabCare';
+}
+
+function updateOperatorUI() {
+  var el = document.getElementById('lblOperator');
+  if (el) el.textContent = getOperatorName();
+}
+
+function doLogoutAdmin() {
+  if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
+    localStorage.removeItem('labcare_operator'); // Hapus sesi login
+    location.reload(); // Muat ulang halaman agar kembali ke layar login
+  }
+}
 var _toastTimer;
 function toastMsg(msg, type) { var t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : ''); clearTimeout(_toastTimer); _toastTimer = setTimeout(function() { t.className = 'toast'; }, 2400); }
 function setSyncState(state) { syncState = state; var badge = document.getElementById('syncBadge'); var badgeText = document.getElementById('syncBadgeText'); var mobile = document.getElementById('syncBadgeMobile'); var labels = { idle: 'Offline (lokal)', syncing: 'Menyinkron...', online: 'Tersinkron', offline: 'Gagal sinkron' }; if (badge) badge.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : ''); if (badgeText) badgeText.textContent = labels[state] || state; if (mobile) mobile.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : ''); }
@@ -2469,6 +2522,111 @@ loadTests(); loadKaryawan(); load(); renderNav();
 render();
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
+// ================= LOGIKA LOGIN KARTU PETUGAS =================
+var selectedAdminName = '';
+
+// Cek status login saat aplikasi pertama kali dibuka
+document.addEventListener('DOMContentLoaded', function() {
+  var isLoggedIn = localStorage.getItem('labcare_operator');
+  var overlay = document.getElementById('loginOverlay');
+  
+  if (isLoggedIn && isLoggedIn !== 'Admin LabCare') {
+    // Jika sudah pernah login, sembunyikan layar
+    if(overlay) overlay.style.display = 'none';
+    updateOperatorUI();
+  } else {
+    // Jika belum, muat daftar kartu
+    if(overlay) overlay.style.display = 'flex';
+    loadAdminCards();
+  }
+});
+
+// Fungsi memuat daftar kartu
+async function loadAdminCards() {
+  var container = document.getElementById('adminCardContainer');
+  try {
+    // Gunakan fetch langsung karena kita belum login (belum punya operator name)
+    var res = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getAdminList', data: {} })
+    });
+    var json = await res.json();
+    
+    if (json && json.ok && json.list.length > 0) {
+      container.innerHTML = json.list.map(function(a) {
+        var initial = a.nama.charAt(0).toUpperCase(); 
+        return `
+          <div onclick="selectAdmin('${a.nama}')" style="background:#1e293b; width:120px; height:140px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; border:2px solid transparent;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='transparent'">
+            <div style="width:60px; height:60px; background:#3b82f6; color:#fff; font-size:24px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">${initial}</div>
+            <div style="color:#fff; font-size:13px; font-weight:600; text-align:center; padding:0 5px;">${a.nama}</div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      container.innerHTML = '<p style="color:#ef4444;">Belum ada data admin di Master_Admin.</p>';
+    }
+  } catch (e) {
+    container.innerHTML = '<p style="color:#ef4444;">Gagal memuat daftar petugas. Periksa koneksi.</p>';
+  }
+}
+
+// Fungsi saat kartu diklik
+function selectAdmin(nama) {
+  selectedAdminName = nama;
+  document.getElementById('nameSelected').innerText = nama;
+  document.getElementById('avatarSelected').innerText = nama.charAt(0).toUpperCase();
+  
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep2').style.display = 'block';
+  document.getElementById('loginPinAdmin').value = '';
+  document.getElementById('loginPinAdmin').focus();
+}
+
+// Fungsi kembali ke pilih kartu
+function backToStep1() {
+  document.getElementById('loginStep2').style.display = 'none';
+  document.getElementById('loginStep1').style.display = 'block';
+  selectedAdminName = '';
+}
+
+// Fungsi verifikasi PIN
+async function doLoginAdmin() {
+  var pin = document.getElementById('loginPinAdmin').value.trim();
+  var errEl = document.getElementById('loginError');
+  var btn = document.getElementById('btnLoginAdmin');
+
+  if (!pin) { errEl.style.display = 'block'; errEl.innerText = 'PIN tidak boleh kosong.'; return; }
+
+  errEl.style.display = 'none';
+  btn.innerText = 'Memeriksa...';
+  btn.disabled = true;
+
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'loginAdmin', data: { nama: selectedAdminName, pin: pin } })
+    });
+    var json = await res.json();
+
+    if (json && json.ok) {
+      // Simpan nama asli dari database ke memori
+      localStorage.setItem('labcare_operator', json.nama_asli);
+      document.getElementById('loginOverlay').style.display = 'none';
+      updateOperatorUI();
+      toastMsg('Selamat datang, ' + json.nama_asli, 'ok');
+    } else {
+      errEl.style.display = 'block';
+      errEl.innerText = json.error || 'PIN Salah.';
+      btn.innerText = 'Masuk →';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    errEl.style.display = 'block';
+    errEl.innerText = 'Error koneksi ke server.';
+    btn.innerText = 'Masuk →';
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>
