@@ -366,6 +366,8 @@ window._prolanisSearch = window._prolanisSearch || '';
 window._kegiatanSearch = window._kegiatanSearch || '';
 window._kegiatanDateFilter = window._kegiatanDateFilter === undefined ? new Date().toISOString().slice(0, 10) : window._kegiatanDateFilter;
 window._hasilTab = window._hasilTab || 'umum';
+window._logSearch = '';
+window._logDate = '';
 function uid() { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -2173,7 +2175,28 @@ function viewMasterLogBackup() {
     '<div><h3 style="font-size:17px;font-weight:700;">Log & Backup Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Pantau aktivitas petugas dan riwayat pencadangan data.</p></div>' +
     '<button class="btn btn-primary" onclick="prosesBackupSekarang()">🔄 Backup Sekarang</button>' +
     '</div>' +
-    '<div id="logBackupContainer"><div class="empty-state"><span class="em">⏳</span><p>Memuat data log dan backup...</p></div></div>';
+    
+    '<div class="card" style="margin-bottom: 16px;">' +
+      '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;">📜 Log Aktivitas</h3>' +
+      
+      // --- UI PENCARIAN & FILTER ---
+      '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">' +
+        '<input type="text" id="logSearchInput" placeholder="🔍 Cari pengguna, aksi, atau detail..." oninput="onSearchLog(this.value)" style="flex:1; min-width:200px; padding:10px 14px; border:1px solid var(--slate-300); border-radius:10px; font-size:14px; font-family:inherit; outline:none;">' +
+        '<div style="display:flex; align-items:center; background:#fff; border:1px solid var(--slate-300); border-radius:10px; padding:0 10px;">' +
+          '<span style="font-size:16px;">📅</span>' +
+          '<input type="date" id="logDateInput" onchange="onFilterDateLog(this.value)" style="border:none; outline:none; padding:10px 6px; font-size:14px; font-family:inherit; background:transparent;">' +
+          '<button onclick="clearLogFilter()" style="border:none; background:none; cursor:pointer; padding:0 4px; font-size:16px;" title="Hapus Filter Tanggal">✕</button>' +
+        '</div>' +
+      '</div>' +
+      // -----------------------------
+      
+      '<div id="logTableContainer"><div class="empty-state"><span class="em">⏳</span><p>Memuat data log...</p></div></div>' +
+    '</div>' +
+    
+    '<div class="card">' +
+      '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;">💾 Riwayat Backup Terbaru</h3>' +
+      '<div id="backupTableContainer"><div class="empty-state"><span class="em">⏳</span><p>Memuat data backup...</p></div></div>' +
+    '</div>';
 }
 async function prosesBackupSekarang() {
   if (!confirm('Apakah Anda yakin ingin membuat file backup baru sekarang?')) return;
@@ -2195,57 +2218,95 @@ async function prosesBackupSekarang() {
   }
 }
 async function loadLogDanBackup() {
-  var container = document.getElementById('logBackupContainer');
-  if (!container) return;
+  var logContainer = document.getElementById('logTableContainer');
+  var backupContainer = document.getElementById('backupTableContainer');
+  if (!logContainer) return;
 
   try {
-    // Ambil data Log dan Backup secara bersamaan
+    // Ambil data Log (dengan parameter pencarian) dan Backup secara bersamaan
     var [resLog, resBackup] = await Promise.all([
-      apiCall('getRecentLogs', {}),
+      apiCall('getRecentLogs', { search: window._logSearch, date: window._logDate }),
       apiCall('getBackupHistory', {})
     ]);
-
-    var logHtml = '';
-    var backupHtml = '';
 
     // --- RENDER TABEL LOG ---
     if (resLog && resLog.ok && resLog.list.length > 0) {
       var logRows = resLog.list.map(function(l) {
         var warna = l.aksi.includes('Hapus') || l.aksi.includes('Gagal') ? 'color:var(--danger);font-weight:600;' : (l.aksi.includes('Berhasil') ? 'color:var(--success);font-weight:600;' : '');
         
-        // --- FORMAT WAKTU BARU ---
-        var waktuFormat = l.waktu;
-        // -------------------------
-
         return '<tr>' +
-          '<td style="font-size:11px;white-space:nowrap;">' + esc(waktuFormat) + '</td>' +
+          '<td style="font-size:11px;white-space:nowrap;">' + esc(l.waktu) + '</td>' +
           '<td style="font-weight:600;">' + esc(l.pengguna) + '</td>' +
           '<td style="' + warna + '">' + esc(l.aksi) + '</td>' +
           '<td style="font-size:12px;color:var(--slate-500);">' + esc(l.detail) + '</td>' +
           '</tr>';
       }).join('');
-      logHtml = '<div class="table-wrap" style="max-height: 300px; overflow-y: auto;"><table><thead><tr><th style="width:120px;">Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>' + logRows + '</tbody></table></div>';
+      logContainer.innerHTML = '<div class="table-wrap" style="max-height: 400px; overflow-y: auto;"><table><thead><tr><th style="width:120px;">Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>' + logRows + '</tbody></table></div>';
     } else {
-      logHtml = '<div class="empty-state" style="padding:20px;"><p>Belum ada log aktivitas.</p></div>';
+      logContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><p>Tidak ada log aktivitas yang cocok dengan pencarian.</p></div>';
     }
 
     // --- RENDER TABEL BACKUP ---
-    if (resBackup && resBackup.ok && resBackup.list.length > 0) {
-      var backupRows = resBackup.list.map(function(b) {
-        var badgeColor = b.kategori === 'Harian' ? 'badge-proses' : (b.kategori === 'Bulanan' ? 'badge-menunggu' : 'badge-selesai');
-        return '<tr>' +
-          '<td><span class="badge ' + badgeColor + '">' + esc(b.kategori) + '</span></td>' +
-          '<td style="font-weight:500;">' + esc(b.nama) + '</td>' +
-          '<td style="font-size:12px;">' + esc(b.tanggal) + '</td>' +
-          '<td style="font-size:12px;">' + esc(b.ukuran) + '</td>' +
-          '<td style="text-align:right;"><a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm">Buka</a></td>' +
-          '</tr>';
-      }).join('');
-      backupHtml = '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Nama File</th><th>Tanggal Dibuat</th><th>Ukuran</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + backupRows + '</tbody></table></div>';
-    } else {
-      backupHtml = '<div class="empty-state" style="padding:20px;"><p>Belum ada file backup yang terbaca.</p></div>';
+    if (backupContainer) {
+      if (resBackup && resBackup.ok && resBackup.list.length > 0) {
+        var backupRows = resBackup.list.map(function(b) {
+          var badgeColor = b.kategori === 'Harian' ? 'badge-proses' : (b.kategori === 'Bulanan' ? 'badge-menunggu' : 'badge-selesai');
+          return '<tr>' +
+            '<td><span class="badge ' + badgeColor + '">' + esc(b.kategori) + '</span></td>' +
+            '<td style="font-weight:500;">' + esc(b.nama) + '</td>' +
+            '<td style="font-size:12px;">' + esc(b.tanggal) + '</td>' +
+            '<td style="font-size:12px;">' + esc(b.ukuran) + '</td>' +
+            '<td style="text-align:right;"><a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm">Buka</a></td>' +
+            '</tr>';
+        }).join('');
+        backupContainer.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Nama File</th><th>Tanggal Dibuat</th><th>Ukuran</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + backupRows + '</tbody></table></div>';
+      } else {
+        backupContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><p>Belum ada file backup yang terbaca.</p></div>';
+      }
     }
 
+  } catch (e) {
+    if (logContainer) logContainer.innerHTML = '<div class="empty-state"><p>Gagal memuat data Log.</p></div>';
+  }
+}
+var _logSearchTimer;
+function onSearchLog(val) {
+  window._logSearch = val;
+  clearTimeout(_logSearchTimer);
+  _logSearchTimer = setTimeout(function() {
+    // Hanya memuat ulang tabel log, bukan seluruh halaman
+    var logContainer = document.getElementById('logTableContainer');
+    if (logContainer) logContainer.innerHTML = '<div class="empty-state"><span class="em">⏳</span><p>Mencari...</p></div>';
+    apiCall('getRecentLogs', { search: window._logSearch, date: window._logDate }).then(function(resLog) {
+       // (Fungsi render log dipanggil ulang di sini)
+       var backupContainer = document.getElementById('backupTableContainer'); // Biarkan backup tidak berubah
+       if (resLog && resLog.ok) {
+          var logRows = resLog.list.map(function(l) { 
+             var warna = l.aksi.includes('Hapus') || l.aksi.includes('Gagal') ? 'color:var(--danger);font-weight:600;' : (l.aksi.includes('Berhasil') ? 'color:var(--success);font-weight:600;' : '');
+             return '<tr><td style="font-size:11px;white-space:nowrap;">' + esc(l.waktu) + '</td><td style="font-weight:600;">' + esc(l.pengguna) + '</td><td style="' + warna + '">' + esc(l.aksi) + '</td><td style="font-size:12px;color:var(--slate-500);">' + esc(l.detail) + '</td></tr>'; 
+          }).join('');
+          logContainer.innerHTML = '<div class="table-wrap" style="max-height: 400px; overflow-y: auto;"><table><thead><tr><th style="width:120px;">Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>' + logRows + '</tbody></table></div>';
+       } else {
+          logContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><p>Tidak ada log yang cocok.</p></div>';
+       }
+    });
+  }, 500); // Debounce 500ms agar tidak memanggil server setiap ketikan huruf
+}
+
+function onFilterDateLog(val) {
+  window._logDate = val;
+  loadLogDanBackup();
+}
+
+function clearLogFilter() {
+  window._logDate = '';
+  window._logSearch = '';
+  var dateInput = document.getElementById('logDateInput');
+  var searchInput = document.getElementById('logSearchInput');
+  if (dateInput) dateInput.value = '';
+  if (searchInput) searchInput.value = '';
+  loadLogDanBackup();
+}
     // --- GABUNGKAN TAMPILAN ---
     container.innerHTML = 
       '<div class="card" style="margin-bottom: 16px;">' +
