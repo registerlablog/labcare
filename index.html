@@ -1184,7 +1184,8 @@ if (selectPengirim === 'lainnya') {
 }
   var alamat = (document.getElementById('pk_alamat').value || '').trim();
   var petugas = (document.getElementById('pk_petugas').value || '').trim();
-  var jumlah = parseInt(document.getElementById('pk_jumlah').value || '0', 10) || 0;
+  var jumlahEl = document.getElementById('pk_jumlah');
+  var jumlah = jumlahEl ? (parseInt(jumlahEl.value || '0', 10) || 0) : 0;
   if (!nama || !tanggal) { alert('Nama dan tanggal wajib diisi.'); return; }
   if (jumlah < 0) jumlah = 0;
   if (jumlah > 500) jumlah = 500;
