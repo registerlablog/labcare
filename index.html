@@ -1153,7 +1153,7 @@ var pengirimHtml =
     '<div><label class="lbl">Tanggal *</label><input type="date" id="pk_tanggal" class="inp" value="' + (k ? esc((k.tanggal || '').slice(0, 10)) : '') + '"></div>' +
     pengirimHtml +
     '<div><label class="lbl">Alamat / Wilayah</label><input id="pk_alamat" class="inp" value="' + (k ? esc(k.alamat || '') : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
-    '<div><label class="lbl">Jumlah Peserta</label><input type="number" id="pk_jumlah" class="inp" value="0" min="0" max="500"><div style="font-size:11px;color:var(--slate-400);margin-top:4px;">Isi jumlah peserta → otomatis buat baris kosong</div></div>' +
+    (isEdit ? '' : '<div><label class="lbl">Jumlah Peserta</label><input type="number" id="pk_jumlah" class="inp" value="0" min="0" max="500"><div style="font-size:11px;color:var(--slate-400);margin-top:4px;">Isi jumlah peserta → otomatis buat baris kosong</div></div>') +
     '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
     '</div>' +
     '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis(\'' + (isEdit ? esc(id) : '') + '\')">💾 Simpan</button>' +
@@ -1221,13 +1221,23 @@ if (selectPengirim === 'lainnya') {
       peserta: peserta
     });
   }
-  showLoading(true); // Munculkan loading
-apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function() {
-  showLoading(false); // Hilangkan loading setelah selesai
-  toastMsg(editId ? '✅ Kegiatan diperbarui' : '✅ Kegiatan dibuat', 'ok');
-  closeModal();
-  render();
-});
+    showLoading(true); // Munculkan loading
+  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function(res) {
+    showLoading(false); // Hilangkan loading setelah selesai
+    
+    // --- PENGECEKAN ERROR BARU ---
+    if (res && res.ok) {
+      toastMsg(editId ? '✅ Kegiatan diperbarui' : '✅ Kegiatan dibuat', 'ok');
+      closeModal();
+      render();
+    } else {
+      // Jika gagal, tampilkan pesan error asli dari server
+      var pesanError = (res && res.error) ? res.error : 'Gagal menyimpan. Periksa koneksi atau login ulang.';
+      alert('⚠️ GAGAL MENYIMPAN:\n\n' + pesanError);
+      toastMsg('Gagal menyimpan data', 'err');
+    }
+    // ------------------------------
+  });
 }
   function bukaKegiatanProlanis(id) {
   var k = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(id); });
