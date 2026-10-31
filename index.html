@@ -1167,28 +1167,25 @@ function simpanKegiatanProlanis(editId) {
   var nama = (document.getElementById('pk_nama').value || '').trim();
   var tanggal = (document.getElementById('pk_tanggal').value || '').trim();
   var selectPengirim = document.getElementById('pk_pengirim_select').value;
-var pengirim = '';
+  var pengirim = '';
 
-if (selectPengirim === 'lainnya') {
-  pengirim = (document.getElementById('pk_pengirim_manual').value || '').trim();
-  if (!pengirim) { 
-    alert('Nama Puskesmas manual wajib diisi!'); 
-    return; 
+  if (selectPengirim === 'lainnya') {
+    pengirim = (document.getElementById('pk_pengirim_manual').value || '').trim();
+    if (!pengirim) { alert('Nama Puskesmas manual wajib diisi!'); return; }
+  } else {
+    pengirim = selectPengirim;
+    if (!pengirim) { alert('Pilih Puskesmas Pengirim terlebih dahulu.'); return; }
   }
-} else {
-  pengirim = selectPengirim;
-  if (!pengirim) { 
-    alert('Pilih Puskesmas Pengirim terlebih dahulu.'); 
-    return; 
-  }
-}
+  
   var alamat = (document.getElementById('pk_alamat').value || '').trim();
   var petugas = (document.getElementById('pk_petugas').value || '').trim();
   var jumlahEl = document.getElementById('pk_jumlah');
   var jumlah = jumlahEl ? (parseInt(jumlahEl.value || '0', 10) || 0) : 0;
+  
   if (!nama || !tanggal) { alert('Nama dan tanggal wajib diisi.'); return; }
   if (jumlah < 0) jumlah = 0;
   if (jumlah > 500) jumlah = 500;
+  
   window._prolanisList = window._prolanisList || [];
   
   if (editId) {
@@ -1222,23 +1219,43 @@ if (selectPengirim === 'lainnya') {
       peserta: peserta
     });
   }
-    showLoading(true); // Munculkan loading
-  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList }).then(function(res) {
-    showLoading(false); // Hilangkan loading setelah selesai
-    
-    // --- PENGECEKAN ERROR BARU ---
-    if (res && res.ok) {
+
+  // --- TAMBAHAN BARU: Kumpulkan semua peserta untuk disimpan ---
+  var allPeserta = [];
+  (window._prolanisList || []).forEach(function(keg) {
+    (keg.peserta || []).forEach(function(p, i) {
+      var ps = JSON.parse(JSON.stringify(p));
+      ps.id = keg.id_kegiatan + '-' + (i + 1);
+      ps.id_kegiatan = keg.id_kegiatan;
+      ps.status = ps.status || 'belum';
+      if (!ps.tgl_input) ps.tgl_input = new Date().toISOString();
+      allPeserta.push(ps);
+    });
+  });
+  // -----------------------------------------------------------
+
+  showLoading(true);
+  
+  // Simpan Kegiatan, lalu Simpan Peserta
+  apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList })
+    .then(function(res) {
+      if (res && res.ok) {
+        return apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
+      } else {
+        throw new Error((res && res.error) ? res.error : 'Gagal menyimpan kegiatan');
+      }
+    })
+    .then(function() {
+      showLoading(false);
       toastMsg(editId ? '✅ Kegiatan diperbarui' : '✅ Kegiatan dibuat', 'ok');
       closeModal();
       render();
-    } else {
-      // Jika gagal, tampilkan pesan error asli dari server
-      var pesanError = (res && res.error) ? res.error : 'Gagal menyimpan. Periksa koneksi atau login ulang.';
-      alert('⚠️ GAGAL MENYIMPAN:\n\n' + pesanError);
+    })
+    .catch(function(err) {
+      showLoading(false);
+      alert('⚠️ GAGAL MENYIMPAN:\n\n' + err.message);
       toastMsg('Gagal menyimpan data', 'err');
-    }
-    // ------------------------------
-  });
+    });
 }
   function bukaKegiatanProlanis(id) {
   var k = (window._prolanisList || []).find(function(x) { return String(x.id_kegiatan) === String(id); });
