@@ -2307,22 +2307,7 @@ function clearLogFilter() {
   if (searchInput) searchInput.value = '';
   loadLogDanBackup();
 }
-    // --- GABUNGKAN TAMPILAN ---
-    container.innerHTML = 
-      '<div class="card" style="margin-bottom: 16px;">' +
-        '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;"><i class="fa-solid fa-clock-rotate-left"></i> 30 Aktivitas Terakhir</h3>' +
-        logHtml +
-      '</div>' +
-      '<div class="card">' +
-        '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;"><i class="fa-solid fa-database"></i> Riwayat Backup Terbaru</h3>' +
-        backupHtml +
-      '</div>';
-
-  } catch (e) {
-    container.innerHTML = '<div class="empty-state"><p>Gagal memuat data Log & Backup.</p></div>';
-  }
-}
-  function viewMasterPuskesmas() {
+function viewMasterPuskesmas() {
   // Panggil fungsi load data setelah HTML dirender
   setTimeout(loadDataPuskesmas, 100); 
   
