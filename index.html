@@ -2068,7 +2068,14 @@ function viewLaporan() {
 function goToMaster(tab) { view = 'master'; window._masterTab = tab; renderNav(); render(); }
 function viewMaster() {
   var tab = window._masterTab || 'pemeriksaan';
-  var tabsHtml = '<button class="pill' + (tab === 'pemeriksaan' ? ' active' : '') + '" onclick="window._masterTab=\'pemeriksaan\'; render();">🔬 Pemeriksaan</button><button class="pill' + (tab === 'analis' ? ' active' : '') + '" onclick="window._masterTab=\'analis\'; render();">👨‍🔬 Analis</button><button class="pill' + (tab === 'dokter' ? ' active' : '') + '" onclick="window._masterTab=\'dokter\'; render();">🩺 Dokter</button><button class="pill' + (tab === 'stempel' ? ' active' : '') + '" onclick="window._masterTab=\'stempel\'; render();">🏢 Stempel</button><button class="pill' + (tab === 'puskesmas' ? ' active' : '') + '" onclick="window._masterTab=\'puskesmas\'; render();">🔐 Akses Puskesmas</button>''<button class="pill' + (tab === 'logbackup' ? ' active' : '') + '" onclick="window._masterTab=\'logbackup\'; render();">🛡️ Log & Backup</button>';
+   var tabsArr = [];
+  tabsArr.push('<button class="pill' + (tab === 'pemeriksaan' ? ' active' : '') + '" onclick="window._masterTab=\'pemeriksaan\'; render();">🔬 Pemeriksaan</button>');
+  tabsArr.push('<button class="pill' + (tab === 'analis' ? ' active' : '') + '" onclick="window._masterTab=\'analis\'; render();">👨‍🔬 Analis</button>');
+  tabsArr.push('<button class="pill' + (tab === 'dokter' ? ' active' : '') + '" onclick="window._masterTab=\'dokter\'; render();">🩺 Dokter</button>');
+  tabsArr.push('<button class="pill' + (tab === 'stempel' ? ' active' : '') + '" onclick="window._masterTab=\'stempel\'; render();">🏢 Stempel</button>');
+  tabsArr.push('<button class="pill' + (tab === 'puskesmas' ? ' active' : '') + '" onclick="window._masterTab=\'puskesmas\'; render();">🔐 Akses Puskesmas</button>');
+  tabsArr.push('<button class="pill' + (tab === 'logbackup' ? ' active' : '') + '" onclick="window._masterTab=\'logbackup\'; render();">🛡️ Log & Backup</button>');
+  var tabsHtml = tabsArr.join('');
   var content = '';
   if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
   else if (tab === 'analis') content = viewMasterAnalis();
