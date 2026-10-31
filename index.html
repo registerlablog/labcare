@@ -2152,7 +2152,7 @@ async function loadLogDanBackup() {
 
     // --- RENDER TABEL LOG ---
     if (resLog && resLog.ok && resLog.list.length > 0) {
-           var logRows = resLog.list.map(function(l) {
+      var logRows = resLog.list.map(function(l) {
         var warna = l.aksi.includes('Hapus') || l.aksi.includes('Gagal') ? 'color:var(--danger);font-weight:600;' : (l.aksi.includes('Berhasil') ? 'color:var(--success);font-weight:600;' : '');
         
         // --- FORMAT WAKTU BARU ---
@@ -2175,6 +2175,10 @@ async function loadLogDanBackup() {
           '<td style="font-size:12px;color:var(--slate-500);">' + esc(l.detail) + '</td>' +
           '</tr>';
       }).join('');
+      logHtml = '<div class="table-wrap" style="max-height: 300px; overflow-y: auto;"><table><thead><tr><th style="width:120px;">Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>' + logRows + '</tbody></table></div>';
+    } else {
+      logHtml = '<div class="empty-state" style="padding:20px;"><p>Belum ada log aktivitas.</p></div>';
+    }
 
     // --- RENDER TABEL BACKUP ---
     if (resBackup && resBackup.ok && resBackup.list.length > 0) {
