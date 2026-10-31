@@ -425,6 +425,7 @@ function updateOperatorUI() {
 function doLogoutAdmin() {
   if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
     localStorage.removeItem('labcare_operator'); // Hapus sesi login
+    localStorage.removeItem('labcare_token');
     location.reload(); // Muat ulang halaman agar kembali ke layar login
   }
 }
@@ -437,7 +438,8 @@ async function apiCall(action, data) {
   
   // --- TAMBAHKAN KODE INI ---
   var payloadData = data || {};
-  payloadData.operator = getOperatorName(); 
+  payloadData.operator = getOperatorName();
+  payloadData.token = localStorage.getItem('labcare_token') || '';
   // ---------------------------
 
   try {
@@ -2663,6 +2665,7 @@ async function doLoginAdmin() {
     if (json && json.ok) {
       // Simpan nama asli dari database ke memori
       localStorage.setItem('labcare_operator', json.nama_asli);
+      localStorage.setItem('labcare_token', json.token);
       document.getElementById('loginOverlay').style.display = 'none';
       updateOperatorUI();
       toastMsg('Selamat datang, ' + json.nama_asli, 'ok');
