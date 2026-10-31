@@ -2214,16 +2214,7 @@ async function loadLogDanBackup() {
         var warna = l.aksi.includes('Hapus') || l.aksi.includes('Gagal') ? 'color:var(--danger);font-weight:600;' : (l.aksi.includes('Berhasil') ? 'color:var(--success);font-weight:600;' : '');
         
         // --- FORMAT WAKTU BARU ---
-        var dt = new Date(l.waktu);
         var waktuFormat = l.waktu;
-        if (!isNaN(dt.getTime())) {
-          var dd = String(dt.getDate()).padStart(2, '0');
-          var mm = String(dt.getMonth() + 1).padStart(2, '0');
-          var yyyy = dt.getFullYear();
-          var hh = String(dt.getHours()).padStart(2, '0');
-          var min = String(dt.getMinutes()).padStart(2, '0');
-          waktuFormat = dd + '-' + mm + '-' + yyyy + ' ' + hh + ':' + min;
-        }
         // -------------------------
 
         return '<tr>' +
