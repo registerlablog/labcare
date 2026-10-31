@@ -2132,10 +2132,31 @@ function viewMasterLogBackup() {
   // Panggil fungsi load data setelah HTML dirender
   setTimeout(loadLogDanBackup, 100);
 
-  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Log & Backup Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Pantau aktivitas petugas dan riwayat pencadangan data.</p></div></div>' +
+  return '<div class="page-header-flex">' +
+    '<div><h3 style="font-size:17px;font-weight:700;">Log & Backup Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Pantau aktivitas petugas dan riwayat pencadangan data.</p></div>' +
+    '<button class="btn btn-primary" onclick="prosesBackupSekarang()">🔄 Backup Sekarang</button>' +
+    '</div>' +
     '<div id="logBackupContainer"><div class="empty-state"><span class="em">⏳</span><p>Memuat data log dan backup...</p></div></div>';
 }
+async function prosesBackupSekarang() {
+  if (!confirm('Apakah Anda yakin ingin membuat file backup baru sekarang?')) return;
 
+  showLoading(true);
+  try {
+    var res = await apiCall('triggerManualBackup', {});
+    showLoading(false);
+
+    if (res && res.ok) {
+      toastMsg('✅ Backup berhasil dibuat!', 'ok');
+      loadLogDanBackup(); // Muat ulang tabel agar file baru muncul
+    } else {
+      toastMsg(res.error || 'Gagal membuat backup', 'err');
+    }
+  } catch (e) {
+    showLoading(false);
+    toastMsg('Error koneksi: ' + e.message, 'err');
+  }
+}
 async function loadLogDanBackup() {
   var container = document.getElementById('logBackupContainer');
   if (!container) return;
