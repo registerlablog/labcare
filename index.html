@@ -2268,25 +2268,26 @@ async function loadLogDanBackup() {
     }
 
     // --- RENDER TABEL BACKUP ---
-    if (backupContainer) {
-      if (resBackup && resBackup.ok && resBackup.list.length > 0) {
-        var backupRows = resBackup.list.map(function(b) {
-          var badgeColor = b.kategori === 'Harian' ? 'badge-proses' : (b.kategori === 'Bulanan' ? 'badge-menunggu' : 'badge-selesai');
-          return '<tr>' +
-            '<td><span class="badge ' + badgeColor + '">' + esc(b.kategori) + '</span></td>' +
-            '<td style="font-weight:500;">' + esc(b.nama) + '</td>' +
-            '<td style="font-size:12px;">' + esc(b.tanggal) + '</td>' +
-            '<td style="font-size:12px;">' + esc(b.ukuran) + '</td>' +
-            '<td style="text-align:right;"><a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm">Buka</a></td>' +
-            '</tr>';
-        }).join('');
-        backupContainer.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Nama File</th><th>Tanggal Dibuat</th><th>Ukuran</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + backupRows + '</tbody></table></div>';
-      } else {
-        backupContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><p>Belum ada file backup yang terbaca.</p></div>';
-      }
-    }
-
-  } catch (e) {
+if (backupContainer) {
+  if (resBackup && resBackup.ok && resBackup.list.length > 0) {
+    var backupRows = resBackup.list.map(function(b) {
+      var badgeColor = b.kategori === 'Harian' ? 'badge-proses' : (b.kategori === 'Bulanan' ? 'badge-menunggu' : 'badge-selesai');
+      return '<tr>' +
+        '<td><span class="badge ' + badgeColor + '">' + esc(b.kategori) + '</span></td>' +
+        '<td style="font-weight:500;">' + esc(b.nama) + '</td>' +
+        '<td style="font-size:12px;">' + esc(b.tanggal) + '</td>' +
+        '<td style="font-size:12px;">' + esc(b.ukuran) + '</td>' +
+        '<td style="text-align:right;"><a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm">Buka</a></td>' +
+        '</tr>';
+    }).join('');
+    backupContainer.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Nama File</th><th>Tanggal Dibuat</th><th>Ukuran</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + backupRows + '</tbody></table></div>';
+  } else {
+    // --- UBAH BAGIAN INI UNTUK MENAMPILKAN ERROR ---
+    var errorMsg = (resBackup && resBackup.error) ? resBackup.error : 'Belum ada file backup yang terbaca / folder kosong.';
+    backupContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><p style="color:var(--danger); font-family:monospace;">ERROR: ' + esc(errorMsg) + '</p></div>';
+  }
+}
+}  catch (e) {
     if (logContainer) logContainer.innerHTML = '<div class="empty-state"><p>Gagal memuat data Log.</p></div>';
   }
 }
