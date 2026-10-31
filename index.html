@@ -1577,7 +1577,7 @@ function konfirmasiUploadProlanis() {
   window._uploadParsedRows = null;
   closeModal();
   render();
-  toastMsg('✅ ' + newList.length + ' peserta berhasil diperbarui', 'ok');
+toastMsg('✅ ' + newList.length + ' peserta diperbarui. KLIK TOMBOL SIMPAN untuk menyimpan permanen.', 'ok');
 }
 function downloadTemplateProlanis() {
   if (typeof XLSX === 'undefined') { toastMsg('Library Excel belum siap', 'err'); return; }
@@ -1652,7 +1652,8 @@ var aoa = [header].concat(dataPeserta);
 function simpanDetailKegiatan() {
   if (!window._prolanisDetail) return;
   var k = window._prolanisDetail;
-  // Update list
+  
+  // Update list lokal
   var idx = (window._prolanisList || []).findIndex(function(x) { return String(x.id_kegiatan) === String(k.id_kegiatan); });
   if (idx >= 0) window._prolanisList[idx] = k;
   else window._prolanisList.push(k);
@@ -1664,26 +1665,34 @@ function simpanDetailKegiatan() {
       var ps = JSON.parse(JSON.stringify(p));
       ps.id = keg.id_kegiatan + '-' + (i + 1);
       ps.id_kegiatan = keg.id_kegiatan;
-      ps.status = 'selesai';
-      ps.tgl_input = new Date().toISOString();
+      ps.status = ps.status || 'belum';
+      if (!ps.tgl_input) ps.tgl_input = new Date().toISOString();
       allPeserta.push(ps);
     });
   });
 
-  showLoading(true); // 1. Tampilkan Loading
+  showLoading(true);
 
-  // 2. Simpan Kegiatan, lalu lanjut simpan Peserta
   apiCall('saveMaster', { jenis: 'prolanis_kegiatan', list: window._prolanisList })
-    .then(function() {
-      return apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
+    .then(function(res) {
+      if (res && res.ok) {
+        return apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
+      } else {
+        throw new Error((res && res.error) ? res.error : 'Gagal menyimpan kegiatan');
+      }
     })
     .then(function() {
-      showLoading(false); // 3. Hilangkan Loading setelah KEDUANYA selesai
-      toastMsg('✅ Kegiatan tersimpan', 'ok');
+      showLoading(false);
+      toastMsg('✅ Kegiatan & peserta tersimpan', 'ok');
       render();
+    })
+    .catch(function(err) {
+      showLoading(false);
+      alert('⚠️ GAGAL MENYIMPAN:\n\n' + err.message);
+      toastMsg('Gagal menyimpan data', 'err');
     });
 }
-  /* ===== EXPORT PROLANIS KE EXCEL (STYLED) ===== */
+/* ===== EXPORT PROLANIS KE EXCEL (STYLED) ===== */
 function exportProlanisXLSX(kegId) {
   var keg = (window._prolanisList || []).find(function(x) {
     return String(x.id_kegiatan) === String(kegId);
