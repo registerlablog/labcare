@@ -2173,8 +2173,10 @@ function viewMasterLogBackup() {
 
   return '<div class="page-header-flex">' +
     '<div><h3 style="font-size:17px;font-weight:700;">Log & Backup Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Pantau aktivitas petugas dan riwayat pencadangan data.</p></div>' +
-    '<button class="btn btn-primary" onclick="prosesBackupSekarang()">🔄 Backup Sekarang</button>' +
-    '</div>' +
+'<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+'<button class="btn" style="background:#f59e0b; color:#fff;" onclick="prosesArsipSekarang()">📦 Arsipkan Log Lama</button>' +
+'<button class="btn btn-primary" onclick="prosesBackupSekarang()">🔄 Backup Sekarang</button>' +
+'</div>' +    '</div>' +
     
     '<div class="card" style="margin-bottom: 16px;">' +
       '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;">📜 Log Aktivitas</h3>' +
@@ -2211,6 +2213,25 @@ async function prosesBackupSekarang() {
       loadLogDanBackup(); // Muat ulang tabel agar file baru muncul
     } else {
       toastMsg(res.error || 'Gagal membuat backup', 'err');
+    }
+  } catch (e) {
+    showLoading(false);
+    toastMsg('Error koneksi: ' + e.message, 'err');
+  }
+}
+async function prosesArsipSekarang() {
+  if (!confirm('Arsipkan log yang umurnya lebih dari 90 hari ke sheet Audit_Log_Arsip?\n\n(Pastikan Anda sudah melakukan Backup sebelum melakukan ini).')) return;
+
+  showLoading(true);
+  try {
+    var res = await apiCall('triggerManualArsip', {});
+    showLoading(false);
+
+    if (res && res.ok) {
+      toastMsg('✅ ' + res.message, 'ok');
+      loadLogDanBackup(); // Muat ulang tabel log agar data terbaru muncul
+    } else {
+      toastMsg(res.error || 'Gagal mengarsipkan log', 'err');
     }
   } catch (e) {
     showLoading(false);
