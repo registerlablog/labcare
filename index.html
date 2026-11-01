@@ -443,18 +443,31 @@ async function apiCall(action, data) {
   payloadData.operator = getOperatorName();
   payloadData.token = localStorage.getItem('labcare_token') || '';
   // ---------------------------
-
+try {
+  var res = await fetch(API_URL, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+    body: JSON.stringify({ action: action, data: payloadData }), 
+    redirect: 'follow' 
+  });
+  
+  // Baca respon sebagai teks mentah dulu
+  var text = await res.text();
+  
   try {
-    var res = await fetch(API_URL, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-      body: JSON.stringify({ action: action, data: payloadData }), // <--- Gunakan payloadData
-      redirect: 'follow' 
-    });
-    var json = await res.json();
+    // Coba ubah ke JSON
+    var json = JSON.parse(text);
     setSyncState(json && json.ok ? 'online' : 'offline');
     return json;
-  } catch (e) { setSyncState('offline'); return null; }
+  } catch (parseErr) {
+    // Jika gagal jadi JSON (berarti server crash / return HTML)
+    setSyncState('offline');
+    return { ok: false, error: 'Server Crash/Error 500. Respon: ' + text.substring(0, 50) };
+  }
+  
+} catch (e) { 
+  setSyncState('offline'); 
+  return { ok: false, error: 'Koneksi putus: ' + e.message }; 
 }
 async function syncAllFromServer(silent) {
   if (!SYNC_ENABLED) { setSyncState('idle'); return; }
