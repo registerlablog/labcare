@@ -1720,11 +1720,14 @@ function exportProlanisXLSX(kegId) {
     toastMsg('Belum ada peserta di kegiatan ini', 'err');
     return;
   }
-  if (typeof XLSX === 'undefined') {
-    toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err');
-    return;
-  }
-  
+if (typeof XLSX === 'undefined') {
+  toastMsg('Library Excel belum siap. Cek koneksi internet.', 'err');
+  return;
+}
+
+// --- LOG DI SINI (SETELAH SEMUA PENGECEKAN) ---
+apiCall('logActivityManual', { aksi: '📥 Export Excel Prolanis', detail: 'Kegiatan: ' + keg.nama_kegiatan + ' | Total: ' + peserta.length + ' peserta' });
+// ----------------------------------------------
   // === 1. Susun data mentah ===
   var aoa = [];
   aoa.push(['LAPORAN HASIL PEMERIKSAAN PROLANIS', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
@@ -2071,15 +2074,14 @@ function showMultiPagePrint(pages, title) {
 }
 
 function cetakProlanisKegiatan(kegId) {
-  var keg = (window._prolanisList || []).find(function(x) {
-    return String(x.id_kegiatan) === String(kegId);
-  });
+  var keg = (window._prolanisList || []).find(function(x) {return String(x.id_kegiatan) === String(kegId);});
   if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
   var peserta = keg.peserta || [];
   if (peserta.length === 0) {
     toastMsg('Belum ada peserta di kegiatan ini', 'err');
     return;
   }
+  apiCall('logActivityManual', { aksi: '🖨️ Cetak Rekap Prolanis (PDF)', detail: 'Kegiatan: ' + keg.nama_kegiatan + ' | Total: ' + (keg.peserta ? keg.peserta.length : 0) + ' peserta' });
   var pages = peserta.map(function(p) {
     return buildProlanisPrintPage(keg, p);
   });
@@ -2704,6 +2706,7 @@ function buildTwoColumnHtml(grouped) {
 }
 function cetakHasil(id) {
   var p = patients.find(function(x) { return x.id === id; }); if (!p) return;
+  apiCall('logActivityManual', { aksi: '🖨️ Cetak Hasil Lab (Umum)', detail: 'Pasien: ' + p.nama + ' | RM: ' + p.noRM });
   var hasil = p.hasil || {};
   var totalTes = (p.tests || []).length; var fs;
   if (totalTes <= 18) fs = 12; else if (totalTes <= 25) fs = 11; else fs = 10;
