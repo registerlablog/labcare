@@ -2827,35 +2827,41 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Fungsi memuat daftar kartu
 async function loadAdminCards() {
   var container = document.getElementById('adminCardContainer');
   try {
-    // Gunakan fetch langsung karena kita belum login (belum punya operator name)
     var res = await fetch(API_URL, {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'getAdminList', data: {} })
     });
-    var json = await res.json();
     
-    if (json && json.ok && json.list.length > 0) {
-      container.innerHTML = json.list.map(function(a) {
-        var initial = a.nama.charAt(0).toUpperCase(); 
-        return `
-          <div onclick="selectAdmin('${a.nama}')" style="background:#1e293b; width:120px; height:140px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; border:2px solid transparent;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='transparent'">
-            <div style="width:60px; height:60px; background:#3b82f6; color:#fff; font-size:24px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">${initial}</div>
-            <div style="color:#fff; font-size:13px; font-weight:600; text-align:center; padding:0 5px;">${a.nama}</div>
-          </div>
-        `;
-      }).join('');
-    } else {
-      container.innerHTML = '<p style="color:#ef4444;">Belum ada data admin di Master_Admin.</p>';
+    // Baca respon sebagai teks (antisipasi jika server return HTML error)
+    var text = await res.text();
+    
+    try {
+      var json = JSON.parse(text);
+      
+      if (json && json.ok && json.list.length > 0) {
+        container.innerHTML = json.list.map(function(a) {
+          var initial = a.nama.charAt(0).toUpperCase(); 
+          return `
+            <div onclick="selectAdmin('${a.nama}')" style="background:#1e293b; width:120px; height:140px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; border:2px solid transparent;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='transparent'">
+              <div style="width:60px; height:60px; background:#3b82f6; color:#fff; font-size:24px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">${initial}</div>
+              <div style="color:#fff; font-size:13px; font-weight:600; text-align:center; padding:0 5px;">${a.nama}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        container.innerHTML = '<p style="color:#ef4444;">Belum ada data admin di Master_Admin.</p>';
+      }
+    } catch (parseErr) {
+      // Jika server crash / return HTML
+      container.innerHTML = '<p style="color:#ef4444;">Error Server: Gagal memuat daftar. (Error 500)</p>';
     }
   } catch (e) {
-    container.innerHTML = '<p style="color:#ef4444;">Gagal memuat daftar petugas. Periksa koneksi.</p>';
+    container.innerHTML = '<p style="color:#ef4444;">Gagal memuat daftar petugas. Periksa koneksi internet.</p>';
   }
 }
-
 // Fungsi saat kartu diklik
 function selectAdmin(nama) {
   selectedAdminName = nama;
