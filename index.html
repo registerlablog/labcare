@@ -469,6 +469,7 @@ try {
   setSyncState('offline'); 
   return { ok: false, error: 'Koneksi putus: ' + e.message }; 
 }
+}
 async function syncAllFromServer(silent) {
   if (!SYNC_ENABLED) { setSyncState('idle'); return; }
   var r = await apiCall('getAll');
