@@ -288,7 +288,6 @@ tbody tr:hover { background: var(--slate-50); }
     <div class="sidebar-footer">
       <p id="clock"></p>
       <button class="reset-btn sync-btn" onclick="manualSync()">🔄 Sinkron dari Spreadsheet</button>
-      <button class="reset-btn" onclick="resetData()">🗑️ Reset data pasien</button>
       <button class="reset-btn" style="color: #f87171; margin-top: 8px;" onclick="doLogoutAdmin()">🚪 Logout Admin</button>
     </div>
   </aside>
@@ -2130,6 +2129,7 @@ function viewMaster() {
   tabsArr.push('<button class="pill' + (tab === 'stempel' ? ' active' : '') + '" onclick="window._masterTab=\'stempel\'; render();">🏢 Stempel</button>');
   tabsArr.push('<button class="pill' + (tab === 'puskesmas' ? ' active' : '') + '" onclick="window._masterTab=\'puskesmas\'; render();">🔐 Akses Puskesmas</button>');
   tabsArr.push('<button class="pill' + (tab === 'logbackup' ? ' active' : '') + '" onclick="window._masterTab=\'logbackup\'; render();">🛡️ Log & Backup</button>');
+  tabsArr.push('<button class="pill' + (tab === 'sistem' ? ' active' : '') + '" onclick="window._masterTab=\'sistem\'; render();">⚙️ Pengaturan Sistem</button>');
   var tabsHtml = tabsArr.join('');
   var content = '';
   if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
@@ -2138,6 +2138,7 @@ function viewMaster() {
   else if (tab === 'stempel') content = viewMasterStempel();
   else if (tab === 'puskesmas') content = viewMasterPuskesmas();
   else if (tab === 'logbackup') content = viewMasterLogBackup();
+  else if (tab === 'sistem') content = viewMasterSistem();
   return '<div class="page-header"><h2>🧬 Master Lab</h2><p>Kelola master data laboratorium: pemeriksaan, analis, dan dokter.</p></div><div class="pill-row">' + tabsHtml + '</div>' + content;
 }
 function viewMasterPemeriksaan() {
@@ -2214,6 +2215,14 @@ function viewMasterLogBackup() {
     '<div class="card">' +
       '<h3 class="section-title" style="margin-top:0; border-bottom:none; padding-bottom:0;">💾 Riwayat Backup Terbaru</h3>' +
       '<div id="backupTableContainer"><div class="empty-state"><span class="em">⏳</span><p>Memuat data backup...</p></div></div>' +
+    '</div>';
+}
+function viewMasterSistem() {
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">⚙️ Pengaturan Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Zona Berbahaya (Hanya untuk Admin).</p></div></div>' +
+    '<div class="card" style="border: 2px solid var(--danger); background: #fff5f5;">' +
+      '<h3 style="color: var(--danger); margin-bottom: 8px;">⚠️ Reset Data Pasien</h3>' +
+      '<p style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px;">Fitur ini akan <b>menghapus permanen</b> seluruh data pasien (Nama, Hasil Lab, Riwayat). Hanya gunakan fitur ini di akhir tahun untuk mereset penomoran RM.</p>' +
+      '<button class="btn" style="background:var(--danger); color:#fff;" onclick="modalResetData()">🗑️ Mulai Proses Reset</button>' +
     '</div>';
 }
 async function prosesBackupSekarang() {
@@ -2930,6 +2939,76 @@ async function doLoginAdmin() {
     errEl.innerText = 'Error koneksi ke server.';
     btn.innerText = 'Masuk →';
     btn.disabled = false;
+  }
+}
+function modalResetData() {
+  var html = '<div class="modal-body">' +
+    '<div class="modal-head"><div><h3 style="color:var(--danger);">⚠️ Konfirmasi Hapus Permanen</h3><p>Data yang dihapus tidak bisa dikembalikan.</p></div>' +
+    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+    
+    '<div class="info-box" style="background:#fee2e2; color:#991b1b; margin-bottom:16px;"><span class="info-em">🚨</span><span>Sistem akan melakukan <b>Backup otomatis</b> sebelum menghapus seluruh data pasien.</span></div>' +
+    
+    '<div style="margin-bottom:16px;">' +
+      '<label class="lbl">Pintu 1: Ketik <b>HAPUS PERMANEN</b></label>' +
+      '<input type="text" id="reset_teks" class="inp" placeholder="HAPUS PERMANEN" style="border-color:var(--danger);">' +
+    '</div>' +
+    
+    '<div style="margin-bottom:16px;">' +
+      '<label class="lbl">Pintu 2: Masukkan PIN Login Anda</label>' +
+      '<input type="password" id="reset_pin" class="inp" placeholder="••••••" style="border-color:var(--danger);">' +
+    '</div>' +
+    
+    '<p id="reset_error" style="color:var(--danger); font-size:12px; font-weight:600; display:none; margin-bottom:8px;"></p>' +
+    
+    '<div class="btn-row">' +
+      '<button class="btn btn-secondary" onclick="closeModal()" style="flex:1;">Batal</button>' +
+      '<button id="btn_reset_submit" class="btn" onclick="prosesResetData()" style="flex:1; background:var(--danger); color:#fff;">Hapus Sekarang</button>' +
+    '</div>' +
+  '</div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(function() { var el = document.getElementById('reset_teks'); if (el) el.focus(); }, 100);
+}
+
+async function prosesResetData() {
+  var teks = document.getElementById('reset_teks').value.trim();
+  var pin = document.getElementById('reset_pin').value.trim();
+  var errEl = document.getElementById('reset_error');
+  var btn = document.getElementById('btn_reset_submit');
+
+  if (teks !== 'HAPUS PERMANEN') {
+    errEl.innerText = 'Kata kunci salah. Harap ketik HAPUS PERMANEN (huruf besar).';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!pin) {
+    errEl.innerText = 'PIN wajib diisi.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  btn.innerText = 'Memproses...';
+  btn.disabled = true;
+
+  showLoading(true);
+  
+  // Kirim perintah ke server beserta PIN untuk verifikasi
+  var res = await apiCall('resetPasien', { pin: pin });
+  
+  showLoading(false);
+
+  if (res && res.ok) {
+    closeModal();
+    patients = []; // Bersihkan memory lokal
+    save(); // Simpan ke localStorage
+    render(); // Refresh UI
+    toastMsg('✅ Semua data pasien berhasil dihapus.', 'ok');
+  } else {
+    btn.innerText = 'Hapus Sekarang';
+    btn.disabled = false;
+    errEl.innerText = (res && res.error) ? res.error : 'Gagal reset. Periksa PIN atau koneksi.';
+    errEl.style.display = 'block';
   }
 }
 </script>
