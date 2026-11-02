@@ -7,77 +7,37 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-/* --- TEMA DEFAULT (Biru/Slate) --- */
-:root, body.theme-default {
-  --primary: #2563eb; 
-  --primary-dark: #1d4ed8; 
-  --primary-light: #eff6ff;
-  --success: #16a34a; 
-  --warning: #f59e0b; 
+:root {
+  --primary: #2563eb; --primary-dark: #1d4ed8; --primary-light: #eff6ff;
+  --success: #16a34a; --success-light: #dcfce7;
+  --warning: #f59e0b; --warning-light: #fef3c7;
+  --purple: #9333ea; --purple-light: #f3e8ff;
   --danger: #dc2626;
-  
-  /* Variabel lama (tetap dipertahankan agar tidak error) */
   --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
   --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
   --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b;
   --slate-900: #0f172a;
-
-  /* Variabel Tema Baru */
-  --bg-base: #f8fafc; 
-  --surface-card: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  
+  --radius: 12px;
   --shadow: 0 1px 3px rgba(15,23,42,.08);
   --shadow-lg: 0 10px 25px -5px rgba(15,23,42,.15);
-  --radius: 12px;
-}
-
-/* --- TEMA NEUMORPHIC (Cream) --- */
-body.theme-neumorphic {
-  --primary: #0F5B66; 
-  --primary-dark: #0A444C; 
-  --primary-light: #E6F2F4;
-  --success: #16a34a; 
-  --warning: #f59e0b; 
-  --danger: #dc2626;
-  
-  /* Mengubah warna variabel lama agar otomatis menyesuaikan */
-  --slate-50: #F3EFEA; --slate-100: #F3EFEA; --slate-200: #E2DBD0;
-  --slate-300: #E2DBD0; --slate-400: #7A868B; --slate-500: #7A868B;
-  --slate-600: #475569; --slate-700: #334155; --slate-800: #2C3539;
-  --slate-900: #1A2022; 
-  
-  /* Variabel Tema Baru */
-  --bg-base: #F3EFEA; 
-  --surface-card: #F3EFEA;
-  --text-main: #2C3539;
-  --text-muted: #7A868B;
-  --border-color: #E2DBD0;
-  
-  --shadow: 8px 8px 16px #d5cfc5, -8px -8px 16px #ffffff;
-  --shadow-lg: 14px 14px 28px #cbd2c7, -14px -14px 28px #ffffff;
-  --radius: 16px;
 }
 html, body { height: 100%; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-base); color: var(--text-main); line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--slate-100); color: var(--slate-800); line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 .layout { display: flex; min-height: 100vh; }
-.sidebar { 
 .sidebar { 
   display: none; 
   width: 240px; 
-  background: var(--surface-card); 
-  color: var(--text-main); 
+  background: var(--slate-900); 
+  color: var(--slate-300); 
   flex-direction: column; 
   position: fixed; 
   top: 0; 
-  bottom: 0; 
+  bottom: 0; /* Menggantikan height: 100vh agar pas dengan layar tablet */
   left: 0;
   z-index: 20; 
-  overflow: hidden; 
-  border-right: 1px solid var(--border-color);
+  overflow: hidden; /* Mencegah seluruh sidebar ikut ter-scroll */
 }
+
 .sidebar-brand { 
   padding: 20px; 
   border-bottom: 1px solid var(--slate-700); 
@@ -146,7 +106,7 @@ tbody tr:hover { background: var(--slate-50); }
 @media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
 .lbl { display: block; font-size: 12px; font-weight: 600; color: var(--slate-600); margin-bottom: 6px; }
 .lbl .lbl-hint { font-weight: 400; color: var(--slate-400); font-size: 11px; }
-.inp, .inp-sel, .inp-ta { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text-main); background: var(--surface-card); outline: none; transition: .15s; }
+.inp, .inp-sel, .inp-ta { width: 100%; padding: 10px 12px; border: 1px solid var(--slate-300); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--slate-800); background: #fff; outline: none; transition: .15s; }
 .inp:focus, .inp-sel:focus, .inp-ta:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
 .inp[readonly] { background: var(--slate-100); color: var(--slate-500); }
 .inp-ta { resize: vertical; min-height: 60px; }
@@ -154,21 +114,9 @@ tbody tr:hover { background: var(--slate-50); }
 .info-box.info-blue { background: var(--primary-light); color: #1e3a8a; }
 .info-box .info-em { font-size: 16px; flex-shrink: 0; }
 .info-box a { color: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; }
-.btn { 
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px; 
-  padding: 10px 18px; border-radius: 10px; border: none; 
-  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; 
-  transition: .15s; line-height: 1.4; 
-  background: var(--surface-card); 
-  color: var(--text-main);
-  box-shadow: var(--shadow);
-}
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: .15s; line-height: 1.4; }
 .btn:active { transform: scale(.97); }
-.btn-primary { 
-  background: var(--primary); 
-  color: #fff; 
-  border: none;
-}
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,.25); }
 .btn-primary:hover { background: var(--primary-dark); }
 .btn-secondary { background: var(--slate-200); color: var(--slate-700); }
 .btn-secondary:hover { background: var(--slate-300); }
@@ -186,16 +134,8 @@ tbody tr:hover { background: var(--slate-50); }
 .patient-grid { display: grid; gap: 14px; }
 @media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1200px) { .patient-grid { grid-template-columns: repeat(3, 1fr); } }
-.patient-card { 
-  background: var(--surface-card); 
-  border-radius: var(--radius); 
-  padding: 18px; 
-  box-shadow: var(--shadow); 
-  border: 1px solid var(--border-color); 
-  border-left: 4px solid var(--slate-300); 
-  display: flex; 
-  flex-direction: column; 
-}.patient-card.menunggu { border-left-color: var(--warning); }
+.patient-card { background: #fff; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); border-left: 4px solid var(--slate-300); display: flex; flex-direction: column; }
+.patient-card.menunggu { border-left-color: var(--warning); }
 .patient-card.sampling { border-left-color: #3b82f6; }
 .patient-card.proses   { border-left-color: var(--purple); }
 .patient-card.selesai  { border-left-color: var(--success); }
@@ -347,9 +287,6 @@ tbody tr:hover { background: var(--slate-50); }
     <nav class="sidebar-nav" id="nav"></nav>
     <div class="sidebar-footer">
       <p id="clock"></p>
-      <button class="reset-btn" style="color: var(--primary); font-weight: bold; margin-bottom: 8px;" onclick="toggleTheme()" id="btn-theme">
-  🎨 Ganti Tema (Default)
-</button>
       <button class="reset-btn sync-btn" onclick="manualSync()">🔄 Sinkron dari Spreadsheet</button>
       <button class="reset-btn" style="color: #f87171; margin-top: 8px;" onclick="doLogoutAdmin()">🚪 Logout Admin</button>
     </div>
@@ -3098,36 +3035,6 @@ function konfirmasiRestore(fileId, namaFile, tanggalFile) {
     }
   });
 }
-// --- LOGIKA GANTI TEMA ---
-function toggleTheme() {
-  var body = document.body;
-  var btn = document.getElementById('btn-theme');
-  
-  if (body.classList.contains('theme-neumorphic')) {
-    // Ubah ke Default
-    body.classList.remove('theme-neumorphic');
-    body.classList.add('theme-default');
-    btn.innerText = '🎨 Ganti Tema (Default)';
-    localStorage.setItem('labcare_theme', 'theme-default');
-  } else {
-    // Ubah ke Neumorphic
-    body.classList.remove('theme-default');
-    body.classList.add('theme-neumorphic');
-    btn.innerText = '🎨 Ganti Tema (Neumorphic)';
-    localStorage.setItem('labcare_theme', 'theme-neumorphic');
-  }
-}
-
-// Muat tema yang tersimpan saat halaman dibuka
-document.addEventListener('DOMContentLoaded', function() {
-  var savedTheme = localStorage.getItem('labcare_theme') || 'theme-default';
-  document.body.classList.add(savedTheme);
-  
-  var btn = document.getElementById('btn-theme');
-  if (btn && savedTheme === 'theme-neumorphic') {
-    btn.innerText = '🎨 Ganti Tema (Neumorphic)';
-  }
-});
 </script>
 </body>
 </html>
