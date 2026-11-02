@@ -2302,7 +2302,10 @@ if (backupContainer) {
         '<td style="font-weight:500;">' + esc(b.nama) + '</td>' +
         '<td style="font-size:12px;">' + esc(b.tanggal) + '</td>' +
         '<td style="font-size:12px;">' + esc(b.ukuran) + '</td>' +
-        '<td style="text-align:right;"><a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm">Buka</a></td>' +
+       '<td style="text-align:right; white-space:nowrap;">' +
+  '<a href="' + b.url + '" target="_blank" class="btn btn-secondary btn-sm" style="margin-right:4px;">Buka</a>' +
+  '<button class="btn btn-primary btn-sm" onclick="konfirmasiRestore(\'' + b.fileId + '\', \'' + esc(b.nama) + '\', \'' + esc(b.tanggal) + '\')">♻️ Restore</button>' +
+'</td>' +
         '</tr>';
     }).join('');
     backupContainer.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Nama File</th><th>Tanggal Dibuat</th><th>Ukuran</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + backupRows + '</tbody></table></div>';
@@ -3010,6 +3013,27 @@ async function prosesResetData() {
     errEl.innerText = (res && res.error) ? res.error : 'Gagal reset. Periksa PIN atau koneksi.';
     errEl.style.display = 'block';
   }
+}
+function konfirmasiRestore(fileId, namaFile, tanggalFile) {
+  if (!confirm('⚠️ PERINGATAN!\n\nSeluruh data pasien saat ini akan DIGANTI dengan data dari file backup:\n\nNama: ' + namaFile + '\nTanggal: ' + tanggalFile + '\n\nLanjutkan?')) return;
+
+  showLoading(true);
+  
+  // Kita gunakan apiCall agar token & operator terkirim
+  apiCall('restoreBackup', { fileId: fileId }).then(function(res) {
+    showLoading(false);
+    
+    if (res && res.ok) {
+      toastMsg('✅ ' + res.message, 'ok');
+      // Sinkronkan ulang data dari server agar tampilan web terupdate
+      syncAllFromServer(true).then(function() {
+         render(); // Render ulang tampilan
+      });
+    } else {
+      alert('⚠️ GAGAL RESTORE:\n\n' + (res.error || 'Periksa koneksi atau file backup.'));
+      toastMsg('Gagal melakukan restore', 'err');
+    }
+  });
 }
 </script>
 </body>
