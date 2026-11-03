@@ -2665,7 +2665,14 @@ function getProlanisPrintCols(diagnosa) {
 function buildProlanisPrintPage(keg, peserta) {
   var cols = getProlanisPrintCols(peserta.diagnosa);
   var nomorRegister = getTanggalKode(keg.tanggal) + '-' + (peserta.no || 'P-001');
+  
+  // 1. PERBAIKAN TANGGAL: Jadi DD-MM-YYYY
   var tglTampil = fmtTanggalKeg(keg.tanggal);
+  if (tglTampil && /^\d{4}-\d{2}-\d{2}$/.test(tglTampil)) {
+    var tp = tglTampil.split('-');
+    tglTampil = tp[2] + '-' + tp[1] + '-' + tp[0];
+  }
+  
   var umurStr = peserta.tgl_lahir ? umur(peserta.tgl_lahir) : '-';
   var pemeriksaData = (analisList || []).find(function(a) {
     return a.nama && a.nama.toLowerCase().indexOf('linda') >= 0;
@@ -2674,15 +2681,16 @@ function buildProlanisPrintPage(keg, peserta) {
     return d.nama && d.nama.toLowerCase().indexOf('titik') >= 0;
   }) || { nama: 'Dr. Titik Erna Erawati', kode: 'NIP. 19771231 200501 2 014', ttd: '' };
   var ttdPemeriksa = pemeriksaData.ttd ? '<img src="' + pemeriksaData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
-var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
+  var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-height:150px; max-width:90%; object-fit:contain; display:block; margin:0 auto 2px;">' : '';
   var stempelHtml = stempelUrl ? '<img src="' + stempelUrl + '" style="position:absolute; top:-120px; left:0%; width:225px; height:225px; object-fit:contain; opacity:0.75; z-index:2; pointer-events:none; mix-blend-mode:multiply;">' : '';
-  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="width:80px; height:80px; object-fit:contain;">' : '';
+  var logoKiriHtml = CLINIC.logoKiri ? '<img src="' + esc(CLINIC.logoKiri) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
   var logoKananHtml = CLINIC.logoKanan ? '<img src="' + esc(CLINIC.logoKanan) + '" style="max-width:100%; max-height:100%; object-fit:contain;">' : '';
 
+  // 2. PERBAIKAN KOP: Baris 1 jadi normal (tidak terlalu tebal) & ukuran disamakan
   var kopHtml = '<div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:6px;">' +
   '<div style="width:140px; height:140px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' + logoKiriHtml + '</div>' +
-  '<div style="flex:1; text-align:center; padding: 0 10px;">' +
-  '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
+  '<div style="flex:1; text-align:center; padding: 0 10px; font-family: Arial, sans-serif;">' +
+  '<div style="font-size:13px; font-weight:normal; color:#000;">' + esc(CLINIC.baris1) + '</div>' +
   '<div style="font-size:13px; font-weight:800; color:#000;">' + esc(CLINIC.baris2) + '</div>' +
   '<div style="font-size:17px; font-weight:900; color:#000; margin:2px 0;">' + esc(CLINIC.baris3) + '</div>' +
   '<div style="font-size:10px; color:#000;">' + esc(CLINIC.alamat) + '</div>' +
@@ -2692,11 +2700,11 @@ var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-h
   '</div>' +
   '<div style="border-top:2.5px solid #000; margin:0;"></div>' +
   '<div style="border-top:0.8px solid #000; margin-top:2px;"></div>';
+  
   var judulHtml = '<div style="text-align:center; margin-top:12px; margin-bottom:8px;">' +
-    '<div style="font-size:18px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div>' +
-    '</div>';
+    '<div style="font-size:18px; font-weight:bold; color:#000;">HASIL PEMERIKSAAN LABORATORIUM</div></div>';
 
-  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; color:#000; line-height:1.5;">' +
+  var infoHtml = '<div style="margin-top:0; margin-bottom:12px; font-size:13px; font-family: Arial, sans-serif; color:#000; line-height:1.5;">' +
     '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
     '<div style="float:left; width:15%;">Nama</div><div style="float:left; width:45%;">: ' + esc(peserta.nama || '-') + '</div>' +
     '<div style="float:left; width:20%;">Tanggal Periksa</div><div style="float:left; width:20%;">: ' + esc(tglTampil) + '</div>' +
@@ -2711,11 +2719,13 @@ var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-h
     '<div style="clear:both;"></div></div>' +
     '</div>';
 
-  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:6px; font-weight:bold; font-size:13px; color:#000;">' +
-    '<div style="width:30%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
-    '<div style="width:35%; text-align:center;">HASIL</div>' +
-    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
+  // 3. PERBAIKAN LEBAR KOLOM HEADER: 35% / 20% / 45%
+  var headerTabel = '<div style="display:flex; width:100%; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:6px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
+    '<div style="width:35%; text-align:left;">PEMERIKSAAN LABORATORIUM</div>' +
+    '<div style="width:20%; text-align:center;">HASIL</div>' +
+    '<div style="width:45%; text-align:left; padding-left:15px; box-sizing:border-box;">NILAI RUJUKAN</div>' +
     '</div>';
+    
   var grup = {};
   var urutanKategori = [];
   cols.forEach(function(c) {
@@ -2724,24 +2734,25 @@ var ttdDokter = dokterData.ttd ? '<img src="' + dokterData.ttd + '" style="max-h
     grup[kat].push(c);
   });
 
+  // 4. PERBAIKAN LEBAR KOLOM DATA: 35% / 20% / 45%
   var rowsHtml = '';
   urutanKategori.forEach(function(kat) {
-    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; color:#000;">' + esc(kat) + '</div>';
+    rowsHtml += '<div style="width:100%; margin-top:8px; margin-bottom:4px; font-weight:bold; font-size:13px; font-family: Arial, sans-serif; color:#000;">' + esc(kat) + '</div>';
     grup[kat].forEach(function(c) {
       var val = peserta[c.key];
       if (val === undefined || val === null || val === '') val = '-';
       var rujukanLengkap = c.rujukan + ' ' + c.satuan;
-      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; color:#000;">' +
-    '<div style="width:30%; text-align:left; padding-right:15px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
-    '<div style="width:35%; text-align:center;">' + esc(val) + '</div>' +
-    '<div style="width:35%; text-align:left; padding-left:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
-    '</div>';
+      rowsHtml += '<div style="display:flex; width:100%; margin-bottom:3px; font-size:13px; font-family: Arial, sans-serif; color:#000;">' +
+        '<div style="width:35%; text-align:left; padding-right:10px; box-sizing:border-box;">' + esc(c.label) + '</div>' +
+        '<div style="width:20%; text-align:center;">' + esc(val) + '</div>' +
+        '<div style="width:45%; text-align:left; padding-left:15px; padding-right:15px; box-sizing:border-box;">' + esc(rujukanLengkap) + '</div>' +
+        '</div>';
     });
   });
 
   var content = kopHtml + judulHtml + infoHtml + headerTabel + '<div style="width:100%; overflow:hidden;">' + rowsHtml + '</div>';
 
- var footer =
+  var footer =
     '<div style="display:flex; width:100%; font-size:12px; color:#000;">' +
       '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">&nbsp;<br>Pemeriksa,</div>' +
       '<div style="width:50%; text-align:center; padding:6px 12px 0; font-weight:bold;">Mengetahui,<br>Dokter Penanggungjawab</div>' +
