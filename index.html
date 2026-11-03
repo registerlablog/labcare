@@ -121,7 +121,9 @@ body {
 .sidebar-footer .sync-btn { color: var(--primary); }
 
 .nav-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   text-align: left;
   padding: 11px 14px;
@@ -136,6 +138,14 @@ body {
   margin-bottom: 4px;
   font-weight: 500;
 }
+.nav-btn .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.nav-btn.active .nav-icon { opacity: 1; }
 .nav-btn:hover {
   background: var(--surface);
   color: var(--text);
@@ -638,7 +648,7 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   box-shadow: var(--shadow-inset);
 }
 .master-toolbar .search-box::before {
-  content: '🔍';
+  content: ''; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") center/14px no-repeat;
   position: absolute;
   left: 12px;
   top: 50%;
@@ -929,7 +939,7 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   
   <!-- TAHAP 1: PILIH KARTU -->
   <div id="loginStep1" style="width:100%; max-width:600px; text-align:center;">
-    <h1 style="color:#1c1917; font-size:32px; margin-bottom:10px; font-weight:800; letter-spacing:-0.5px;">🧪 LabCare</h1>
+    <h1 style="color:#1c1917; font-size:32px; margin-bottom:10px; font-weight:800; letter-spacing:-0.5px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-4px;margin-right:6px;"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>LabCare</h1>
     <p style="color:#78716c; font-size:14px; margin-bottom:40px;">Silakan pilih kartu petugas Anda untuk melanjutkan.</p>
     
     <div id="adminCardContainer" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
@@ -964,23 +974,23 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 <div class="layout">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <h1>🧪 LabCare</h1>
+      <h1 style="display:flex;align-items:center;gap:8px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg> LabCare</h1>
       <p>Sistem Pelayanan Laboratorium</p>
       <span class="sync-badge" id="syncBadge"><span class="dot"></span><span id="syncBadgeText">Memuat...</span></span>
     </div>
     <nav class="sidebar-nav" id="nav"></nav>
     <div class="sidebar-footer">
       <p id="clock"></p>
-      <button class="reset-btn sync-btn" onclick="manualSync()">🔄 Sinkron dari Spreadsheet</button>
-      <button class="reset-btn" style="color: #f87171; margin-top: 8px;" onclick="doLogoutAdmin()">🚪 Logout Admin</button>
+      <button class="reset-btn sync-btn" onclick="manualSync()" style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sinkron dari Spreadsheet</button>
+      <button class="reset-btn" style="color: #f87171; margin-top: 8px;" onclick="doLogoutAdmin()" style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout Admin</button>
     </div>
   </aside>
   <div class="main-wrapper">
     <header class="mobile-header">
-      <h1>🧪 LabCare</h1>
+      <h1 style="display:flex;align-items:center;gap:6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg> LabCare</h1>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="sync-badge" id="syncBadgeMobile" style="margin:0;"><span class="dot"></span></span>
-        <button class="hamburger" onclick="toggleMobileNav()">☰</button>
+        <button class="hamburger" onclick="toggleMobileNav()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       </div>
     </header>
     <nav class="mobile-nav" id="mobileNav"></nav>
@@ -1023,13 +1033,13 @@ var DEFAULT_TESTS = [
 var TESTS = []; var analisList = []; var dokterList = [];
 var STATUS = { menunggu: { label: 'Menunggu', cls: 'badge-menunggu' }, proses: { label: 'Diproses', cls: 'badge-proses' }, selesai: { label: 'Selesai', cls: 'badge-selesai' } };
 var NAV_ITEMS = [
-  { view: 'dashboard',   label: '📊 Dashboard' },
-  { view: 'pendaftaran', label: '📝 Pendaftaran Pasien' },
-  { view: 'antrian',     label: '⏳ Antrian & Status' },
-  { view: 'hasil',       label: '🔬 Input Hasil' },
-  { view: 'laporan',     label: '📄 Laporan' },
-  { view: 'prolanis',    label: '📋 Kegiatan Prolanis' },
-  { view: 'master',      label: '🧬 Master Lab' }
+  { view: 'dashboard',   label: 'Dashboard',   icon: 'dashboard' },
+  { view: 'pendaftaran', label: 'Pendaftaran', icon: 'user-plus' },
+  { view: 'antrian',     label: 'Antrian',     icon: 'clock' },
+  { view: 'hasil',       label: 'Input Hasil', icon: 'flask' },
+  { view: 'laporan',     label: 'Laporan',     icon: 'file' },
+  { view: 'prolanis',    label: 'Prolanis',    icon: 'clipboard' },
+  { view: 'master',      label: 'Master Lab',  icon: 'settings' }
 ];
 var patients = []; var view = 'dashboard'; var mobileNavOpen = false; var editKode = null; var editKaryawanId = null; var stempelUrl = '';
 var masterPuskesmasList = [];
@@ -1178,7 +1188,7 @@ async function syncAllFromServer(silent) {
   window._isDataSynced = true; // <--- TAMBAHKAN BARIS INI
   
   renderNav(); render();
-  if (!silent) toastMsg('✅ Tersinkron dengan Spreadsheet', 'ok');
+  if (!silent) toastMsg('Tersinkron dengan Spreadsheet', 'ok');
 }
 function normalizePasien(p) { if (!p) return p; if (typeof p.tests === 'string') { try { p.tests = JSON.parse(p.tests || '[]'); } catch (e) { p.tests = []; } } if (typeof p.hasil === 'string') { try { p.hasil = JSON.parse(p.hasil || '{}'); } catch (e) { p.hasil = {}; } } if (!p.tests) p.tests = []; if (!p.hasil) p.hasil = {}; if (!p.status) p.status = 'menunggu'; if (typeof p.pengirim !== 'string') p.pengirim = ''; return p; }
 function manualSync() { if (!SYNC_ENABLED) { toastMsg('Mode offline: API belum dikonfigurasi'); return; } syncAllFromServer(false); }
@@ -1187,31 +1197,55 @@ function load() { try { var raw = localStorage.getItem('labcare_patients'); if (
 function loadKaryawan() { try { var a = localStorage.getItem('labcare_analis'); if (a) analisList = JSON.parse(a) || []; var d = localStorage.getItem('labcare_dokter'); if (d) dokterList = JSON.parse(d) || []; } catch (e) { analisList = []; dokterList = []; } }
 function loadTests() { try { var raw = localStorage.getItem('labcare_tests'); if (raw) { var parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) { TESTS = parsed; return; } } } catch (e) {} TESTS = DEFAULT_TESTS.slice(); }
 function saveTests() { 
-  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  if (!window._isDataSynced && !confirm('Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
   try { localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); } catch (e) {} 
   apiCall('saveMaster', { jenis: 'pemeriksaan', list: TESTS }); 
 }
 
 function saveAnalis() { 
-  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  if (!window._isDataSynced && !confirm('Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
   try { localStorage.setItem('labcare_analis', JSON.stringify(analisList)); } catch (e) {} 
   apiCall('saveMaster', { jenis: 'analis', list: analisList }); 
 }
 function saveDokter() { 
-  if (!window._isDataSynced && !confirm('⚠️ Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
+  if (!window._isDataSynced && !confirm('Data master belum sinkron sempurna. Yakin ingin menimpa database?')) return;
   try { localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {} 
   apiCall('saveMaster', { jenis: 'dokter', list: dokterList }); 
 }
 function resetAnalis() { if (!confirm('Reset daftar analis?')) return; analisList = []; saveAnalis(); render(); toastMsg('Daftar analis direset'); }
 function resetDokter() { if (!confirm('Reset daftar dokter?')) return; dokterList = []; saveDokter(); render(); toastMsg('Daftar dokter direset'); }
+function navIcon(name) {
+  var icons = {
+    dashboard: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    'user-plus': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>',
+    clock: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    flask: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>',
+    file: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    clipboard: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>',
+    settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+    logout: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+    sync: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>'
+  };
+  return icons[name] || '';
+}
 function renderNav() {
-  var html = NAV_ITEMS.map(function(i) { return '<button class="nav-btn' + (view === i.view ? ' active' : '') + '" data-view="' + i.view + '">' + i.label + '</button>'; }).join('');
+  var html = NAV_ITEMS.map(function(i) {
+    return '<button class="nav-btn' + (view === i.view ? ' active' : '') + '" data-view="' + i.view + '"><span class="nav-icon">' + navIcon(i.icon) + '</span><span>' + i.label + '</span></button>';
+  }).join('');
   document.getElementById('nav').innerHTML = html;
   document.getElementById('mobileNav').innerHTML = html + 
-  '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #334155;">' +
-    '<button class="nav-btn" onclick="doLogoutAdmin()" style="color: #f87171; text-align: center; width: 100%;">🚪 Logout Admin</button>' +
+  '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">' +
+    '<button class="nav-btn" onclick="doLogoutAdmin()" style="color: #dc2626;"><span class="nav-icon">' + navIcon('logout') + '</span><span>Logout</span></button>' +
   '</div>';
-  document.querySelectorAll('.nav-btn').forEach(function(b) { b.onclick = function() { view = b.dataset.view; mobileNavOpen = false; document.getElementById('mobileNav').classList.remove('open'); renderNav(); render(); }; });
+  document.querySelectorAll('.nav-btn[data-view]').forEach(function(b) {
+    b.onclick = function() {
+      view = b.dataset.view;
+      mobileNavOpen = false;
+      document.getElementById('mobileNav').classList.remove('open');
+      renderNav();
+      render();
+    };
+  });
 }
 function toggleMobileNav() { mobileNavOpen = !mobileNavOpen; document.getElementById('mobileNav').classList.toggle('open', mobileNavOpen); }
 function render() {
@@ -1231,10 +1265,10 @@ function viewDashboard() {
   var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
   var c = function(s) { return t.filter(function(p) { return p.status === s; }).length; };
   var cards = [
-    { label: 'Pasien Hari Ini', val: t.length,       cls: 'stat-blue',   icon: '👥' },
-    { label: 'Menunggu',        val: c('menunggu'),  cls: 'stat-amber',  icon: '⏳' },
-    { label: 'Diproses',        val: c('proses') + c('sampling'), cls: 'stat-purple', icon: '🔬' },
-    { label: 'Selesai',         val: c('selesai'),   cls: 'stat-green',  icon: '✅' }
+    { label: 'Pasien Hari Ini', val: t.length,       cls: 'stat-blue',   icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { label: 'Menunggu',        val: c('menunggu'),  cls: 'stat-amber',  icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+    { label: 'Diproses',        val: c('proses') + c('sampling'), cls: 'stat-purple', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>' },
+    { label: 'Selesai',         val: c('selesai'),   cls: 'stat-green',  icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' }
   ];
   var cardsHtml = cards.map(function(x) { return '<div class="stat-card ' + x.cls + '"><div class="icon">' + x.icon + '</div><div class="val">' + x.val + '</div><div class="lbl">' + x.label + '</div></div>'; }).join('');
   var recent = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
@@ -1274,7 +1308,7 @@ function viewPendaftaran() {
     '<h3 class="section-title">B. Pemeriksaan Laboratorium *</h3>' +
     '<div id="testPickerWrap">' + renderTestPicker() + '</div>' +
     '<div style="margin-top:24px;"><label class="lbl">Catatan Klinis</label><textarea name="catatan" rows="2" class="inp-ta" placeholder="Keluhan / diagnosis / catatan"></textarea></div>' +
-    '<div class="btn-row"><button type="submit" class="btn btn-primary">💾 Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
+    '<div class="btn-row"><button type="submit" class="btn btn-primary">Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
 }
 function renderTestPicker() {
   if (TESTS.length === 0) { return '<div class="info-box info-blue"><span class="info-em">ℹ️</span><span>Belum ada pemeriksaan. Tambahkan di <a onclick="goToMaster(\'pemeriksaan\')">Master Lab → Pemeriksaan</a>.</span></div>'; }
@@ -1335,9 +1369,9 @@ function viewAntrian() {
         '<div class="patient-card-actions">' + actionsHtml +
         (p.spesimen !== 'ada' && p.status === 'menunggu' ? '<button class="btn-icon" onclick="panggilPasien(\'' + p.id + '\')" title="Panggil ke Sampling" style="background:#fef3c7;color:#b45309;font-weight:bold;">🔊</button>' : '') +
         '<button class="btn-icon" onclick="modalEditPasien(\'' + p.id + '\')" title="Edit Data Pasien" style="background:#f3e8ff;color:#7e22ce;">👤</button>' +
-        '<button class="btn-icon" onclick="modalEditPemeriksaan(\'' + p.id + '\')" title="Edit Pemeriksaan" style="background:#dbeafe;color:#1d4ed8;">✏️</button>' +
-        '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak">🖨️</button>' +
-        '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus">🗑️</button>' +
+        '<button class="btn-icon" onclick="modalEditPemeriksaan(\'' + p.id + '\')" title="Edit Pemeriksaan" style="background:#dbeafe;color:#1d4ed8;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+        '<button class="btn-icon" onclick="cetakHasil(\'' + p.id + '\')" title="Cetak"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>' +
+        '<button class="btn-icon danger" onclick="hapusPasien(\'' + p.id + '\')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
         '</div></div>';
     }).join('') + '</div>';
   }
@@ -1359,7 +1393,7 @@ function viewHasilUmum() {
     var tests = p.tests || []; var hasil = p.hasil || {};
     var filled = tests.filter(function(k) { return hasil[k]; }).length;
     var done = tests.length > 0 && filled === tests.length;
-    return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(p.noAntrian) + '</td><td><div style="font-weight:500;">' + esc(p.nama) + '</div><div class="mono" style="font-size:11px;color:var(--slate-400);">' + esc(p.noRM) + '</div></td><td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td><td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td><td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasil(\'' + p.id + '\')">' + (done ? '✏️ Edit' : '🔬 Input') + '</button></td></tr>';
+    return '<tr><td class="mono" style="font-weight:700;color:var(--primary);">' + esc(p.noAntrian) + '</td><td><div style="font-weight:500;">' + esc(p.nama) + '</div><div class="mono" style="font-size:11px;color:var(--slate-400);">' + esc(p.noRM) + '</div></td><td style="font-size:12px;color:var(--slate-500);">' + tests.length + ' tes • <span style="color:' + (done ? 'var(--success)' : 'var(--warning)') + ';font-weight:600;">' + filled + '/' + tests.length + '</span></td><td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td><td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="modalHasil(\'' + p.id + '\')">' + (done ? 'Edit' : 'Input') + '</button></td></tr>';
   }).join('');
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Daftar pasien umum.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="table-wrap"><table><thead><tr><th>Antrian</th><th>Pasien</th><th>Pemeriksaan</th><th>Status</th><th style="text-align:right;">Aksi</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
 }
@@ -1376,7 +1410,7 @@ function getColsProlanis(diagnosa) {
   // Level 1: Daftar Kegiatan
   var list = window._prolanisList || [];
   if (list.length === 0) {
-    return '<div class="empty-state"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p></div>';
+    return '<div class="empty-state"><span class="em"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span><p>Belum ada kegiatan Prolanis.</p></div>';
   }
   var cols = ['chol','trig','hdl','ldl','creatin','ureum','hba1c','mikro'];
   var cards = list.map(function(keg) {
@@ -1390,7 +1424,7 @@ pesertaList.forEach(function(p) {
     var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
     return '<div class="patient-card" style="cursor:pointer;" onclick="bukaHasilProlanisKeg(\'' + esc(keg.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
-      '<div><div style="font-size:15px;font-weight:800;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
+      '<div><div style="font-size:15px;font-weight:800;">' + esc(keg.nama_kegiatan || '-') + '</div>' +
       '<div style="font-size:11px;color:var(--slate-400);">' + esc(fmtTanggalKeg(keg.tanggal)) + '</div></div>' +
       '<span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
       '</div>' +
@@ -1437,11 +1471,11 @@ return '<div class="patient-card ' + cls + '" style="cursor:pointer;background:'
   return '<button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="window._hasilProlanisKegId=null; render();">← Kembali ke Daftar Kegiatan</button>' +
     '<div class="card" style="margin-bottom:16px;padding:16px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
-    '<div><div style="font-size:16px;font-weight:700;">📋 ' + esc(keg.nama_kegiatan || '-') + '</div>' +
+    '<div><div style="font-size:16px;font-weight:700;">' + esc(keg.nama_kegiatan || '-') + '</div>' +
     '<div style="font-size:12px;color:var(--slate-500);">' + esc(fmtTanggalKeg(keg.tanggal)) + ' • ' + esc(keg.alamat || '-') + '</div></div>' +
     '<span class="badge badge-proses">' + pesertaList.length + ' peserta</span>' +
     '</div>' +
-    '<div class="patient-grid">' + (cardsHtml || '<div class="empty-state" style="grid-column:1/-1;"><span class="em">👥</span><p>Belum ada peserta.</p></div>') + '</div></div>';
+    '<div class="patient-grid">' + (cardsHtml || '<div class="empty-state" style="grid-column:1/-1;"><span class="em"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><p>Belum ada peserta.</p></div>') + '</div></div>';
 }
 
 function modalHasilProlanis(kegId, idx) {
@@ -1481,7 +1515,7 @@ function modalHasilProlanis(kegId, idx) {
     '<div class="result-list" style="max-height:none;">' + fieldsHtml + '</div>' +
     '<div style="margin-top:16px;"><label class="lbl">Kesimpulan / Catatan</label>' +
     '<textarea id="pk_kesimpulan" rows="2" class="inp-ta">' + esc(p.kesimpulan || '') + '</textarea></div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasilProlanis(\'' + esc(kegId) + '\', ' + idx + ')">💾 Simpan</button>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasilProlanis(\'' + esc(kegId) + '\', ' + idx + ')">Simpan</button>' +
     '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
@@ -1518,7 +1552,7 @@ function simpanHasilProlanis(kegId, idx) {
       });
     });
     apiCall('saveMaster', { jenis: 'prolanis_peserta', list: allPeserta });
-    toastMsg('✅ Hasil tersimpan', 'ok');
+    toastMsg('Hasil tersimpan', 'ok');
     closeModal();
     render();
   });
@@ -1549,7 +1583,7 @@ function simpanHasilProlanis(kegId, idx) {
     '<thead><tr><th style="width:80px;">Kode</th><th>Nama</th><th style="width:120px;">Operator</th><th style="width:90px;">Faktor</th></tr></thead>' +
     '<tbody>' + rowsHtml + '</tbody></table></div>' +
     '<div class="info-box" style="margin-top:12px;"><span class="info-em">ℹ️</span><span>Perubahan langsung tersimpan ke Master Lab.</span></div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKalibrasiHariIni()">💾 Simpan</button>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKalibrasiHariIni()">Simpan</button>' +
     '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
@@ -1566,7 +1600,7 @@ function simpanKalibrasiHariIni() {
   saveTests();
   closeModal();
   render();
-  toastMsg('✅ Kalibrasi diperbarui', 'ok');
+  toastMsg('Kalibrasi diperbarui', 'ok');
 }
   function viewKegiatanProlanis() {
   var list = window._prolanisList || [];
@@ -1623,7 +1657,7 @@ pesertaList.forEach(function(p) {
 var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
     return '<div class="patient-card" style="cursor:pointer;margin-bottom:14px;" onclick="bukaKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')">' +
       '<div class="patient-card-head">' +
-      '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">📋 ' + esc(k.nama_kegiatan || '-') + '</div>' +
+      '<div><div style="font-size:16px;font-weight:800;color:var(--slate-800);">' + esc(k.nama_kegiatan || '-') + '</div>' +
       '<div style="font-size:11px;color:var(--slate-400);">' + esc(fmtTanggalKeg(k.tanggal)) + '</div></div>' +
       '<span class="badge badge-proses">' + jumlah + ' peserta</span>' +
       '</div>' +
@@ -1639,23 +1673,23 @@ var persen = totalAll > 0 ? Math.round(totalFilled / totalAll * 100) : 0;
       '<div class="patient-card-actions" style="margin-top:10px;">' +
       '<span style="flex:1;font-size:12px;font-weight:600;color:var(--primary);padding:6px 0;">Klik untuk buka →</span>' +
       '<button class="btn-icon" onclick="event.stopPropagation();exportProlanisXLSX(\'' + esc(k.id_kegiatan) + '\')" title="Unduh Excel" style="background:#dcfce7;color:#16a34a;font-weight:bold;">📥</button>' +
-      '<button class="btn-icon" onclick="event.stopPropagation();cetakProlanisKegiatan(\'' + esc(k.id_kegiatan) + '\')" title="Cetak PDF Rekap" style="background:#dbeafe;color:#1d4ed8;font-weight:bold;">🖨️</button>' +
-      '<button class="btn-icon danger" onclick="event.stopPropagation();hapusKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\',\'' + esc(k.nama_kegiatan) + '\')" title="Hapus">🗑️</button>' +
-      '<button class="btn-icon" onclick="event.stopPropagation();modalKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')" title="Edit" style="background:#f3e8ff;color:#7e22ce;">✏️</button>' +
+      '<button class="btn-icon" onclick="event.stopPropagation();cetakProlanisKegiatan(\'' + esc(k.id_kegiatan) + '\')" title="Cetak PDF Rekap" style="background:#dbeafe;color:#1d4ed8;font-weight:bold;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>' +
+      '<button class="btn-icon danger" onclick="event.stopPropagation();hapusKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\',\'' + esc(k.nama_kegiatan) + '\')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+      '<button class="btn-icon" onclick="event.stopPropagation();modalKegiatanProlanis(\'' + esc(k.id_kegiatan) + '\')" title="Edit" style="background:#f3e8ff;color:#7e22ce;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
       '</div>' +
       '</div>';
   }).join('');
   
   if (list.length === 0) {
-    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">📋</span><p>Belum ada kegiatan Prolanis.</p><p style="margin-top:8px;">Klik "➕ Buat Kegiatan" untuk mulai.</p></div>';
+    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span><p>Belum ada kegiatan Prolanis.</p><p style="margin-top:8px;">Klik "➕ Buat Kegiatan" untuk mulai.</p></div>';
   } else if (filtered.length === 0) {
-    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em">🔍</span><p>Tidak ada kegiatan yang cocok dengan filter/pencarian.</p></div>';
+    cards = '<div class="empty-state" style="grid-column:1/-1;"><span class="em"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><p>Tidak ada kegiatan yang cocok dengan filter/pencarian.</p></div>';
   }
   
   var totalSemua = list.length;
   var totalTampil = filtered.length;
   
-  return '<div class="page-header-flex"><div><h2>📋 Kegiatan Prolanis</h2><p>Kelola kegiatan pemeriksaan Prolanis</p></div>' +
+  return '<div class="page-header-flex"><div><h2>Kegiatan Prolanis</h2><p>Kelola kegiatan pemeriksaan Prolanis</p></div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
     '<button class="btn btn-primary" onclick="modalKegiatanProlanis()">➕ Buat Kegiatan</button>' +
     '<button class="btn btn-secondary" onclick="syncAllFromServer(false)">🔄 Refresh</button>' +
@@ -1747,8 +1781,8 @@ function buildProlanisRowsHtml() {
       '<td><select class="inp-sel" style="padding:6px 8px;font-size:12px;width:100px;" onchange="updatePesertaField(' + idx + ',\'diagnosa\',this.value)"><option value="">-</option><option value="DM"' + (p.diagnosa === 'DM' ? ' selected' : '') + '>DM</option><option value="HT"' + (p.diagnosa === 'HT' ? ' selected' : '') + '>HT</option></select></td>' +
       inputs +
       '<td style="text-align:center;white-space:nowrap;">' +
-      '<button class="btn-icon" onclick="cetakProlanisPeserta(\'' + esc(k.id_kegiatan) + '\',' + idx + ')" title="Cetak PDF" style="background:#dbeafe;color:#1d4ed8;">🖨️</button> ' +
-      '<button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus">🗑️</button>' +
+      '<button class="btn-icon" onclick="cetakProlanisPeserta(\'' + esc(k.id_kegiatan) + '\',' + idx + ')" title="Cetak PDF" style="background:#dbeafe;color:#1d4ed8;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button> ' +
+      '<button class="btn-icon danger" onclick="hapusPesertaProlanis(' + idx + ')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
       '</td>' +
       '</tr>';
   }).join('');
@@ -1786,7 +1820,7 @@ function viewDetailKegiatan() {
   
   return '<div class="page-header-flex"><div>' +
     '<button class="btn btn-secondary btn-sm" onclick="window._prolanisDetail=null;window._prolanisFilter=\'semua\';window._prolanisSearch=\'\';view=\'prolanis\';render();" style="margin-bottom:8px;">← Kembali</button>' +
-    '<h2 style="margin-top:8px;">📋 ' + esc(k.nama_kegiatan || '-') + '</h2>' +
+    '<h2 style="margin-top:8px;">' + esc(k.nama_kegiatan || '-') + '</h2>' +
     '<p>' + esc(fmtTanggalKeg(k.tanggal)) + ' • ' + esc(k.pengirim || '-') + ' • ' + esc(k.alamat || '-') + '</p>' +
     '<p style="margin-top:4px;font-weight:600;color:var(--primary);">' + pesertaList.length + ' peserta</p>' +
     '</div>' +
@@ -1795,7 +1829,7 @@ function viewDetailKegiatan() {
 '<button class="btn btn-secondary" onclick="uploadExcelProlanis()">📁 Upload Excel</button>' +
 '<button class="btn btn-secondary" onclick="pasteExcelProlanis()">📋 Paste Excel</button>' +
 '<button class="btn btn-secondary" onclick="downloadTemplateProlanis()">📥 Template</button>' +
-'<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">💾 Simpan</button>' +
+'<button class="btn btn-secondary" onclick="simpanDetailKegiatan()">Simpan</button>' +
 '</div></div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">' +
     '<input type="text" id="prolanisSearchInput" placeholder="🔍 Cari nama / NIK / no..." value="' + esc(window._prolanisSearch || '') + '" oninput="onSearchProlanis(this.value)" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--slate-300);border-radius:10px;font-size:14px;font-family:inherit;outline:none;">' +
@@ -1845,7 +1879,7 @@ var pengirimHtml =
   '<input type="text" id="pk_pengirim_manual" class="inp" style="display:' + (isCustomPengirim ? 'block' : 'none') + '; margin-top:8px;" value="' + (isCustomPengirim ? esc(k.pengirim) : '') + '" placeholder="Ketik nama Puskesmas baru...">' +
   '</div>';
   var html = '<div class="modal-body">' +
-    '<div class="modal-head"><div><h3>' + (isEdit ? '✏️ Edit Kegiatan Prolanis' : '➕ Buat Kegiatan Prolanis') + '</h3><p>Isi data kegiatan</p></div>' +
+    '<div class="modal-head"><div><h3>' + (isEdit ? 'Edit Kegiatan Prolanis' : '➕ Buat Kegiatan Prolanis') + '</h3><p>Isi data kegiatan</p></div>' +
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     '<div class="form-row" style="grid-template-columns:1fr;">' +
     '<div><label class="lbl">Nama Kegiatan *</label><input id="pk_nama" class="inp" value="' + (k ? esc(k.nama_kegiatan) : '') + '" placeholder="Contoh: Maesan, Penanggungan"></div>' +
@@ -1855,7 +1889,7 @@ var pengirimHtml =
     (isEdit ? '' : '<div><label class="lbl">Jumlah Peserta</label><input type="number" id="pk_jumlah" class="inp" value="0" min="0" max="500"><div style="font-size:11px;color:var(--slate-400);margin-top:4px;">Isi jumlah peserta → otomatis buat baris kosong</div></div>') +
     '<div><label class="lbl">Petugas</label><input id="pk_petugas" class="inp" value="' + (k ? esc(k.petugas || '') : '') + '" placeholder="Contoh: Tim A"></div>' +
     '</div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis(\'' + (isEdit ? esc(id) : '') + '\')">💾 Simpan</button>' +
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKegiatanProlanis(\'' + (isEdit ? esc(id) : '') + '\')">Simpan</button>' +
     '<button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modal').classList.add('open');
@@ -1952,7 +1986,7 @@ function simpanKegiatanProlanis(editId) {
     })
     .catch(function(err) {
       showLoading(false);
-      alert('⚠️ GAGAL MENYIMPAN:\n\n' + err.message);
+      alert('GAGAL MENYIMPAN:\n\n' + err.message);
       toastMsg('Gagal menyimpan data', 'err');
     });
 }
@@ -2387,7 +2421,7 @@ function simpanDetailKegiatan() {
     })
     .catch(function(err) {
       showLoading(false);
-      alert('⚠️ GAGAL MENYIMPAN:\n\n' + err.message);
+      alert('GAGAL MENYIMPAN:\n\n' + err.message);
       toastMsg('Gagal menyimpan data', 'err');
     });
 }
@@ -2750,7 +2784,7 @@ function showMultiPagePrint(pages, title) {
   overlay.innerHTML = '<div class="print-toolbar">' +
     '<button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button>' +
     '<div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div>' +
-    '<button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button>' +
+    '<button class="print-btn-print" onclick="window.print()">Cetak / PDF</button>' +
     '</div>' + pagesHtml;
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2845,8 +2879,8 @@ function buildTestRows(list) {
       '<td style="font-size:12px;color:var(--slate-500);">' + esc(t.rujukan) + '</td>' +
       '<td>' + (t.kal_aktif ? '<span class="badge badge-selesai" style="font-size:10px;">⚡ ' + (t.kal_operator || '*') + ' ' + (t.kal_faktor || 1) + '</span>' : '<span style="color:var(--slate-400);font-size:12px;">-</span>') + '</td>' +
       '<td style="text-align:right;white-space:nowrap;">' +
-      '<button class="btn-icon" onclick="modalTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Edit">✏️</button> ' +
-      '<button class="btn-icon danger" onclick="hapusTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Hapus">🗑️</button>' +
+      '<button class="btn-icon" onclick="modalTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> ' +
+      '<button class="btn-icon danger" onclick="hapusTest(\'' + esc(t.kode).replace(/'/g, "\\'") + '\')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
       '</td></tr>';
   }).join('');
 }
@@ -2854,19 +2888,19 @@ function filterTestTable() { var search = (document.getElementById('testSearch')
 function viewMasterAnalis() {
   var rows;
   if (analisList.length === 0) { rows = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada data analis.</td></tr>'; }
-  else { rows = analisList.map(function(a, i) { return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td><td style="font-weight:500;">' + esc(a.nama) + '</td><td style="font-size:12px;">' + esc(a.kode || '-') + '</td><td style="text-align:right;white-space:nowrap;"><button class="btn-icon" onclick="modalKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Edit">✏️</button> <button class="btn-icon danger" onclick="hapusKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Hapus">🗑️</button></td></tr>'; }).join(''); }
+  else { rows = analisList.map(function(a, i) { return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td><td style="font-weight:500;">' + esc(a.nama) + '</td><td style="font-size:12px;">' + esc(a.kode || '-') + '</td><td style="text-align:right;white-space:nowrap;"><button class="btn-icon" onclick="modalKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn-icon danger" onclick="hapusKaryawan(\'analis\', \'' + esc(a.id) + '\')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>'; }).join(''); }
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Analis</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar nama analis laboratorium.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-primary" onclick="modalKaryawan(\'analis\', null)">➕ Tambah Analis</button>' + (analisList.length > 0 ? '<button class="btn btn-secondary" onclick="resetAnalis()">🔄 Reset</button>' : '') + '</div></div><div class="table-wrap"><table><thead><tr><th style="width:50px;">No</th><th>Nama Analis</th><th>NIP / Kode</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 function viewMasterDokter() {
   var rows;
   if (dokterList.length === 0) { rows = '<tr><td colspan="4" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada data dokter.</td></tr>'; }
-  else { rows = dokterList.map(function(d, i) { return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td><td style="font-weight:500;">' + esc(d.nama) + '</td><td style="font-size:12px;">' + esc(d.kode || '-') + '</td><td style="text-align:right;white-space:nowrap;"><button class="btn-icon" onclick="modalKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Edit">✏️</button> <button class="btn-icon danger" onclick="hapusKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Hapus">🗑️</button></td></tr>'; }).join(''); }
+  else { rows = dokterList.map(function(d, i) { return '<tr><td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td><td style="font-weight:500;">' + esc(d.nama) + '</td><td style="font-size:12px;">' + esc(d.kode || '-') + '</td><td style="text-align:right;white-space:nowrap;"><button class="btn-icon" onclick="modalKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button class="btn-icon danger" onclick="hapusKaryawan(\'dokter\', \'' + esc(d.id) + '\')" title="Hapus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>'; }).join(''); }
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Master Dokter</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar dokter penanggung jawab (DPJP).</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-primary" onclick="modalKaryawan(\'dokter\', null)">➕ Tambah Dokter</button>' + (dokterList.length > 0 ? '<button class="btn btn-secondary" onclick="resetDokter()">🔄 Reset</button>' : '') + '</div></div><div class="table-wrap"><table><thead><tr><th style="width:50px;">No</th><th>Nama Dokter</th><th>SIP / Kode</th><th style="text-align:right;width:110px;">Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 function viewMasterStempel() {
   var s = stempelUrl || '';
   return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Stempel Klinik</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Stempel akan otomatis muncul di atas tanda tangan dokter saat cetak.</p></div></div>' +
-    '<div class="card"><label class="lbl">Gambar Stempel <span class="lbl-hint">(PNG transparan disarankan, maks 500 KB)</span></label><input type="file" id="stempelFile" accept="image/*" class="inp" onchange="previewStempel(this)"><div style="margin-top:12px; padding:20px; border:1px dashed var(--slate-300); border-radius:10px; background:#fff; min-height:160px; display:flex; align-items:center; justify-content:center;"><img id="stempelPreview" src="' + (s ? esc(s) : '') + '" style="max-height:140px; max-width:100%; object-fit:contain; ' + (s ? '' : 'display:none;') + '"><span id="stempelPlaceholder" style="font-size:13px; color:var(--slate-400); ' + (s ? 'display:none;' : '') + '">Belum ada stempel</span></div><div class="btn-row"><button class="btn btn-primary" onclick="simpanStempel()">💾 Simpan Stempel</button>' + (s ? '<button class="btn btn-secondary" onclick="hapusStempel()">🗑️ Hapus Stempel</button>' : '') + '</div></div>';
+    '<div class="card"><label class="lbl">Gambar Stempel <span class="lbl-hint">(PNG transparan disarankan, maks 500 KB)</span></label><input type="file" id="stempelFile" accept="image/*" class="inp" onchange="previewStempel(this)"><div style="margin-top:12px; padding:20px; border:1px dashed var(--slate-300); border-radius:10px; background:#fff; min-height:160px; display:flex; align-items:center; justify-content:center;"><img id="stempelPreview" src="' + (s ? esc(s) : '') + '" style="max-height:140px; max-width:100%; object-fit:contain; ' + (s ? '' : 'display:none;') + '"><span id="stempelPlaceholder" style="font-size:13px; color:var(--slate-400); ' + (s ? 'display:none;' : '') + '">Belum ada stempel</span></div><div class="btn-row"><button class="btn btn-primary" onclick="simpanStempel()">Simpan Stempel</button>' + (s ? '<button class="btn btn-secondary" onclick="hapusStempel()">🗑️ Hapus Stempel</button>' : '') + '</div></div>';
 }
 function viewMasterLogBackup() {
   // Panggil fungsi load data setelah HTML dirender
@@ -3103,7 +3137,7 @@ async function aktifkanPuskesmas(nama) {
 function previewStempel(input) { var file = input.files && input.files[0]; if (!file) return; if (file.size > 500 * 1024) { alert('Ukuran gambar terlalu besar. Maksimal 500 KB.'); input.value = ''; return; } var reader = new FileReader(); reader.onload = function(e) { window._stempelTemp = e.target.result; var prev = document.getElementById('stempelPreview'); var ph = document.getElementById('stempelPlaceholder'); if (prev) { prev.src = e.target.result; prev.style.display = ''; } if (ph) ph.style.display = 'none'; }; reader.readAsDataURL(file); }
 async function simpanStempel() { var ttdBaru = window._stempelTemp; if (!ttdBaru || ttdBaru.indexOf('data:image') !== 0) { toastMsg('Pilih gambar stempel terlebih dahulu'); return; } toastMsg('Mengunggah stempel ke Drive...'); var up = await apiCall('uploadTTD', { jenis: 'stempel', nama: 'klinik', base64: ttdBaru }); if (!up || !up.ok) { toastMsg('Gagal upload: ' + (up && up.error ? up.error : 'error'), 'err'); return; } stempelUrl = up.url; try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {} await apiCall('saveStempel', { url: stempelUrl }); window._stempelTemp = undefined; render(); toastMsg('Stempel tersimpan'); }
 async function hapusStempel() { if (!confirm('Hapus stempel klinik?')) return; stempelUrl = ''; try { localStorage.removeItem('labcare_stempel_url'); } catch (e) {} await apiCall('saveStempel', { url: '' }); render(); toastMsg('Stempel dihapus'); }
-function modalEditPemeriksaan(id) { var p = patients.find(function(x) { return x.id === id; }); if (!p) return; window._editPickedTests = {}; (p.tests || []).forEach(function(k) { window._editPickedTests[k] = true; }); window._editPatientId = id; window._editKatFilter = 'semua'; window._editPickSearch = ''; var html = '<div class="modal-body"><div class="modal-head"><div><h3>Edit Pemeriksaan</h3><p>' + esc(p.nama) + ' • ' + esc(p.noRM) + ' • ' + esc(p.noAntrian) + '</p></div><button class="modal-close" onclick="closeModal()">&times;</button></div><div id="editTestPickerWrap">' + renderEditTestPicker() + '</div><div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPemeriksaan()">💾 Simpan Pemeriksaan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>'; document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open'); }
+function modalEditPemeriksaan(id) { var p = patients.find(function(x) { return x.id === id; }); if (!p) return; window._editPickedTests = {}; (p.tests || []).forEach(function(k) { window._editPickedTests[k] = true; }); window._editPatientId = id; window._editKatFilter = 'semua'; window._editPickSearch = ''; var html = '<div class="modal-body"><div class="modal-head"><div><h3>Edit Pemeriksaan</h3><p>' + esc(p.nama) + ' • ' + esc(p.noRM) + ' • ' + esc(p.noAntrian) + '</p></div><button class="modal-close" onclick="closeModal()">&times;</button></div><div id="editTestPickerWrap">' + renderEditTestPicker() + '</div><div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPemeriksaan()">Simpan Pemeriksaan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>'; document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open'); }
 function modalEditPasien(id) {
   var p = patients.find(function(x) { return x.id === id; }); if (!p) return;
   var dokterField;
@@ -3124,7 +3158,7 @@ function modalEditPasien(id) {
     '<div><label class="lbl">Status Spesimen</label><select id="ep_spesimen" class="inp-sel"><option value="belum"' + (p.spesimen === 'belum' ? ' selected' : '') + '>📦 Belum Ada</option><option value="ada"' + (p.spesimen === 'ada' ? ' selected' : '') + '>📦 Sudah Ada</option></select></div>' +
     '<div><label class="lbl">Alamat</label><textarea id="ep_alamat" class="inp-ta" rows="2">' + esc(p.alamat || '') + '</textarea></div>' +
     '<div><label class="lbl">Catatan Klinis</label><textarea id="ep_catatan" class="inp-ta" rows="2">' + esc(p.catatan || '') + '</textarea></div>' +
-    '</div><div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPasien(\'' + p.id + '\')">💾 Simpan Perubahan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+    '</div><div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanEditPasien(\'' + p.id + '\')">Simpan Perubahan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
   setTimeout(function() { var el = document.getElementById('ep_nama'); if (el) el.focus(); }, 100);
 }
@@ -3175,7 +3209,7 @@ function modalTest(kode) {
 '<div><label class="lbl">Faktor</label><input type="number" step="any" id="t_kal_faktor" class="inp" value="' + (t && t.kal_faktor ? t.kal_faktor : '1') + '" placeholder="Contoh: 0.5"></div>' +
 '</div></div>' +
     '</div>' + (isEdit ? '<div class="info-box"><span class="info-em">ℹ️</span><span>Kode tidak bisa diubah.</span></div>' : '') +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanTest()">💾 Simpan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanTest()">Simpan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
   setTimeout(function() { var el = document.getElementById(isEdit ? 't_nama' : 't_kode'); if (el) el.focus(); }, 100);
 }
@@ -3241,7 +3275,7 @@ function modalKaryawan(jenis, id) {
     '<div><label class="lbl">Tanda Tangan</label><input type="file" id="k_ttd" accept="image/*" class="inp" onchange="previewTTD(this)"><div style="margin-top:8px; padding:8px; border:1px dashed var(--slate-300); border-radius:8px; background:#fff; min-height:70px; display:flex; align-items:center; justify-content:center;"><img id="ttdPreview" src="' + (k && k.ttd ? esc(k.ttd) : '') + '" style="max-height:60px; max-width:100%; object-fit:contain; ' + (k && k.ttd ? '' : 'display:none;') + '"><span id="ttdPlaceholder" style="font-size:11px; color:var(--slate-400); ' + (k && k.ttd ? 'display:none;' : '') + '">Belum ada tanda tangan</span></div>' +
     (k && k.ttd ? '<button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px;" onclick="hapusTTD()">🗑️ Hapus TTD</button>' : '') +
     '</div></div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKaryawan(\'' + jenis + '\')">💾 Simpan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanKaryawan(\'' + jenis + '\')">Simpan</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
   setTimeout(function() { var el = document.getElementById('k_nama'); if (el) el.focus(); }, 100);
   window._ttdTemp = undefined;
@@ -3315,7 +3349,7 @@ function modalHasil(id) {
     '<div class="result-list">' + fieldsHtml + '</div>' +
     '<div style="margin-top:16px;"><label class="lbl">Nama Analis</label>' + analisField + '</div>' +
     '<div style="margin-top:16px;"><label class="lbl">Kesimpulan / Catatan Petugas</label><textarea id="kesimpulan" rows="2" class="inp-ta">' + esc(p.kesimpulan || '') + '</textarea></div>' +
-    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasil(\'' + p.id + '\')">💾 Simpan Hasil</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
+    '<div class="btn-row"><button class="btn btn-primary" style="flex:1;" onclick="simpanHasil(\'' + p.id + '\')">Simpan Hasil</button><button class="btn btn-secondary" onclick="closeModal()">Batal</button></div></div>';
   document.getElementById('modalContent').innerHTML = html; document.getElementById('modal').classList.add('open');
 }
   function hitungKalibrasi(kode) {
@@ -3364,16 +3398,16 @@ if (!res || !res.ok) {
   } else {
     pesanErr = 'Gagal sinkron ke server. Periksa koneksi internet.';
   }
-  alert('⚠️ GAGAL MENYIMPAN:\n\n' + pesanErr);
+  alert('GAGAL MENYIMPAN:\n\n' + pesanErr);
   return;
 }
 // --------------------------------------------------------  
 var sisa = (p.tests || []).length - filled;
-  document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em">✅</div><h3>Hasil Tersimpan</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Pemeriksaan</p><div class="big-no">' + filled + '/' + (p.tests || []).length + '</div><p style="margin-top:8px;font-size:12px;color:' + (sisa > 0 ? 'var(--warning)' : 'var(--success)') + ';font-weight:600;">' + (sisa > 0 ? sisa + ' tes belum diisi' : '✓ Lengkap') + '</p></div>' +
+  document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>Hasil Tersimpan</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Pemeriksaan</p><div class="big-no">' + filled + '/' + (p.tests || []).length + '</div><p style="margin-top:8px;font-size:12px;color:' + (sisa > 0 ? 'var(--warning)' : 'var(--success)') + ';font-weight:600;">' + (sisa > 0 ? sisa + ' tes belum diisi' : '✓ Lengkap') + '</p></div>' +
     '<div style="display:flex;flex-direction:column;gap:8px;">' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); cetakHasil(\'' + p.id + '\');">🖨️ Cetak Hasil Sekarang</button>' +
-    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); render();">✏️ Edit Lagi</button>' +
-    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">📋 Selesai</button>' +
+    '<button class="btn btn-primary" style="width:100%;" onclick="closeModal(); cetakHasil(\'' + p.id + '\');">Cetak Hasil Sekarang</button>' +
+    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); render();">Edit Lagi</button>' +
+    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Selesai</button>' +
     '</div></div>';
   document.getElementById('modal').classList.add('open');
 }
@@ -3382,7 +3416,7 @@ function showPrintPreview(html, title, options) {
   options = options || {}; var footerHtml = options.footerHtml || '';
   var overlay = document.getElementById('printOverlay');
   if (!overlay) { overlay = document.createElement('div'); overlay.id = 'printOverlay'; document.body.appendChild(overlay); }
-  overlay.innerHTML = '<div class="print-toolbar"><button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button><div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div><button class="print-btn-print" onclick="window.print()">🖨️ Cetak / PDF</button></div>' +
+  overlay.innerHTML = '<div class="print-toolbar"><button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button><div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div><button class="print-btn-print" onclick="window.print()">Cetak / PDF</button></div>' +
     '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:287mm;overflow:hidden;">' +
     '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:287mm;object-fit:fill;z-index:0;pointer-events:none;">' +
     '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + html + '</div>' +
@@ -3502,10 +3536,10 @@ document.addEventListener('submit', function(e) {
   var p = { id: uid(), noRM: f.get('noRM'), nama: f.get('nama').trim(), tglLahir: f.get('tglLahir'), jk: f.get('jk'), telepon: f.get('telepon'), pengirim: (f.get('pengirim') || '').trim(), dokter: f.get('dokter'), analis: f.get('analis'), alamat: f.get('alamat'), catatan: f.get('catatan'), tests: tests, hasil: {}, status: statusAwal, spesimen: spesimen, noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'), tglDaftar: new Date().toISOString(), kesimpulan: '' };
   patients.push(p); save(); apiCall('savePasien', p);
   e.target.reset(); window._pickedTests = {}; window._katFilter = 'semua'; window._pickSearch = '';
-  document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em">✅</div><h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
+  document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
     '<div style="display:flex;gap:8px;">' +
-    '<button class="btn btn-secondary" style="flex:1;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">📋 Antrian</button>' +
-    '<button class="btn btn-primary" style="flex:1;" onclick="inputHasilPasien(\'' + p.id + '\')">🔬 Input Hasil</button>' +
+    '<button class="btn btn-secondary" style="flex:1;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Antrian</button>' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="inputHasilPasien(\'' + p.id + '\')">Input Hasil</button>' +
     '</div></div>';
   document.getElementById('modal').classList.add('open');
 });
@@ -3630,7 +3664,7 @@ async function doLoginAdmin() {
 }
 function modalResetData() {
   var html = '<div class="modal-body">' +
-    '<div class="modal-head"><div><h3 style="color:var(--danger);">⚠️ Konfirmasi Hapus Permanen</h3><p>Data yang dihapus tidak bisa dikembalikan.</p></div>' +
+    '<div class="modal-head"><div><h3 style="color:var(--danger);">Konfirmasi Hapus Permanen</h3><p>Data yang dihapus tidak bisa dikembalikan.</p></div>' +
     '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
     
     '<div class="info-box" style="background:#fee2e2; color:#991b1b; margin-bottom:16px;"><span class="info-em">🚨</span><span>Sistem akan melakukan <b>Backup otomatis</b> sebelum menghapus seluruh data pasien.</span></div>' +
@@ -3690,7 +3724,7 @@ async function prosesResetData() {
     patients = []; // Bersihkan memory lokal
     save(); // Simpan ke localStorage
     render(); // Refresh UI
-    toastMsg('✅ Semua data pasien berhasil dihapus.', 'ok');
+    toastMsg('Semua data pasien berhasil dihapus.', 'ok');
   } else {
     btn.innerText = 'Hapus Sekarang';
     btn.disabled = false;
@@ -3699,7 +3733,7 @@ async function prosesResetData() {
   }
 }
 function konfirmasiRestore(fileId, namaFile, tanggalFile) {
-  if (!confirm('⚠️ PERINGATAN!\n\nSeluruh data pasien saat ini akan DIGANTI dengan data dari file backup:\n\nNama: ' + namaFile + '\nTanggal: ' + tanggalFile + '\n\nLanjutkan?')) return;
+  if (!confirm('PERINGATAN!\n\nSeluruh data pasien saat ini akan DIGANTI dengan data dari file backup:\n\nNama: ' + namaFile + '\nTanggal: ' + tanggalFile + '\n\nLanjutkan?')) return;
 
   showLoading(true);
   
@@ -3714,7 +3748,7 @@ function konfirmasiRestore(fileId, namaFile, tanggalFile) {
          render(); // Render ulang tampilan
       });
     } else {
-      alert('⚠️ GAGAL RESTORE:\n\n' + (res.error || 'Periksa koneksi atau file backup.'));
+      alert('GAGAL RESTORE:\n\n' + (res.error || 'Periksa koneksi atau file backup.'));
       toastMsg('Gagal melakukan restore', 'err');
     }
   });
