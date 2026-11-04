@@ -931,6 +931,233 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+/* ============================================================
+   LOGIN SCREEN — PREMIUM NEUMORPHIC CARDS
+   (Lanyard Vertical + Bento Horizontal + Search + Greeting)
+   ============================================================ */
+
+#loginStep1 { width:100%; max-width:1000px; }
+
+/* Live Clock Badge */
+.greeting-badge {
+  display:inline-flex; align-items:center; gap:8px; padding:8px 18px;
+  border-radius:999px; background:#efeae2; margin-bottom:14px;
+  box-shadow: inset 4px 4px 8px rgba(168,158,140,.22),
+              inset -3px -3px 6px rgba(255,255,255,.75);
+  font-size:11px; font-weight:700; color:#0A369D;
+  font-family: ui-monospace, monospace; letter-spacing:.5px;
+}
+.greeting-badge .dot-live {
+  width:10px; height:10px; border-radius:50%; background:#15803D;
+  animation: pulseDot 1.5s infinite;
+}
+@keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+/* View Switcher (Vertical / Horizontal) */
+.login-view-switch {
+  background:#efeae2; padding:5px; border-radius:16px;
+  display:inline-flex; gap:4px;
+  box-shadow: inset 4px 4px 8px rgba(168,158,140,.22),
+              inset -3px -3px 6px rgba(255,255,255,.75);
+}
+.login-view-btn {
+  padding:8px 16px; border-radius:12px; border:none; background:transparent;
+  color:#78716c; font-size:12px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+  font-family:inherit; transition:.2s;
+}
+.login-view-btn.active {
+  background:#f9f6f0; color:#0A369D;
+  box-shadow: 4px 4px 8px rgba(168,158,140,.22),
+              -3px -3px 6px rgba(255,255,255,.85);
+}
+
+/* Search Box */
+.login-search-box {
+  background:#efeae2; padding:8px 14px; border-radius:16px;
+  display:flex; gap:10px; align-items:center;
+  box-shadow: inset 4px 4px 8px rgba(168,158,140,.22),
+              inset -3px -3px 6px rgba(255,255,255,.75);
+}
+.login-search-box input {
+  background:transparent; border:none; outline:none; width:100%;
+  font-size:13px; color:#1c1917; font-family:inherit;
+}
+
+/* ===== VERTICAL LANYARD CARDS ===== */
+.admin-cards-vertical {
+  display:flex; gap:24px; flex-wrap:wrap;
+  justify-content:center; margin-bottom:20px;
+}
+.admin-cards-horizontal {
+  display:none; flex-direction:column; gap:14px;
+  max-width:700px; margin:0 auto 20px;
+}
+
+.admin-card-v {
+  background:#f9f6f0; border-radius:28px; padding:20px;
+  width:280px; cursor:pointer;
+  box-shadow: 9px 9px 18px rgba(168,158,140,.28),
+              -9px -9px 18px rgba(255,255,255,.9);
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  border-top: 4px solid #0A369D;
+  position: relative;
+}
+.admin-card-v:hover {
+  transform:translateY(-6px);
+  box-shadow: 14px 14px 28px rgba(168,158,140,.35),
+              -14px -14px 28px rgba(255,255,255,.95);
+}
+.admin-card-v:active {
+  transform:translateY(0);
+  box-shadow: inset 5px 5px 10px rgba(168,158,140,.28),
+              inset -5px -5px 10px rgba(255,255,255,.75);
+}
+.lanyard-hole {
+  width:36px; height:10px; border-radius:6px;
+  background:#E4DDD2; margin:0 auto 12px;
+  box-shadow: inset 2px 2px 4px #b8b2a7, inset -2px -2px 4px #ffffff;
+}
+.card-header {
+  text-align:center; padding-bottom:12px;
+  border-bottom:1px solid rgba(228,221,210,.6);
+}
+.card-badge {
+  font-size:9px; font-family: ui-monospace, monospace;
+  font-weight:700; letter-spacing:2px;
+  color:#D97706; text-transform:uppercase;
+}
+.card-header h4 {
+  font-size:11px; font-weight:900; color:#0A369D;
+  text-transform:uppercase; letter-spacing:.5px; margin-top:2px;
+}
+.card-avatar-wrap { text-align:center; margin:20px 0; }
+.avatar-ring {
+  width:100px; height:100px; border-radius:50%;
+  background:#f9f6f0; margin:0 auto 12px; padding:6px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+  border:2px solid #D97706;
+  box-shadow: 6px 6px 12px rgba(168,158,140,.22),
+              -6px -6px 12px rgba(255,255,255,.85),
+              0 0 12px rgba(217,119,6,.25);
+}
+.avatar-initial {
+  width:100%; height:100%; border-radius:50%;
+  background: linear-gradient(145deg,#0A369D,#0C41BC);
+  color:#fff; font-size:32px; font-weight:900;
+  font-family: ui-monospace, monospace;
+  display:flex; align-items:center; justify-content:center;
+}
+.status-dot {
+  position:absolute; bottom:4px; right:4px;
+  width:18px; height:18px; border-radius:50%;
+  background:#15803D; border:3px solid #f9f6f0;
+}
+.card-name {
+  font-size:17px; font-weight:800; color:#1e293b; margin-bottom:2px;
+}
+.card-role {
+  font-size:11px; font-weight:700; color:#15803D;
+}
+.card-nip {
+  display:inline-block; margin-top:8px; padding:4px 12px;
+  border-radius:10px; background:#f5f2eb;
+  box-shadow: inset 3px 3px 6px rgba(168,158,140,.22),
+              inset -3px -3px 6px rgba(255,255,255,.85);
+  font-size:10px; font-family: ui-monospace, monospace;
+  font-weight:700; color:#0A369D;
+}
+.card-footer {
+  padding-top:12px; border-top:1px solid rgba(228,221,210,.6);
+}
+.barcode-box {
+  background:#f5f2eb; border-radius:12px; padding:10px;
+  text-align:center; color:#1e293b;
+  box-shadow: inset 3px 3px 6px rgba(168,158,140,.22),
+              inset -3px -3px 6px rgba(255,255,255,.85);
+}
+.barcode-box span {
+  display:block; margin-top:4px;
+  font-size:8px; font-family: ui-monospace, monospace;
+  color:#a8a29e; letter-spacing:1.5px; text-transform:uppercase;
+}
+
+/* ===== HORIZONTAL BENTO CARDS ===== */
+.admin-card-h {
+  background:#f9f6f0; border-radius:24px; padding:18px 22px;
+  cursor:pointer;
+  box-shadow: 9px 9px 18px rgba(168,158,140,.28),
+              -9px -9px 18px rgba(255,255,255,.9);
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  border-left: 4px solid #0A369D;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px;
+}
+.admin-card-h:hover {
+  transform:translateY(-3px);
+  box-shadow: 14px 14px 28px rgba(168,158,140,.35),
+              -14px -14px 28px rgba(255,255,255,.95);
+}
+.card-h-left {
+  display:flex; align-items:center; gap:16px;
+  flex:1; min-width:0;
+}
+.avatar-ring-h {
+  width:60px; height:60px; border-radius:16px;
+  background:#f9f6f0; padding:4px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  border:2px solid #D97706;
+  box-shadow: 4px 4px 8px rgba(168,158,140,.22),
+              -3px -3px 6px rgba(255,255,255,.85);
+}
+.avatar-initial-h {
+  width:100%; height:100%; border-radius:12px;
+  background: linear-gradient(145deg,#0A369D,#0C41BC);
+  color:#fff; font-size:22px; font-weight:900;
+  font-family: ui-monospace, monospace;
+  display:flex; align-items:center; justify-content:center;
+}
+.card-h-info { flex:1; min-width:0; }
+.card-h-nip {
+  display:flex; align-items:center; gap:8px; margin-bottom:4px;
+}
+.card-h-nip .nip-tag {
+  padding:2px 8px; border-radius:6px; background:#f5f2eb;
+  box-shadow: inset 2px 2px 4px rgba(168,158,140,.22),
+              inset -2px -2px 4px rgba(255,255,255,.85);
+  font-size:9px; font-family: ui-monospace, monospace;
+  font-weight:700; color:#0A369D;
+}
+.card-h-nip .dot-on {
+  width:8px; height:8px; border-radius:50%; background:#15803D;
+}
+.card-h-name {
+  font-size:16px; font-weight:800; color:#1e293b;
+  margin-bottom:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.card-h-role {
+  font-size:11px; font-weight:700; color:#15803D;
+}
+.card-h-arrow {
+  width:44px; height:44px; border-radius:14px;
+  background: linear-gradient(145deg,#0C41BC,#0A369D);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  box-shadow: 5px 5px 14px rgba(168,158,140,.28),
+              -5px -5px 14px rgba(255,255,255,.9);
+}
+
+/* Responsive */
+@media (max-width:640px) {
+  .admin-card-v { width:100%; max-width:320px; }
+  .admin-cards-vertical {
+    flex-direction:column; align-items:center;
+  }
+}
 </style>
 </head>
 <body>
@@ -938,16 +1165,44 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 <div id="loginOverlay" style="position:fixed; inset:0; background:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
   
   <!-- TAHAP 1: PILIH KARTU -->
-  <div id="loginStep1" style="width:100%; max-width:600px; text-align:center;">
-    <h1 style="color:#1c1917; font-size:32px; margin-bottom:10px; font-weight:800; letter-spacing:-0.5px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-4px;margin-right:6px;"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>LabCare</h1>
-    <p style="color:#78716c; font-size:14px; margin-bottom:40px;">Silakan pilih kartu petugas Anda untuk melanjutkan.</p>
-    
-    <div id="adminCardContainer" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
-      <!-- Kartu petugas akan dimuat oleh JavaScript di sini -->
-      <p style="color:#a8a29e;">Memuat daftar petugas...</p>
+<div id="loginStep1" style="text-align:center;">
+  <div style="text-align:center; margin-bottom:26px;">
+    <div class="greeting-badge">
+      <span class="dot-live"></span>
+      <span id="liveClockLogin">MEMUAT...</span>
+    </div>
+    <h1 style="color:#1c1917; font-size:30px; font-weight:800; letter-spacing:-0.5px; margin-bottom:8px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px;margin-right:6px;"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>LabCare
+    </h1>
+    <h2 id="greetingTitle" style="color:#1c1917; font-size:19px; font-weight:700; margin-bottom:6px;">Silakan Pilih Kartu Petugas</h2>
+    <p style="color:#78716c; font-size:13px;">Pilih profil petugas laboratorium di bawah ini untuk melanjutkan.</p>
+  </div>
+
+  <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px;">
+    <div class="login-view-switch">
+      <button type="button" onclick="setLoginView('vertical')" id="btnLoginVert" class="login-view-btn active">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        <span>Kartu Lanyard</span>
+      </button>
+      <button type="button" onclick="setLoginView('horizontal')" id="btnLoginHoriz" class="login-view-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Bento Grid</span>
+      </button>
     </div>
   </div>
 
+  <div style="max-width:400px; margin:0 auto 28px;">
+    <div class="login-search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="loginSearch" oninput="filterAdminCards()" placeholder="Cari Nama Petugas...">
+    </div>
+  </div>
+
+  <div id="adminCardsVertical" class="admin-cards-vertical">
+    <p style="color:#a8a29e; text-align:center; width:100%;">Memuat daftar petugas...</p>
+  </div>
+  <div id="adminCardsHorizontal" class="admin-cards-horizontal"></div>
+</div>
   <!-- TAHAP 2: INPUT PIN -->
   <div id="loginStep2" style="display:none; width:100%; max-width:400px; background:#f9f6f0; padding:35px 30px; border-radius:20px; text-align:center; box-shadow: 8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9);">
     
@@ -3586,40 +3841,167 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAdminCards();
   }
 });
+// ================= LOGIKA RENDER KARTU LOGIN =================
 
 async function loadAdminCards() {
-  var container = document.getElementById('adminCardContainer');
+  var vContainer = document.getElementById('adminCardsVertical');
+  var hContainer = document.getElementById('adminCardsHorizontal');
+  
+  // Jalankan jam & sapaan langsung saat halaman dimuat
+  updateLoginClockGreeting();
+  setInterval(updateLoginClockGreeting, 1000);
+
   try {
     var res = await fetch(API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      method: 'POST', 
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'getAdminList', data: {} })
     });
     
-    // Baca respon sebagai teks (antisipasi jika server return HTML error)
     var text = await res.text();
     
     try {
       var json = JSON.parse(text);
-      
       if (json && json.ok && json.list.length > 0) {
-        container.innerHTML = json.list.map(function(a) {
-          var initial = a.nama.charAt(0).toUpperCase(); 
-          return `
-            <div onclick="selectAdmin('${a.nama}')" style="background:#f9f6f0; width:130px; height:150px; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; box-shadow: 8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9);" onmouseover="this.style.boxShadow='5px 5px 12px rgba(15,118,110,0.25), -3px -3px 8px rgba(255,255,255,0.9)'" onmouseout="this.style.boxShadow='8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9)'">
-              <div style="width:60px; height:60px; background:#0f766e; color:#fff; font-size:24px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow: 4px 4px 10px rgba(15,118,110,0.3);">${initial}</div>
-              <div style="color:#1c1917; font-size:13px; font-weight:600; text-align:center; padding:0 8px;">${a.nama}</div>
-            </div>
-          `;
-        }).join('');
+        window._adminList = json.list;
+        renderAdminCards(json.list);
       } else {
-        container.innerHTML = '<p style="color:#dc2626;">Belum ada data admin di Master_Admin.</p>';
+        vContainer.innerHTML = '<p style="color:#dc2626; text-align:center; width:100%;">Belum ada data admin di Master_Admin.</p>';
       }
     } catch (parseErr) {
-      // Jika server crash / return HTML
-      container.innerHTML = '<p style="color:#ef4444;">Error Server: Gagal memuat daftar. (Error 500)</p>';
+      vContainer.innerHTML = '<p style="color:#ef4444; text-align:center; width:100%;">Error Server: Gagal memuat daftar (Error 500).</p>';
     }
   } catch (e) {
-    container.innerHTML = '<p style="color:#ef4444;">Gagal memuat daftar petugas. Periksa koneksi internet.</p>';
+    vContainer.innerHTML = '<p style="color:#ef4444; text-align:center; width:100%;">Gagal memuat daftar petugas. Periksa koneksi internet.</p>';
+  }
+}
+
+function renderAdminCards(list) {
+  var vContainer = document.getElementById('adminCardsVertical');
+  var hContainer = document.getElementById('adminCardsHorizontal');
+  if (!vContainer || !hContainer) return;
+
+  // SVG Barcode dekoratif untuk kartu vertikal
+  var barcodeSvg = '<svg width="100%" height="26" viewBox="0 0 200 26" preserveAspectRatio="none"><g fill="#1e293b">' +
+    '<rect x="0" y="0" width="2" height="26"/><rect x="4" y="0" width="1" height="26"/><rect x="7" y="0" width="3" height="26"/>' +
+    '<rect x="12" y="0" width="1" height="26"/><rect x="15" y="0" width="2" height="26"/><rect x="19" y="0" width="3" height="26"/>' +
+    '<rect x="24" y="0" width="1" height="26"/><rect x="27" y="0" width="2" height="26"/><rect x="31" y="0" width="3" height="26"/>' +
+    '<rect x="36" y="0" width="1" height="26"/><rect x="39" y="0" width="2" height="26"/><rect x="43" y="0" width="3" height="26"/>' +
+    '<rect x="48" y="0" width="1" height="26"/><rect x="51" y="0" width="2" height="26"/><rect x="55" y="0" width="3" height="26"/>' +
+    '<rect x="60" y="0" width="1" height="26"/><rect x="63" y="0" width="2" height="26"/><rect x="67" y="0" width="3" height="26"/>' +
+    '<rect x="72" y="0" width="1" height="26"/><rect x="75" y="0" width="2" height="26"/><rect x="79" y="0" width="3" height="26"/>' +
+    '<rect x="84" y="0" width="1" height="26"/><rect x="87" y="0" width="2" height="26"/><rect x="91" y="0" width="3" height="26"/>' +
+    '<rect x="96" y="0" width="1" height="26"/><rect x="99" y="0" width="2" height="26"/><rect x="103" y="0" width="3" height="26"/>' +
+    '<rect x="108" y="0" width="1" height="26"/><rect x="111" y="0" width="2" height="26"/><rect x="115" y="0" width="3" height="26"/>' +
+    '<rect x="120" y="0" width="1" height="26"/><rect x="123" y="0" width="2" height="26"/><rect x="127" y="0" width="3" height="26"/>' +
+    '<rect x="132" y="0" width="1" height="26"/><rect x="135" y="0" width="2" height="26"/><rect x="139" y="0" width="3" height="26"/>' +
+    '<rect x="144" y="0" width="1" height="26"/><rect x="147" y="0" width="2" height="26"/><rect x="151" y="0" width="3" height="26"/>' +
+    '<rect x="156" y="0" width="1" height="26"/><rect x="159" y="0" width="2" height="26"/><rect x="163" y="0" width="3" height="26"/>' +
+    '<rect x="168" y="0" width="1" height="26"/><rect x="171" y="0" width="2" height="26"/><rect x="175" y="0" width="3" height="26"/>' +
+    '<rect x="180" y="0" width="1" height="26"/><rect x="183" y="0" width="2" height="26"/><rect x="187" y="0" width="3" height="26"/>' +
+    '<rect x="192" y="0" width="1" height="26"/><rect x="195" y="0" width="2" height="26"/><rect x="198" y="0" width="2" height="26"/>' +
+    '</g></svg>';
+
+  var arrowSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+  // RENDER KARTU VERTIKAL (LANYARD)
+  vContainer.innerHTML = list.map(function(a) {
+    var nama = a.nama || a.nama_asli || '';
+    var initial = nama.charAt(0).toUpperCase();
+    var kode = a.kode || a.nip || '-';
+    return `
+      <div class="admin-card-v" data-name="${esc(nama.toLowerCase())}" onclick="selectAdmin('${esc(nama)}')">
+        <div class="lanyard-hole"></div>
+        <div class="card-header">
+          <div class="card-badge">KARTU PEGAWAI DIGITAL</div>
+          <h4>LABKESDA BONDOWOSO</h4>
+        </div>
+        <div class="card-avatar-wrap">
+          <div class="avatar-ring">
+            <div class="avatar-initial">${initial}</div>
+            <span class="status-dot"></span>
+          </div>
+          <h3 class="card-name">${esc(nama)}</h3>
+          <p class="card-role">Petugas Laboratorium</p>
+          <div class="card-nip">${esc(kode)}</div>
+        </div>
+        <div class="card-footer">
+          <div class="barcode-box">
+            ${barcodeSvg}
+            <span>TAP KARTU UNTUK LOGIN</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // RENDER KARTU HORIZONTAL (BENTO)
+  hContainer.innerHTML = list.map(function(a) {
+    var nama = a.nama || a.nama_asli || '';
+    var initial = nama.charAt(0).toUpperCase();
+    var kode = a.kode || a.nip || '-';
+    return `
+      <div class="admin-card-h" data-name="${esc(nama.toLowerCase())}" onclick="selectAdmin('${esc(nama)}')">
+        <div class="card-h-left">
+          <div class="avatar-ring-h">
+            <div class="avatar-initial-h">${initial}</div>
+          </div>
+          <div class="card-h-info">
+            <div class="card-h-nip">
+              <span class="nip-tag">${esc(kode)}</span>
+              <span class="dot-on"></span>
+            </div>
+            <h3 class="card-h-name">${esc(nama)}</h3>
+            <p class="card-h-role">Petugas Laboratorium</p>
+          </div>
+        </div>
+        <div class="card-h-arrow">${arrowSvg}</div>
+      </div>`;
+  }).join('');
+}
+
+function setLoginView(mode) {
+  var v = document.getElementById('adminCardsVertical');
+  var h = document.getElementById('adminCardsHorizontal');
+  var bv = document.getElementById('btnLoginVert');
+  var bh = document.getElementById('btnLoginHoriz');
+  if (!v || !h) return;
+
+  if (mode === 'vertical') {
+    v.style.display = 'flex'; h.style.display = 'none';
+    bv.classList.add('active'); bh.classList.remove('active');
+  } else {
+    v.style.display = 'none'; h.style.display = 'flex';
+    bh.classList.add('active'); bv.classList.remove('active');
+  }
+}
+
+function filterAdminCards() {
+  var q = (document.getElementById('loginSearch').value || '').toLowerCase();
+  document.querySelectorAll('.admin-card-v, .admin-card-h').forEach(function(el) {
+    var name = el.getAttribute('data-name') || '';
+    el.style.display = name.indexOf(q) >= 0 ? '' : 'none';
+  });
+}
+
+function updateLoginClockGreeting() {
+  var now = new Date();
+  var h = now.getHours();
+  var greet = 'Selamat Pagi';
+  if (h >= 11 && h < 15) greet = 'Selamat Siang';
+  else if (h >= 15 && h < 18) greet = 'Selamat Sore';
+  else if (h >= 18 || h < 4) greet = 'Selamat Malam';
+  
+  var gEl = document.getElementById('greetingTitle');
+  if (gEl) gEl.textContent = greet + ', Silakan Pilih Kartu Petugas';
+  
+  var cEl = document.getElementById('liveClockLogin');
+  if (cEl) {
+    var days = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
+    var months = ['JAN','FEB','MAR','APR','MEI','JUN','JUL','AGS','SEP','OKT','NOV','DES'];
+    var dt = String(now.getDate()).padStart(2,'0');
+    var hr = String(now.getHours()).padStart(2,'0');
+    var mn = String(now.getMinutes()).padStart(2,'0');
+    cEl.textContent = days[now.getDay()] + ', ' + dt + ' ' + months[now.getMonth()] + ' ' + now.getFullYear() + ' • ' + hr + ':' + mn + ' WIB';
   }
 }
 // Fungsi saat kartu diklik
