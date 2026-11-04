@@ -741,6 +741,24 @@ myBarChart = new Chart(ctxBar, {
         function getTanggalKode(t) { if (!t) return ''; var s = String(t); if (s.indexOf('T') > 0) s = s.split('T')[0]; return s.replace(/[^0-9]/g, ''); }
         function umur(tglLahir) { if (!tglLahir) return '-'; var d = new Date(tglLahir), n = new Date(); var y = n.getFullYear() - d.getFullYear(); var m = n.getMonth() - d.getMonth(); if (m < 0 || (m === 0 && n.getDate() < d.getDate())) y--; return y + ' th'; }
 
+        function fmtTglLahir(v) {
+  if (!v) return '-';
+  var s = String(v);
+  if (s.indexOf('T') > 0) {
+    try {
+      var d = new Date(s);
+      var dd = String(d.getDate()).padStart(2, '0');
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var yyyy = d.getFullYear();
+      return dd + '/' + mm + '/' + yyyy;
+    } catch (e) { return s.slice(0, 10); }
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    var parts = s.split('-');
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+  return s;
+}
         function exportExcel(idx) {
           var keg = currentKegiatan[idx]; if (!keg) { toastMsg('Kegiatan tidak ditemukan', 'err'); return; }
           var peserta = keg.peserta || []; if (peserta.length === 0) { toastMsg('Belum ada peserta di kegiatan ini', 'err'); return; }
