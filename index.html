@@ -1929,6 +1929,13 @@ function simpanKegiatanProlanis(editId) {
     k.pengirim = pengirim;
     k.alamat = alamat;
     k.petugas = petugas;
+    // Update alamat semua peserta agar sinkron dengan alamat kegiatan baru
+    if (k.peserta && k.peserta.length > 0) {
+      k.peserta.forEach(function(p) {
+        p.alamat = alamat; 
+      });
+    }
+    // ---------------------------
     if (jumlah > 0) {
       k.peserta = k.peserta || [];
       for (var i = 0; i < jumlah; i++) {
