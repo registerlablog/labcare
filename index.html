@@ -2721,7 +2721,7 @@ function buildProlanisPrintPage(keg, peserta) {
     '<div style="float:left; width:20%;">Nomor Register</div><div style="float:left; width:20%;">: ' + esc(nomorRegister) + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '<div style="width:100%; overflow:hidden; margin-bottom:3px;">' +
-    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(peserta.alamat || '-') + '</div>' +
+    '<div style="float:left; width:15%;">Alamat</div><div style="float:left; width:45%;">: ' + esc(keg.alamat || peserta.alamat || '-') + '</div>' +
     '<div style="float:left; width:20%;">Pengirim</div><div style="float:left; width:20%;">: ' + esc(keg.pengirim || '-') + '</div>' +
     '<div style="clear:both;"></div></div>' +
     '</div>';
