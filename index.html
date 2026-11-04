@@ -1164,22 +1164,27 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 <!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
 <div id="loginOverlay" style="position:fixed; inset:0; background:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
 
-<!-- LOGO POJOK KIRI ATAS (SOFT NEUMORPHISM) -->
-<div style="position:absolute; top:24px; left:24px; z-index:10;">
+<!-- LOGO BERDAMPINGAN (KIRI ATAS) -->
+<div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:12px;">
+  <!-- Logo Bondowoso -->
   <img 
     src="Logo-Kabupaten-Halaman-Login.png" 
     alt="Logo Pemkab Bondowoso" 
-    style="
-      height: 75px; 
-      width: auto; 
-      object-fit: contain; 
-      mix-blend-mode: multiply;
-      filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));
-    "
+    style="height: 75px; width: auto; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));"
+  >
+  
+  <!-- Garis Pemisah (Opsional, agar terlihat rapi seperti kop surat) -->
+  <div style="width: 2px; height: 45px; background: #E4DDD2; border-radius: 2px; opacity: 0.7;"></div>
+
+  <!-- Logo Labkesda -->
+  <img 
+    src="Logo-Labkesda-Halaman-Login.png" 
+    alt="Logo Labkesda" 
+    style="height: 75px; width: auto; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));"
   >
 </div>
-
-  <!-- TAHAP 1: PILIH KARTU -->
+  
+<!-- TAHAP 1: PILIH KARTU -->
 <div id="loginStep1" style="text-align:center;">
   <div style="text-align:center; margin-bottom:26px;">
     <div class="greeting-badge">
