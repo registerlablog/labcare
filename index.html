@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LabCare — Sistem Pelayanan Pasien Laboratorium</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<!-- Tailwind & UI Assets untuk Halaman Login -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    corePlugins: { preflight: false }, // Mencegah Tailwind merusak CSS aplikasi utama
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+        colors: {
+          neu: { base: '#F4F1EA', surface: '#FAF7F2', dark: '#E4DDD2', light: '#FFFFFF', blue: '#0A369D', green: '#15803D', gold: '#D97706', text: '#1E293B', muted: '#64748B' }
+        }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -38,7 +56,6 @@
   --radius-xl: 20px;
   --radius-full: 999px;
   
-  /* Soft dual shadows matching design kit raised / inset / pressed */
   --shadow-raised: 8px 8px 16px rgba(168, 158, 140, 0.28), -6px -6px 14px rgba(255, 255, 255, 0.9);
   --shadow-raised-sm: 4px 4px 8px rgba(168, 158, 140, 0.22), -3px -3px 6px rgba(255, 255, 255, 0.85);
   --shadow-inset: inset 4px 4px 8px rgba(168, 158, 140, 0.22), inset -3px -3px 6px rgba(255, 255, 255, 0.75);
@@ -57,142 +74,54 @@ body {
   overflow-x: hidden;
 }
 
+/* ====================================================
+   CSS KHUSUS LOGIN OVERLAY (NEUMORPHIC LANYARD)
+   ==================================================== */
+#loginOverlay {
+  background-color: #F4F1EA;
+  color: #1E293B;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.neu-raised { background: #F4F1EA; box-shadow: 9px 9px 18px #d7d1c6, -9px -9px 18px #ffffff; border: 1px solid rgba(255, 255, 255, 0.7); }
+.neu-raised-sm { background: #F4F1EA; box-shadow: 4px 4px 10px #d9d3c8, -4px -4px 10px #ffffff; border: 1px solid rgba(255, 255, 255, 0.8); }
+.neu-raised-lg { background: #F4F1EA; box-shadow: 14px 14px 28px #cfc8bd, -14px -14px 28px #ffffff; border: 1px solid rgba(255, 255, 255, 0.9); }
+.neu-inset { background: #F4F1EA; box-shadow: inset 5px 5px 10px #d7d1c6, inset -5px -5px 10px #ffffff; border: 1px solid rgba(228, 221, 210, 0.6); }
+.neu-inset-sm { background: #F4F1EA; box-shadow: inset 3px 3px 6px #d8d2c7, inset -3px -3px 6px #ffffff; }
+.neu-btn-blue { background: linear-gradient(145deg, #0C41BC, #0A369D); box-shadow: 5px 5px 14px #d2ccc1, -5px -5px 14px #ffffff; color: #FFFFFF; transition: all 0.2s; }
+.neu-btn-blue:hover { background: linear-gradient(145deg, #0A369D, #072877); box-shadow: 3px 3px 8px #d2ccc1, -3px -3px 8px #ffffff; }
+.neu-btn-blue:active { box-shadow: inset 4px 4px 8px #041849, inset -4px -4px 8px #1054f5; }
+.neu-keypad-btn { background: #F4F1EA; box-shadow: 5px 5px 12px #d7d1c6, -5px -5px 12px #ffffff; transition: all 0.15s ease; }
+.neu-keypad-btn:active { box-shadow: inset 4px 4px 8px #d7d1c6, inset -4px -4px 8px #ffffff; transform: scale(0.96); }
+.neu-card-interactive { transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.neu-card-interactive:hover { transform: translateY(-6px); box-shadow: 14px 14px 28px #c8c2b7, -14px -14px 28px #ffffff; }
+.neu-card-interactive:active { transform: translateY(0px); box-shadow: inset 5px 5px 10px #d7d1c6, inset -5px -5px 10px #ffffff; }
+.gold-border-glow { border: 2px solid #D97706; box-shadow: 0 0 12px rgba(217, 119, 6, 0.25); }
+.lanyard-hole { width: 36px; height: 10px; border-radius: 6px; background: #E4DDD2; box-shadow: inset 2px 2px 4px #b8b2a7, inset -2px -2px 4px #ffffff; }
+
+/* Layout */
 .layout { display: flex; min-height: 100vh; }
 
-/* ===== SIDEBAR (soft light version) ===== */
-.sidebar {
-  display: none;
-  width: 250px;
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  flex-direction: column;
-  position: fixed;
-  top: 0; bottom: 0; left: 0;
-  z-index: 20;
-  overflow: hidden;
-  border-right: 1px solid var(--border);
-  box-shadow: var(--shadow-raised-sm);
-}
-
-.sidebar-brand {
-  padding: 22px 20px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.sidebar-brand h1 {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.3px;
-}
-.sidebar-brand p {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 14px 12px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.sidebar-footer {
-  padding: 14px 16px;
-  border-top: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-.sidebar-footer .reset-btn {
-  display: block;
-  margin-top: 8px;
-  color: #ef4444;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 11px;
-  font-family: inherit;
-  padding: 0;
-  width: 100%;
-  text-align: left;
-}
+/* ===== SIDEBAR ===== */
+.sidebar { display: none; width: 250px; background: var(--bg-elevated); color: var(--text-secondary); flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 20; overflow: hidden; border-right: 1px solid var(--border); box-shadow: var(--shadow-raised-sm); }
+.sidebar-brand { padding: 22px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-brand h1 { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.sidebar-brand p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.sidebar-nav { flex: 1; padding: 14px 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.sidebar-footer .reset-btn { display: block; margin-top: 8px; color: #ef4444; background: none; border: none; cursor: pointer; font-size: 11px; font-family: inherit; padding: 0; width: 100%; text-align: left; }
 .sidebar-footer .sync-btn { color: var(--primary); }
-
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  padding: 11px 14px;
-  border-radius: var(--radius);
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: .18s ease;
-  font-family: inherit;
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-.nav-btn .nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  opacity: 0.85;
-}
+.nav-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 14px; border-radius: var(--radius); border: none; background: none; color: var(--text-secondary); font-size: 14px; cursor: pointer; transition: .18s ease; font-family: inherit; margin-bottom: 4px; font-weight: 500; }
+.nav-btn .nav-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.85; }
 .nav-btn.active .nav-icon { opacity: 1; }
-.nav-btn:hover {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-raised-sm);
-}
-.nav-btn.active {
-  background: var(--primary);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: var(--shadow-btn);
-  border-radius: var(--radius);
-}
+.nav-btn:hover { background: var(--surface); color: var(--text); box-shadow: var(--shadow-raised-sm); }
+.nav-btn.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: var(--shadow-btn); border-radius: var(--radius); }
 
 .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-.mobile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-elevated);
-  color: var(--text);
-  padding: 12px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-raised-sm);
-}
+.mobile-header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); color: var(--text); padding: 12px 16px; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-raised-sm); }
 .mobile-header h1 { font-size: 16px; font-weight: 700; }
-.hamburger {
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 26px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 6px;
-}
-
-.mobile-nav {
-  display: none;
-  background: var(--bg-elevated);
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-}
+.hamburger { background: none; border: none; color: var(--text); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 6px; }
+.mobile-nav { display: none; background: var(--bg-elevated); padding: 8px; border-bottom: 1px solid var(--border); }
 .mobile-nav.open { display: block; }
-
 .main { flex: 1; padding: 16px; }
 
 @media (min-width: 768px) {
@@ -207,72 +136,27 @@ body {
 .page-header { margin-bottom: 24px; }
 .page-header h2 { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.4px; }
 .page-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
-.page-header-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 24px;
-}
+.page-header-flex { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
 .page-header-flex h2 { font-size: 24px; font-weight: 800; color: var(--text); }
 .page-header-flex p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.section-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
-.section-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 24px 0 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ===== CARDS (neumorphic raised) ===== */
-.card {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-raised);
-  padding: 22px;
-  border: none;
-}
+/* ===== CARDS ===== */
+.card { background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised); padding: 22px; border: none; }
 .card + .card { margin-top: 16px; }
-
-/* ===== STAT CARDS ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
-}
-@media (min-width: 768px) {
-  .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
-}
-
-.stat-card {
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  color: #fff;
-  box-shadow: var(--shadow-float);
-  position: relative;
-  overflow: hidden;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
+@media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; } }
+.stat-card { border-radius: var(--radius-lg); padding: 20px; color: #fff; box-shadow: var(--shadow-float); position: relative; overflow: hidden; }
 .stat-card .icon { font-size: 28px; margin-bottom: 6px; }
 .stat-card .val { font-size: 30px; font-weight: 800; line-height: 1.1; }
 .stat-card .lbl { font-size: 13px; opacity: .92; margin-top: 4px; font-weight: 500; }
-
-.stat-blue   { background: linear-gradient(145deg, #0d9488, #0f766e); }
-.stat-amber  { background: linear-gradient(145deg, #f59e0b, #d97706); }
+.stat-blue { background: linear-gradient(145deg, #0d9488, #0f766e); }
+.stat-amber { background: linear-gradient(145deg, #f59e0b, #d97706); }
 .stat-purple { background: linear-gradient(145deg, #8b5cf6, #7c3aed); }
-.stat-green  { background: linear-gradient(145deg, #10b981, #059669); }
+.stat-green { background: linear-gradient(145deg, #10b981, #059669); }
 
 /* ===== TABLES ===== */
-.table-wrap {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-raised);
-  overflow-x: auto;
-  border: 1px solid rgba(255,255,255,0.5);
-}
+.table-wrap { background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised); overflow-x: auto; border: 1px solid rgba(255,255,255,0.5); }
 table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 500px; }
 thead { background: var(--surface); color: var(--text-muted); text-align: left; }
 th { padding: 13px 14px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -281,498 +165,132 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
 
 /* ===== BADGES ===== */
-.badge {
-  display: inline-block;
-  padding: 4px 11px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-}
+.badge { display: inline-block; padding: 4px 11px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; }
 .badge-menunggu { background: var(--warning-light); color: #b45309; }
 .badge-sampling { background: #dbeafe; color: #1d4ed8; }
-.badge-proses   { background: var(--purple-light); color: #6d28d9; }
-.badge-selesai  { background: var(--success-light); color: #047857; }
+.badge-proses { background: var(--purple-light); color: #6d28d9; }
+.badge-selesai { background: var(--success-light); color: #047857; }
 
 /* ===== FORMS ===== */
 .form-row { display: grid; gap: 16px; }
 @media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
-
-.lbl {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
+.lbl { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
 .lbl .lbl-hint { font-weight: 400; color: var(--text-muted); font-size: 11px; }
-
-.inp, .inp-sel, .inp-ta {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid transparent;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text);
-  background: var(--bg-elevated);
-  outline: none;
-  transition: .18s;
-  box-shadow: var(--shadow-inset);
-}
-.inp:focus, .inp-sel:focus, .inp-ta:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15), var(--shadow-inset);
-}
+.inp, .inp-sel, .inp-ta { width: 100%; padding: 12px 14px; border: 1.5px solid transparent; border-radius: var(--radius); font-size: 14px; font-family: inherit; color: var(--text); background: var(--bg-elevated); outline: none; transition: .18s; box-shadow: var(--shadow-inset); }
+.inp:focus, .inp-sel:focus, .inp-ta:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15), var(--shadow-inset); }
 .inp[readonly] { background: var(--surface); color: var(--text-muted); }
 .inp-ta { resize: vertical; min-height: 60px; }
-
-.info-box {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  background: var(--warning-light);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  font-size: 12px;
-  color: #78350f;
-  line-height: 1.5;
-  margin-top: 8px;
-  box-shadow: var(--shadow-raised-sm);
-}
+.info-box { display: flex; gap: 10px; align-items: flex-start; background: var(--warning-light); border-radius: var(--radius); padding: 12px 14px; font-size: 12px; color: #78350f; line-height: 1.5; margin-top: 8px; box-shadow: var(--shadow-raised-sm); }
 .info-box.info-blue { background: var(--primary-light); color: #134e4a; }
 .info-box .info-em { font-size: 16px; flex-shrink: 0; }
 .info-box a { color: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; }
 
 /* ===== BUTTONS ===== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 11px 18px;
-  border-radius: var(--radius);
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: .18s ease;
-  line-height: 1.4;
-}
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 18px; border-radius: var(--radius); border: none; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: .18s ease; line-height: 1.4; }
 .btn:active { transform: scale(.97); }
-
-.btn-primary {
-  background: #0f766e;
-  color: #fff;
-  box-shadow: var(--shadow-btn);
-  border-radius: var(--radius-full);
-}
-.btn-primary:hover {
-  background: #0d5f59;
-  box-shadow: 3px 3px 8px rgba(15, 118, 110, 0.35);
-}
-.btn-primary:active {
-  box-shadow: var(--shadow-pressed);
-  transform: scale(0.98);
-}
-
-.btn-secondary {
-  background: var(--surface);
-  color: var(--text-secondary);
-  box-shadow: var(--shadow-raised-sm);
-  border: none;
-  border-radius: var(--radius-full);
-}
-.btn-secondary:hover {
-  background: var(--border);
-  color: var(--text);
-}
-
+.btn-primary { background: #0f766e; color: #fff; box-shadow: var(--shadow-btn); border-radius: var(--radius-full); }
+.btn-primary:hover { background: #0d5f59; box-shadow: 3px 3px 8px rgba(15, 118, 110, 0.35); }
+.btn-primary:active { box-shadow: var(--shadow-pressed); transform: scale(0.98); }
+.btn-secondary { background: var(--surface); color: var(--text-secondary); box-shadow: var(--shadow-raised-sm); border: none; border-radius: var(--radius-full); }
+.btn-secondary:hover { background: var(--border); color: var(--text); }
 .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: var(--radius-sm); }
-
-.btn-icon {
-  padding: 7px 11px;
-  font-size: 14px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text-secondary);
-  border: none;
-  cursor: pointer;
-  box-shadow: var(--shadow-raised-sm);
-}
+.btn-icon { padding: 7px 11px; font-size: 14px; border-radius: var(--radius-sm); background: var(--surface); color: var(--text-secondary); border: none; cursor: pointer; box-shadow: var(--shadow-raised-sm); }
 .btn-icon:hover { background: var(--border); }
 .btn-icon.danger { background: var(--danger-light); color: var(--danger); }
 .btn-icon.danger:hover { background: #fecaca; }
-
 .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
 
 /* ===== PILLS / TABS ===== */
 .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.pill {
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: .15s;
-  font-family: inherit;
-  box-shadow: var(--shadow-raised-sm);
-}
+.pill { padding: 8px 16px; border-radius: var(--radius-full); border: none; background: var(--surface); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: .15s; font-family: inherit; box-shadow: var(--shadow-raised-sm); }
 .pill:hover { background: var(--border); }
-.pill.active {
-  background: var(--primary);
-  color: #fff;
-  box-shadow: var(--shadow-btn);
-}
+.pill.active { background: var(--primary); color: #fff; box-shadow: var(--shadow-btn); }
 .pill .count { opacity: .7; margin-left: 2px; }
 
 /* ===== PATIENT CARDS ===== */
 .patient-grid { display: grid; gap: 14px; }
 @media (min-width: 768px) { .patient-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1200px) { .patient-grid { grid-template-columns: repeat(3, 1fr); } }
-
-.patient-card {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  box-shadow: var(--shadow-raised);
-  border-left: 4px solid var(--border-soft);
-  display: flex;
-  flex-direction: column;
-  border: none;
-}
+.patient-card { background: var(--card); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-raised); border-left: 4px solid var(--border-soft); display: flex; flex-direction: column; border: none; }
 .patient-card.menunggu { border-left-color: var(--warning); }
 .patient-card.sampling { border-left-color: #3b82f6; }
-.patient-card.proses   { border-left-color: var(--purple); }
-.patient-card.selesai  { border-left-color: var(--success); }
-
-.patient-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-.patient-card-head .antrian {
-  font-size: 22px;
-  font-weight: 800;
-  font-family: ui-monospace, monospace;
-  color: var(--text);
-}
-.patient-card-head .rm {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: ui-monospace, monospace;
-}
+.patient-card.proses { border-left-color: var(--purple); }
+.patient-card.selesai { border-left-color: var(--success); }
+.patient-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.patient-card-head .antrian { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--text); }
+.patient-card-head .rm { font-size: 11px; color: var(--text-muted); font-family: ui-monospace, monospace; }
 .patient-card h4 { font-size: 16px; font-weight: 600; color: var(--text); }
 .patient-card .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
 .test-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
-.test-chip {
-  font-size: 10px;
-  background: var(--surface);
-  color: var(--text-secondary);
-  padding: 3px 8px;
-  border-radius: 6px;
-  box-shadow: var(--shadow-raised-sm);
-}
-
-.patient-card-actions {
-  display: flex;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
+.test-chip { font-size: 10px; background: var(--surface); color: var(--text-secondary); padding: 3px 8px; border-radius: 6px; box-shadow: var(--shadow-raised-sm); }
+.patient-card-actions { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); margin-top: auto; }
 
 /* ===== EMPTY STATE ===== */
-.empty-state {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--text-muted);
-  box-shadow: var(--shadow-raised);
-}
+.empty-state { background: var(--card); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; color: var(--text-muted); box-shadow: var(--shadow-raised); }
 .empty-state .em { font-size: 48px; display: block; margin-bottom: 12px; opacity: .45; }
 .empty-state p { font-size: 14px; margin-bottom: 12px; }
 
 /* ===== MODAL ===== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(28, 25, 23, 0.45);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  backdrop-filter: blur(4px);
-}
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(28, 25, 23, 0.45); z-index: 100; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
 .modal-overlay.open { display: flex; }
-.modal {
-  background: var(--bg-elevated);
-  border-radius: var(--radius-xl);
-  width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-float), 0 0 0 1px rgba(255,255,255,0.4);
-  animation: modalIn .25s cubic-bezier(.34,1.4,.64,1);
-}
+.modal { background: var(--bg-elevated); border-radius: var(--radius-xl); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-float), 0 0 0 1px rgba(255,255,255,0.4); animation: modalIn .25s cubic-bezier(.34,1.4,.64,1); }
 @keyframes modalIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 .modal-body { padding: 24px; }
-.modal-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-}
+.modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
 .modal-head h3 { font-size: 17px; font-weight: 700; color: var(--text); }
 .modal-head p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 28px;
-  line-height: 1;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0 4px;
-}
+.modal-close { background: none; border: none; font-size: 28px; line-height: 1; color: var(--text-muted); cursor: pointer; padding: 0 4px; }
 
-.result-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 50vh;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.result-item {
-  display: grid;
-  grid-template-columns: 1fr 100px 60px;
-  gap: 10px;
-  align-items: center;
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 12px;
-  box-shadow: var(--shadow-raised-sm);
-}
+.result-list { display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+.result-item { display: grid; grid-template-columns: 1fr 100px 60px; gap: 10px; align-items: center; background: var(--surface); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow-raised-sm); }
 .result-item .ri-name { font-size: 14px; font-weight: 500; }
 .result-item .ri-ref { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.result-item input {
-  width: 100%;
-  padding: 8px 10px;
-  font-size: 14px;
-  border: 1.5px solid var(--border-soft);
-  border-radius: 8px;
-  outline: none;
-  font-family: inherit;
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-inset);
-}
+.result-item input { width: 100%; padding: 8px 10px; font-size: 14px; border: 1.5px solid var(--border-soft); border-radius: 8px; outline: none; font-family: inherit; background: var(--bg-elevated); box-shadow: var(--shadow-inset); }
 .result-item .ri-unit { font-size: 12px; color: var(--text-muted); text-align: left; }
 
 .modal-success { text-align: center; padding: 32px 24px; }
 .modal-success .big-em { font-size: 56px; margin-bottom: 12px; }
 .modal-success h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .modal-success p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
-.success-number-box {
-  background: var(--primary-light);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-raised-sm);
-}
+.success-number-box { background: var(--primary-light); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-raised-sm); }
 .success-number-box p:first-child { font-size: 12px; color: var(--text-muted); }
-.success-number-box .big-no {
-  font-size: 40px;
-  font-weight: 800;
-  color: var(--primary);
-  font-family: ui-monospace, monospace;
-  margin-top: 4px;
-}
+.success-number-box .big-no { font-size: 40px; font-weight: 800; color: var(--primary); font-family: ui-monospace, monospace; margin-top: 4px; }
 
 /* ===== TOAST ===== */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--text);
-  color: #fff;
-  padding: 12px 22px;
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  font-weight: 600;
-  z-index: 9999;
-  opacity: 0;
-  transition: all .3s cubic-bezier(.34,1.56,.64,1);
-  box-shadow: var(--shadow-float);
-  max-width: 90vw;
-  text-align: center;
-  pointer-events: none;
-}
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: #fff; padding: 12px 22px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; z-index: 9999; opacity: 0; transition: all .3s cubic-bezier(.34,1.56,.64,1); box-shadow: var(--shadow-float); max-width: 90vw; text-align: center; pointer-events: none; }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 .toast.err { background: var(--danger); }
 .toast.ok { background: var(--success); }
 
 /* ===== MASTER TOOLBAR ===== */
-.master-toolbar {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.master-toolbar .search-box {
-  flex: 1;
-  min-width: 200px;
-  max-width: 400px;
-  position: relative;
-}
-.master-toolbar .search-box input {
-  width: 100%;
-  padding: 11px 14px 11px 38px;
-  border: 1.5px solid var(--border-soft);
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: .15s;
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-inset);
-}
-.master-toolbar .search-box::before {
-  content: ''; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") center/14px no-repeat;
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  pointer-events: none;
-}
+.master-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.master-toolbar .search-box { flex: 1; min-width: 200px; max-width: 400px; position: relative; }
+.master-toolbar .search-box input { width: 100%; padding: 11px 14px 11px 38px; border: 1.5px solid var(--border-soft); border-radius: var(--radius); font-size: 14px; font-family: inherit; outline: none; transition: .15s; background: var(--bg-elevated); box-shadow: var(--shadow-inset); }
+.master-toolbar .search-box::before { content: ''; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") center/14px no-repeat; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
 
 /* ===== PICK SYSTEM ===== */
 .pick-bar { display: grid; gap: 10px; margin-bottom: 14px; }
 @media (min-width: 640px) { .pick-bar { grid-template-columns: 1fr 1fr; } }
 .pick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.pick-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px 12px;
-  background: var(--primary-light);
-  border-radius: var(--radius);
-  margin-bottom: 12px;
-  border: 1px solid var(--primary-soft);
-  min-height: 44px;
-  align-items: center;
-  box-shadow: var(--shadow-raised-sm);
-}
+.pick-chip-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; background: var(--primary-light); border-radius: var(--radius); margin-bottom: 12px; border: 1px solid var(--primary-soft); min-height: 44px; align-items: center; box-shadow: var(--shadow-raised-sm); }
 .pick-chip-row .empty-text { font-size: 12px; color: var(--text-muted); }
-.pick-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff;
-  border: 1px solid var(--primary-soft);
-  padding: 4px 8px 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--primary-dark);
-  box-shadow: var(--shadow-raised-sm);
-}
-.pick-chip button {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 2px;
-  font-family: inherit;
-}
-.pick-grid {
-  display: grid;
-  gap: 6px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-inset);
-}
+.pick-chip { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--primary-soft); padding: 4px 8px 4px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; color: var(--primary-dark); box-shadow: var(--shadow-raised-sm); }
+.pick-chip button { background: none; border: none; color: var(--text-muted); font-size: 14px; line-height: 1; cursor: pointer; padding: 0 2px; font-family: inherit; }
+.pick-grid { display: grid; gap: 6px; max-height: 420px; overflow-y: auto; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-inset); }
 @media (min-width: 768px) { .pick-grid { grid-template-columns: 1fr 1fr; } }
-.pick-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  background: var(--card);
-  border: 1.5px solid transparent;
-  transition: .12s;
-  box-shadow: var(--shadow-raised-sm);
-}
+.pick-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; background: var(--card); border: 1.5px solid transparent; transition: .12s; box-shadow: var(--shadow-raised-sm); }
 .pick-item:hover { border-color: var(--border-soft); }
-.pick-item.picked {
-  background: var(--primary-light);
-  border-color: var(--primary);
-}
-.pick-item input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary);
-  flex-shrink: 0;
-  cursor: pointer;
-}
+.pick-item.picked { background: var(--primary-light); border-color: var(--primary); }
+.pick-item input { width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
 .pick-item .pi-body { flex: 1; min-width: 0; }
 .pick-item .pi-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .pick-item .pi-detail { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.pick-item .pi-cat {
-  font-size: 9px;
-  text-transform: uppercase;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  background: var(--surface);
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.pick-empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 30px 16px;
-  color: var(--text-muted);
-  font-size: 13px;
-}
+.pick-item .pi-cat { font-size: 9px; text-transform: uppercase; font-weight: 700; padding: 2px 7px; border-radius: var(--radius-full); background: var(--surface); color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.pick-empty { grid-column: 1 / -1; text-align: center; padding: 30px 16px; color: var(--text-muted); font-size: 13px; }
 
 /* ===== SYNC BADGE ===== */
-.sync-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  margin-top: 6px;
-}
-.sync-badge .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-}
+.sync-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-full); margin-top: 6px; }
+.sync-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .sync-badge.online { background: rgba(16, 185, 129, .15); color: #059669; }
 .sync-badge.offline { background: rgba(239, 68, 68, .12); color: #dc2626; }
 .sync-badge.syncing { background: rgba(13, 148, 136, .15); color: #0d9488; }
@@ -783,193 +301,187 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ===== PRINT ===== */
-#printOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #e7e5e4;
-  overflow-y: auto;
-}
+#printOverlay { display: none; position: fixed; inset: 0; z-index: 99999; background: #e7e5e4; overflow-y: auto; }
 #printOverlay.open { display: block; }
-.print-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--text);
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.2);
-}
+.print-toolbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--text); color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
 .print-toolbar .print-title { font-size: 13px; font-weight: 600; flex: 1; text-align: center; }
-.print-toolbar button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-}
+.print-toolbar button { padding: 8px 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .print-btn-print { background: var(--primary); color: #fff; }
 .print-btn-cancel { background: rgba(255,255,255,.15); color: #fff; }
-.print-page {
-  max-width: 210mm;
-  min-height: 297mm;
-  margin: 16px auto;
-  padding: 15mm;
-  background: #fff;
-  box-shadow: 0 4px 25px rgba(0,0,0,.15);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  line-height: 1.4;
-  color: #1e293b;
-  box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
-}
+.print-page { max-width: 210mm; min-height: 297mm; margin: 16px auto; padding: 15mm; background: #fff; box-shadow: 0 4px 25px rgba(0,0,0,.15); font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.4; color: #1e293b; box-sizing: border-box; position: relative; overflow: hidden; }
 @media print {
   @page { size: A4 portrait; margin: 0; }
   html, body { background: #fff !important; overflow: visible !important; }
   body > *:not(#printOverlay):not(#printArea) { display: none !important; }
   #printOverlay { display: block !important; position: static; background: #fff; overflow: visible; }
   #printOverlay .print-toolbar { display: none !important; }
-  #printOverlay .print-page {
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 210mm !important;
-    max-width: 210mm !important;
-    min-height: 287mm !important;
-    font-size: 10.5pt;
-    position: relative !important;
-    box-sizing: border-box !important;
-    overflow: visible !important;
-  }
+  #printOverlay .print-page { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 210mm !important; max-width: 210mm !important; min-height: 287mm !important; font-size: 10.5pt; position: relative !important; box-sizing: border-box !important; overflow: visible !important; }
   #printOverlay tr, #printOverlay .print-page div { page-break-inside: avoid; }
   #printOverlay .print-page { page-break-after: always; }
   #printOverlay .print-page:last-child { page-break-after: auto; }
 }
 
 /* ===== PANGGIL OVERLAY ===== */
-#panggilOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
-  z-index: 99998;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: #fff;
-  padding: 40px 20px;
-  text-align: center;
-}
+#panggilOverlay { display: none; position: fixed; inset: 0; background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%); z-index: 99998; align-items: center; justify-content: center; flex-direction: column; color: #fff; padding: 40px 20px; text-align: center; }
 #panggilOverlay.open { display: flex; }
-#panggilOverlay .panggil-label {
-  font-size: 22px;
-  font-weight: 600;
-  color: #99f6e4;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-#panggilOverlay .panggil-no {
-  font-size: 140px;
-  font-weight: 900;
-  font-family: ui-monospace, monospace;
-  color: #fbbf24;
-  letter-spacing: 8px;
-  line-height: 1;
-  text-shadow: 0 0 40px rgba(251,191,36,.6);
-}
-#panggilOverlay .panggil-nama {
-  font-size: 36px;
-  font-weight: 700;
-  margin-top: 30px;
-  color: #fff;
-}
-#panggilOverlay .panggil-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  background: rgba(255,255,255,.15);
-  border: none;
-  color: #fff;
-  font-size: 32px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-family: inherit;
-}
+#panggilOverlay .panggil-label { font-size: 22px; font-weight: 600; color: #99f6e4; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; }
+#panggilOverlay .panggil-no { font-size: 140px; font-weight: 900; font-family: ui-monospace, monospace; color: #fbbf24; letter-spacing: 8px; line-height: 1; text-shadow: 0 0 40px rgba(251,191,36,.6); }
+#panggilOverlay .panggil-nama { font-size: 36px; font-weight: 700; margin-top: 30px; color: #fff; }
+#panggilOverlay .panggil-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 32px; width: 56px; height: 56px; border-radius: 50%; cursor: pointer; font-family: inherit; }
 
 #printArea { display: none; }
-
-.loading {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(28, 25, 23, .5);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(2px);
-}
+.loading { display: none; position: fixed; inset: 0; background: rgba(28, 25, 23, .5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
 .loading.show { display: flex; }
-.loading .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
+.loading .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-<!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
-<div id="loginOverlay" style="position:fixed; inset:0; background:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
+
+<!-- ================= LAYAR LOGIN KARTU PETUGAS (DESAIN BARU) ================= -->
+<div id="loginOverlay" class="fixed inset-0 z-[999999] overflow-y-auto flex flex-col justify-between p-3 sm:p-6 transition-all duration-300">
   
-  <!-- TAHAP 1: PILIH KARTU -->
-  <div id="loginStep1" style="width:100%; max-width:600px; text-align:center;">
-    <h1 style="color:#1c1917; font-size:32px; margin-bottom:10px; font-weight:800; letter-spacing:-0.5px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-4px;margin-right:6px;"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>LabCare</h1>
-    <p style="color:#78716c; font-size:14px; margin-bottom:40px;">Silakan pilih kartu petugas Anda untuk melanjutkan.</p>
-    
-    <div id="adminCardContainer" style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
-      <!-- Kartu petugas akan dimuat oleh JavaScript di sini -->
-      <p style="color:#a8a29e;">Memuat daftar petugas...</p>
-    </div>
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="w-full max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+      <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+          <div class="flex items-center gap-3 p-2.5 rounded-2xl neu-raised">
+              <div class="w-12 h-14 flex items-center justify-center p-0.5">
+                  <img src="1000507628.png" alt="Logo Pemkab" class="max-h-full max-w-full object-contain filter drop-shadow-sm" onerror="this.style.display='none'"/>
+              </div>
+              <div class="w-[1px] h-10 bg-neu-dark"></div>
+              <div class="w-12 h-14 flex items-center justify-center p-0.5">
+                  <img src="1000507235.png" alt="Logo Labkesda" class="max-h-full max-w-full object-contain filter drop-shadow-sm" onerror="this.style.display='none'"/>
+              </div>
+          </div>
+          <div>
+              <div class="flex items-center gap-2">
+                  <h1 class="text-base sm:text-lg font-black tracking-tight text-neu-blue m-0">UPTD LABORATORIUM KESEHATAN DAERAH</h1>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-semibold text-neu-muted mt-1">
+                  <span class="text-neu-gold font-bold">KABUPATEN BONDOWOSO</span>
+                  <span>•</span>
+                  <span class="bg-neu-blue/10 text-neu-blue px-2 py-0.5 rounded-md font-mono text-[10px] font-bold">LabCare v3.0</span>
+              </div>
+          </div>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+          <div class="neu-inset p-1.5 rounded-2xl flex items-center gap-1">
+              <button onclick="setViewMode('vertical')" id="btn-view-vert" class="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 neu-raised text-neu-blue transition-all border-none cursor-pointer">
+                  <i data-lucide="id-card" class="w-4 h-4"></i>
+                  <span class="hidden sm:inline">Kartu Lanyard</span>
+              </button>
+              <button onclick="setViewMode('horizontal')" id="btn-view-horiz" class="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 text-neu-muted hover:text-neu-blue transition-all border-none cursor-pointer bg-transparent">
+                  <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                  <span class="hidden sm:inline">Bento Grid</span>
+              </button>
+          </div>
+          <button onclick="simulateRFIDScan()" class="neu-raised-sm p-3 rounded-2xl text-neu-blue hover:text-blue-800 transition-colors flex items-center gap-2 text-xs font-bold border-none cursor-pointer" title="Scan RFID">
+              <i data-lucide="scan-line" class="w-4 h-4 text-neu-green animate-pulse"></i>
+              <span class="hidden sm:inline">Scan RFID</span>
+          </button>
+      </div>
+  </header>
+
+  <!-- MAIN SELECTION AREA -->
+  <main class="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-center items-center my-2">
+      <div class="text-center mb-8 space-y-2">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full neu-inset text-xs font-mono font-bold text-neu-blue">
+              <span class="w-2.5 h-2.5 rounded-full bg-neu-green animate-ping"></span>
+              <span id="live-clock">SENIN, 02 NOV 2026 • 08:00 WIB</span>
+          </div>
+          <h2 id="greeting-title" class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight m-0">Selamat Pagi, Silakan Pilih Kartu Petugas</h2>
+          <p class="text-xs sm:text-sm text-neu-muted max-w-lg mx-auto mt-2">
+              Pilih profil petugas laboratorium di bawah ini atau gunakan scanner barcode kartu pegawai untuk melakukan verifikasi PIN.
+          </p>
+          
+          <div class="pt-2 max-w-sm mx-auto">
+              <div class="neu-inset rounded-2xl p-2 flex items-center gap-2 text-xs">
+                  <i data-lucide="search" class="w-4 h-4 text-neu-muted ml-2"></i>
+                  <input type="text" id="search-officer" oninput="filterOfficers()" placeholder="Cari Nama Petugas..." class="bg-transparent border-none outline-none w-full text-slate-800 font-medium placeholder-neu-muted">
+              </div>
+          </div>
+      </div>
+
+      <!-- VIEW 1: LANYARD ID CARD STYLE -->
+      <div id="view-vertical" class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+          <!-- Cards will be injected here by JS -->
+          <p class="text-center w-full col-span-2 text-neu-muted">Memuat daftar petugas...</p>
+      </div>
+
+      <!-- VIEW 2: HORIZONTAL BENTO CARD STYLE -->
+      <div id="view-horizontal" class="w-full max-w-4xl space-y-5 hidden">
+          <!-- Cards will be injected here by JS -->
+      </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full max-w-6xl mx-auto pt-4 border-t border-neu-dark/60 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-neu-muted">
+      <div class="flex items-center gap-2 font-medium">
+          <i data-lucide="shield-check" class="w-4 h-4 text-neu-blue"></i>
+          <span>Sistem Informasi Pelayanan LabCare &copy; 2026 UPTD Labkesda Bondowoso</span>
+      </div>
+      <div class="font-mono text-[11px] flex items-center gap-2 mt-2 sm:mt-0">
+          <span>SERVER:</span>
+          <span class="font-bold text-slate-800 bg-neu-blue/10 px-2 py-0.5 rounded text-neu-blue">ONLINE</span>
+      </div>
+  </footer>
+
+  <!-- MODAL PIN -->
+  <div id="pin-modal" class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center z-[9999999] opacity-0 pointer-events-none transition-all duration-300 p-4">
+      <div id="modal-content" class="neu-raised-lg w-full max-w-sm rounded-[36px] p-7 relative scale-90 transition-all duration-300">
+          <button onclick="closePinModal()" class="absolute top-6 right-6 w-9 h-9 rounded-xl neu-raised-sm flex items-center justify-center text-neu-muted hover:text-rose-600 transition-colors border-none cursor-pointer bg-transparent">
+              <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+
+          <div class="text-center mb-5">
+              <div id="modal-avatar" class="w-20 h-20 rounded-full neu-raised p-1.5 mx-auto mb-3 flex items-center justify-center gold-border-glow">
+                  <div class="w-full h-full rounded-full bg-neu-blue text-white font-mono font-bold text-2xl flex items-center justify-center">--</div>
+              </div>
+              <h3 id="modal-name" class="text-lg font-black text-slate-800 m-0">Nama Petugas</h3>
+              <p id="modal-role" class="text-xs font-bold text-neu-green mt-1 mb-0">Jabatan Petugas</p>
+              <span id="modal-nip" class="mt-2 inline-block px-3 py-0.5 rounded-full neu-inset text-[10px] font-mono font-bold text-neu-blue">NIP: ---</span>
+          </div>
+
+          <div class="mb-5">
+              <p class="text-xs text-center text-neu-muted font-medium mb-2.5">Masukkan 4-Digit PIN Otentikasi</p>
+              <div class="neu-inset p-3.5 rounded-2xl flex justify-center gap-4">
+                  <div class="pin-dot w-4 h-4 rounded-full neu-raised transition-all"></div>
+                  <div class="pin-dot w-4 h-4 rounded-full neu-raised transition-all"></div>
+                  <div class="pin-dot w-4 h-4 rounded-full neu-raised transition-all"></div>
+                  <div class="pin-dot w-4 h-4 rounded-full neu-raised transition-all"></div>
+              </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4">
+              <button onclick="pressPin(1)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">1</button>
+              <button onclick="pressPin(2)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">2</button>
+              <button onclick="pressPin(3)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">3</button>
+              <button onclick="pressPin(4)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">4</button>
+              <button onclick="pressPin(5)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">5</button>
+              <button onclick="pressPin(6)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">6</button>
+              <button onclick="pressPin(7)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">7</button>
+              <button onclick="pressPin(8)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">8</button>
+              <button onclick="pressPin(9)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">9</button>
+              <button onclick="clearPin()" class="neu-keypad-btn h-12 rounded-2xl text-xs font-bold text-rose-600 border-none cursor-pointer">RESET</button>
+              <button onclick="pressPin(0)" class="neu-keypad-btn h-12 rounded-2xl text-lg font-bold font-mono text-slate-800 border-none cursor-pointer">0</button>
+              <button onclick="backspacePin()" class="neu-keypad-btn h-12 rounded-2xl text-xs font-bold text-slate-600 flex items-center justify-center border-none cursor-pointer">
+                  <i data-lucide="delete" class="w-5 h-5"></i>
+              </button>
+          </div>
+
+          <div id="modal-status-text" class="text-center text-xs font-bold h-4 text-neu-blue font-mono"></div>
+      </div>
   </div>
 
-  <!-- TAHAP 2: INPUT PIN -->
-  <div id="loginStep2" style="display:none; width:100%; max-width:400px; background:#f9f6f0; padding:35px 30px; border-radius:20px; text-align:center; box-shadow: 8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9);">
-    
-    <!-- Avatar -->
-    <div id="avatarSelected" style="width:80px; height:80px; background:#0f766e; color:#fff; font-size:32px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; box-shadow: 5px 5px 12px rgba(15,118,110,0.3);"></div>
-    
-    <h2 style="color:#1c1917; font-size:22px; margin-bottom:5px; font-weight:700;" id="nameSelected">Nama Petugas</h2>
-    <p style="color:#78716c; font-size:13px; margin-bottom:25px;">Masukkan PIN Rahasia Anda</p>
-    
-    <!-- Input PIN -->
-    <input type="password" id="loginPinAdmin" placeholder="••••••" style="width:100%; padding:15px; font-size:24px; text-align:center; letter-spacing:8px; border-radius:12px; border:1.5px solid transparent; background:#efeae2; color:#1c1917; margin-bottom:15px; outline:none; box-shadow: inset 4px 4px 8px rgba(168,158,140,0.22), inset -3px -3px 6px rgba(255,255,255,0.75);">
-    
-    <p id="loginError" style="color:#dc2626; font-size:13px; margin-bottom:15px; display:none; font-weight:600;"></p>
-    
-    <!-- Tombol Aksi -->
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <button onclick="backToStep1()" style="flex:1; padding:12px; background:#efeae2; color:#57534e; border:none; border-radius:999px; cursor:pointer; font-weight:600; box-shadow: 4px 4px 8px rgba(168,158,140,0.22), -3px -3px 6px rgba(255,255,255,0.85);">Kembali</button>
-      <button id="btnLoginAdmin" onclick="doLoginAdmin()" style="flex:2; padding:12px; background:#0f766e; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; box-shadow: 5px 5px 12px rgba(15,118,110,0.28);">Masuk →</button>
-    </div>
+  <!-- LOGIN TOAST (Khusus Login Overlay) -->
+  <div id="loginToast" class="fixed bottom-6 right-6 neu-raised px-5 py-3.5 rounded-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-[9999999] border-l-4 border-neu-green pointer-events-none">
+      <i data-lucide="check-circle-2" class="w-5 h-5 text-neu-green"></i>
+      <span id="loginToast-msg" class="text-xs font-bold text-slate-800">Pesan Notifikasi</span>
   </div>
 </div>
 <!-- ============================================================= -->
+
 <div class="loading" id="loading"><div class="spinner"></div></div>
 <div class="layout">
   <aside class="sidebar">
@@ -1107,6 +619,7 @@ function fmtTglLahir(v) {
   return s;
 }
 function findTest(kode) { return TESTS.find(function(x) { return x.kode === kode; }); }
+
 // --- FUNGSI OPERATOR (LOGIN & LOGOUT) ---
 function getOperatorName() {
   return localStorage.getItem('labcare_operator') || 'Admin LabCare';
@@ -1124,6 +637,321 @@ function doLogoutAdmin() {
     location.reload(); // Muat ulang halaman agar kembali ke layar login
   }
 }
+
+// ================= LOGIKA LOGIN KARTU PETUGAS (DESAIN BARU) =================
+var selectedAdminName = '';
+var activeOfficer = '';
+var currentPin = '';
+
+// Cek status login saat aplikasi pertama kali dibuka
+document.addEventListener('DOMContentLoaded', function() {
+  var isLoggedIn = localStorage.getItem('labcare_operator');
+  var overlay = document.getElementById('loginOverlay');
+  
+  if (isLoggedIn && isLoggedIn !== 'Admin LabCare') {
+    if(overlay) overlay.style.display = 'none';
+    updateOperatorUI();
+    // Init fungsi utama aplikasi
+    initApp();
+  } else {
+    if(overlay) overlay.style.display = 'flex';
+    loadAdminCards();
+    updateClockGreeting();
+    setInterval(updateLoginClock, 1000);
+    updateLoginClock();
+    lucide.createIcons();
+  }
+});
+
+function initApp() {
+  try { var _s = localStorage.getItem('labcare_stempel_url'); if (_s) stempelUrl = _s; } catch (e) {}
+  window._isDataSynced = false;
+  loadTests(); loadKaryawan(); load(); renderNav();
+  render();
+  setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
+  if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
+}
+
+async function loadAdminCards() {
+  var containerVert = document.getElementById('view-vertical');
+  var containerHoriz = document.getElementById('view-horizontal');
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getAdminList', data: {} })
+    });
+    
+    var text = await res.text();
+    
+    try {
+      var json = JSON.parse(text);
+      
+      if (json && json.ok && json.list.length > 0) {
+        var vertHtml = '';
+        var horizHtml = '';
+        
+        json.list.forEach(function(a, idx) {
+          var initial = a.nama.charAt(0).toUpperCase(); 
+          // Tentukan warna border bergantian
+          var borderColor = idx % 2 === 0 ? 'border-neu-blue' : 'border-neu-gold';
+          var textColor = idx % 2 === 0 ? 'text-neu-green' : 'text-neu-gold';
+          
+          // --- VERTICAL CARD HTML ---
+          vertHtml += `
+            <div data-name="${a.nama.toLowerCase()}" onclick="openPinModal('${a.nama}')"
+                 class="officer-card neu-raised neu-card-interactive w-full max-w-sm rounded-[32px] p-6 cursor-pointer flex flex-col justify-between relative group border-t-4 ${borderColor}">
+                <div class="flex justify-center mb-3"><div class="lanyard-hole"></div></div>
+                <div class="text-center pb-3 border-b border-neu-dark/60">
+                    <span class="text-[10px] font-mono font-bold tracking-widest text-neu-gold uppercase">KARTU PEGAWAI DIGITAL</span>
+                    <h4 class="text-xs font-black text-neu-blue uppercase tracking-wide m-0 mt-1">LABKESDA BONDOWOSO</h4>
+                </div>
+                <div class="my-5 text-center">
+                    <div class="w-28 h-28 rounded-full neu-raised mx-auto p-2 flex items-center justify-center mb-3 relative gold-border-glow">
+                        <div class="w-full h-full rounded-full bg-gradient-to-tr from-slate-800 to-slate-950 text-white font-mono font-black text-3xl flex items-center justify-center shadow-inner">
+                            ${initial}
+                        </div>
+                        <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-neu-green border-4 border-[#F4F1EA]" title="Status: On Duty"></span>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-slate-800 group-hover:text-neu-blue transition-colors m-0">${a.nama}</h3>
+                    <p class="text-xs font-bold ${textColor} mt-1 mb-0">Petugas Laboratorium</p>
+                    <div class="mt-2.5 inline-block px-3 py-1 rounded-xl neu-inset text-[11px] font-mono font-bold text-neu-blue">
+                        ID: ${a.id_admin || 'ADMIN'}
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-neu-dark/60 space-y-3">
+                    <div class="neu-inset p-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 group-hover:border-neu-blue/40 transition-colors">
+                        <div class="flex items-center gap-1 text-slate-800 opacity-90">
+                            <i data-lucide="barcode" class="w-full h-8"></i>
+                        </div>
+                        <span class="text-[9px] font-mono text-neu-muted tracking-widest uppercase mt-1">SCAN RFID / TAP UNTUK LOGIN</span>
+                    </div>
+                </div>
+            </div>
+          `;
+
+          // --- HORIZONTAL CARD HTML ---
+          horizHtml += `
+            <div data-name="${a.nama.toLowerCase()}" onclick="openPinModal('${a.nama}')"
+                 class="officer-card neu-raised neu-card-interactive rounded-[28px] p-6 cursor-pointer flex flex-col sm:flex-row items-center justify-between gap-6 group border-l-4 ${borderColor}">
+                <div class="flex items-center gap-5">
+                    <div class="w-20 h-20 rounded-2xl neu-raised p-2 shrink-0 flex items-center justify-center gold-border-glow">
+                        <div class="w-full h-full rounded-xl bg-gradient-to-tr from-slate-800 to-slate-950 text-white font-mono font-bold text-2xl flex items-center justify-center">
+                            ${initial}
+                        </div>
+                    </div>
+                    <div class="space-y-1 text-center sm:text-left">
+                        <div class="flex items-center justify-center sm:justify-start gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold neu-inset text-neu-blue">ID: ${a.id_admin || 'ADMIN'}</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-neu-green" title="On Duty"></span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 group-hover:text-neu-blue transition-colors m-0 mt-1">${a.nama}</h3>
+                        <p class="text-xs font-bold ${textColor} m-0">Petugas Laboratorium</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 w-full sm:w-auto justify-end mt-4 sm:mt-0">
+                    <div class="text-right hidden md:block">
+                        <span class="text-[10px] text-neu-muted block font-mono">STATUS SHIFT</span>
+                        <span class="text-xs font-bold text-neu-green">Aktif</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl neu-btn-blue flex items-center justify-center text-white shrink-0">
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </div>
+                </div>
+            </div>
+          `;
+        });
+        
+        containerVert.innerHTML = vertHtml;
+        containerHoriz.innerHTML = horizHtml;
+        lucide.createIcons();
+      } else {
+        containerVert.innerHTML = '<p class="text-center w-full col-span-2 text-rose-600 font-bold">Belum ada data admin di Master_Admin.</p>';
+      }
+    } catch (parseErr) {
+      containerVert.innerHTML = '<p class="text-center w-full col-span-2 text-rose-600 font-bold">Error Server: Gagal memuat daftar. (Error 500)</p>';
+    }
+  } catch (e) {
+    containerVert.innerHTML = '<p class="text-center w-full col-span-2 text-rose-600 font-bold">Gagal memuat daftar petugas. Periksa koneksi internet.</p>';
+  }
+}
+
+// --- UI Helpers (View Mode, Search, Clock) ---
+function setViewMode(mode) {
+    const vert = document.getElementById('view-vertical');
+    const horiz = document.getElementById('view-horizontal');
+    const btnVert = document.getElementById('btn-view-vert');
+    const btnHoriz = document.getElementById('btn-view-horiz');
+
+    if (mode === 'vertical') {
+        vert.classList.remove('hidden');
+        horiz.classList.add('hidden');
+        btnVert.className = "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 neu-raised text-neu-blue transition-all border-none cursor-pointer";
+        btnHoriz.className = "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 text-neu-muted hover:text-neu-blue transition-all border-none cursor-pointer bg-transparent";
+    } else {
+        vert.classList.add('hidden');
+        horiz.classList.remove('hidden');
+        btnHoriz.className = "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 neu-raised text-neu-blue transition-all border-none cursor-pointer";
+        btnVert.className = "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 text-neu-muted hover:text-neu-blue transition-all border-none cursor-pointer bg-transparent";
+    }
+    lucide.createIcons();
+}
+
+function filterOfficers() {
+    const query = document.getElementById('search-officer').value.toLowerCase();
+    const cards = document.querySelectorAll('.officer-card');
+    cards.forEach(card => {
+        const nameData = card.getAttribute('data-name');
+        card.style.display = nameData.includes(query) ? 'flex' : 'none';
+    });
+}
+
+function updateClockGreeting() {
+    const now = new Date();
+    const hours = now.getHours();
+    let greeting = 'Selamat Pagi, Silakan Pilih Kartu Petugas';
+    if (hours >= 11 && hours < 15) greeting = 'Selamat Siang, Silakan Pilih Kartu Petugas';
+    else if (hours >= 15 && hours < 18) greeting = 'Selamat Sore, Silakan Pilih Kartu Petugas';
+    else if (hours >= 18 || hours < 4) greeting = 'Selamat Malam, Silakan Pilih Kartu Petugas';
+    document.getElementById('greeting-title').innerText = greeting;
+}
+
+function updateLoginClock() {
+    const now = new Date();
+    const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGS', 'SEP', 'OKT', 'NOV', 'DES'];
+    const str = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()} • ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WIB`;
+    const el = document.getElementById('live-clock');
+    if (el) el.innerText = str;
+}
+
+// --- PIN Modal Mechanics ---
+function openPinModal(name) {
+    activeOfficer = name;
+    currentPin = '';
+    renderPinDots();
+
+    // Ambil inisial
+    let initial = name.charAt(0).toUpperCase();
+
+    document.getElementById('modal-name').innerText = name;
+    document.getElementById('modal-role').innerText = 'Petugas Laboratorium';
+    document.getElementById('modal-nip').innerText = 'ID: ADMIN';
+    document.getElementById('modal-avatar').innerHTML = `<div class="w-full h-full rounded-full bg-neu-blue text-white font-mono font-bold text-2xl flex items-center justify-center">${initial}</div>`;
+    document.getElementById('modal-status-text').innerText = '';
+    document.getElementById('modal-status-text').className = 'text-center text-xs font-bold h-4 text-neu-blue font-mono';
+
+    const modal = document.getElementById('pin-modal');
+    const content = document.getElementById('modal-content');
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    content.classList.remove('scale-90');
+    content.classList.add('scale-100');
+}
+
+function closePinModal() {
+    const modal = document.getElementById('pin-modal');
+    const content = document.getElementById('modal-content');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-90');
+}
+
+function pressPin(num) {
+    if (currentPin.length < 4) {
+        currentPin += num;
+        renderPinDots();
+        if (currentPin.length === 4) {
+            validatePin();
+        }
+    }
+}
+
+function clearPin() {
+    currentPin = '';
+    renderPinDots();
+    document.getElementById('modal-status-text').innerText = '';
+}
+
+function backspacePin() {
+    currentPin = currentPin.slice(0, -1);
+    renderPinDots();
+}
+
+function renderPinDots() {
+    const dots = document.querySelectorAll('.pin-dot');
+    dots.forEach((dot, idx) => {
+        if (idx < currentPin.length) {
+            dot.className = "pin-dot w-4 h-4 rounded-full bg-neu-blue neu-inset transition-all scale-110";
+        } else {
+            dot.className = "pin-dot w-4 h-4 rounded-full neu-raised transition-all";
+        }
+    });
+}
+
+async function validatePin() {
+    const status = document.getElementById('modal-status-text');
+    status.innerText = "VERIFIKASI PIN...";
+    
+    try {
+        var res = await fetch(API_URL, {
+          method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'loginAdmin', data: { nama: activeOfficer, pin: currentPin } })
+        });
+        var json = await res.json();
+
+        if (json && json.ok) {
+          status.innerText = "PIN BENAR! MEMBUKA LABCARE...";
+          status.className = "text-center text-xs font-bold h-4 text-neu-green font-mono";
+          
+          setTimeout(() => {
+            localStorage.setItem('labcare_operator', json.nama_asli);
+            localStorage.setItem('labcare_token', json.token);
+            document.getElementById('loginOverlay').style.display = 'none';
+            updateOperatorUI();
+            closePinModal();
+            toastMsg('Selamat datang, ' + json.nama_asli, 'ok'); // Panggil toast utama
+            initApp(); // Mulai aplikasi
+          }, 800);
+        } else {
+          status.innerText = json.error || "PIN SALAH. COBA LAGI.";
+          status.className = "text-center text-xs font-bold h-4 text-rose-600 font-mono";
+          clearPin();
+        }
+    } catch (e) {
+        status.innerText = "ERROR KONEKSI KE SERVER.";
+        status.className = "text-center text-xs font-bold h-4 text-rose-600 font-mono";
+        clearPin();
+    }
+}
+
+function simulateRFIDScan() {
+    showLoginToast("Mendeteksi RFID Scanner... Kartu Terbaca!");
+    // Simulasi ambil kartu pertama dari list untuk demo (jika ada)
+    var firstCard = document.querySelector('.officer-card');
+    if (firstCard) {
+        var name = firstCard.getAttribute('data-name');
+        // Kembalikan ke Title Case asli
+        name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        setTimeout(() => {
+            openPinModal(name);
+        }, 1000);
+    } else {
+        setTimeout(() => showLoginToast("Gagal: Kartu tidak dikenali."), 1000);
+    }
+}
+
+function showLoginToast(msg) {
+    const toast = document.getElementById('loginToast');
+    const msgEl = document.getElementById('loginToast-msg');
+    if (!toast || !msgEl) return;
+    msgEl.innerText = msg;
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3200);
+}
+// ================= END OF LOGIN LOGIC =================
+
+
 var _toastTimer;
 function toastMsg(msg, type) { var t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : ''); clearTimeout(_toastTimer); _toastTimer = setTimeout(function() { t.className = 'toast'; }, 2400); }
 function setSyncState(state) { syncState = state; var badge = document.getElementById('syncBadge'); var badgeText = document.getElementById('syncBadgeText'); var mobile = document.getElementById('syncBadgeMobile'); var labels = { idle: 'Offline (lokal)', syncing: 'Menyinkron...', online: 'Tersinkron', offline: 'Gagal sinkron' }; if (badge) badge.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : ''); if (badgeText) badgeText.textContent = labels[state] || state; if (mobile) mobile.className = 'sync-badge ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : state === 'syncing' ? 'syncing' : ''); }
@@ -1131,11 +959,9 @@ async function apiCall(action, data) {
   if (!SYNC_ENABLED) return null;
   setSyncState('syncing');
   
-  // --- TAMBAHKAN KODE INI ---
   var payloadData = data || {};
   payloadData.operator = getOperatorName();
   payloadData.token = localStorage.getItem('labcare_token') || '';
-  // ---------------------------
 try {
   var res = await fetch(API_URL, { 
     method: 'POST', 
@@ -1144,16 +970,13 @@ try {
     redirect: 'follow' 
   });
   
-  // Baca respon sebagai teks mentah dulu
   var text = await res.text();
   
   try {
-    // Coba ubah ke JSON
     var json = JSON.parse(text);
     setSyncState(json && json.ok ? 'online' : 'offline');
     return json;
   } catch (parseErr) {
-    // Jika gagal jadi JSON (berarti server crash / return HTML)
     setSyncState('offline');
     return { ok: false, error: 'Server Crash/Error 500. Respon: ' + text.substring(0, 50) };
   }
@@ -1175,7 +998,6 @@ async function syncAllFromServer(silent) {
   if (Array.isArray(r.prolanis_kegiatan)) {
   var kegList = r.prolanis_kegiatan || [];
   var pesList = r.prolanis_peserta || [];
-  // Gabungkan peserta ke kegiatan masing-masing
   kegList.forEach(function(keg) {
     keg.peserta = pesList.filter(function(p) { return String(p.id_kegiatan) === String(keg.id_kegiatan); });
     keg.peserta_count = keg.peserta.length;
@@ -1185,7 +1007,7 @@ async function syncAllFromServer(silent) {
   try { localStorage.setItem('labcare_patients', JSON.stringify(patients)); localStorage.setItem('labcare_tests', JSON.stringify(TESTS)); localStorage.setItem('labcare_analis', JSON.stringify(analisList)); localStorage.setItem('labcare_dokter', JSON.stringify(dokterList)); } catch (e) {}
    try { var sr = await apiCall('getStempel'); if (sr && sr.ok && sr.url) { stempelUrl = sr.url; try { localStorage.setItem('labcare_stempel_url', stempelUrl); } catch (e) {} } } catch (e) {}
   
-  window._isDataSynced = true; // <--- TAMBAHKAN BARIS INI
+  window._isDataSynced = true; 
   
   renderNav(); render();
   if (!silent) toastMsg('Tersinkron dengan Spreadsheet', 'ok');
@@ -3562,215 +3384,6 @@ document.addEventListener('submit', function(e) {
   document.getElementById('modal').classList.add('open');
 });
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target.id === 'modal') closeModal(); });
-try { var _s = localStorage.getItem('labcare_stempel_url'); if (_s) stempelUrl = _s; } catch (e) {}
-window._isDataSynced = false;
-loadTests(); loadKaryawan(); load(); renderNav();
-render();
-setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
-if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
-// ================= LOGIKA LOGIN KARTU PETUGAS =================
-var selectedAdminName = '';
-
-// Cek status login saat aplikasi pertama kali dibuka
-document.addEventListener('DOMContentLoaded', function() {
-  var isLoggedIn = localStorage.getItem('labcare_operator');
-  var overlay = document.getElementById('loginOverlay');
-  
-  if (isLoggedIn && isLoggedIn !== 'Admin LabCare') {
-    // Jika sudah pernah login, sembunyikan layar
-    if(overlay) overlay.style.display = 'none';
-    updateOperatorUI();
-  } else {
-    // Jika belum, muat daftar kartu
-    if(overlay) overlay.style.display = 'flex';
-    loadAdminCards();
-  }
-});
-
-async function loadAdminCards() {
-  var container = document.getElementById('adminCardContainer');
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getAdminList', data: {} })
-    });
-    
-    // Baca respon sebagai teks (antisipasi jika server return HTML error)
-    var text = await res.text();
-    
-    try {
-      var json = JSON.parse(text);
-      
-      if (json && json.ok && json.list.length > 0) {
-        container.innerHTML = json.list.map(function(a) {
-          var initial = a.nama.charAt(0).toUpperCase(); 
-          return `
-            <div onclick="selectAdmin('${a.nama}')" style="background:#f9f6f0; width:130px; height:150px; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; box-shadow: 8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9);" onmouseover="this.style.boxShadow='5px 5px 12px rgba(15,118,110,0.25), -3px -3px 8px rgba(255,255,255,0.9)'" onmouseout="this.style.boxShadow='8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9)'">
-              <div style="width:60px; height:60px; background:#0f766e; color:#fff; font-size:24px; font-weight:bold; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow: 4px 4px 10px rgba(15,118,110,0.3);">${initial}</div>
-              <div style="color:#1c1917; font-size:13px; font-weight:600; text-align:center; padding:0 8px;">${a.nama}</div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        container.innerHTML = '<p style="color:#dc2626;">Belum ada data admin di Master_Admin.</p>';
-      }
-    } catch (parseErr) {
-      // Jika server crash / return HTML
-      container.innerHTML = '<p style="color:#ef4444;">Error Server: Gagal memuat daftar. (Error 500)</p>';
-    }
-  } catch (e) {
-    container.innerHTML = '<p style="color:#ef4444;">Gagal memuat daftar petugas. Periksa koneksi internet.</p>';
-  }
-}
-// Fungsi saat kartu diklik
-function selectAdmin(nama) {
-  selectedAdminName = nama;
-  document.getElementById('nameSelected').innerText = nama;
-  document.getElementById('avatarSelected').innerText = nama.charAt(0).toUpperCase();
-  
-  document.getElementById('loginStep1').style.display = 'none';
-  document.getElementById('loginStep2').style.display = 'block';
-  document.getElementById('loginPinAdmin').value = '';
-  document.getElementById('loginPinAdmin').focus();
-}
-
-// Fungsi kembali ke pilih kartu
-function backToStep1() {
-  document.getElementById('loginStep2').style.display = 'none';
-  document.getElementById('loginStep1').style.display = 'block';
-  selectedAdminName = '';
-}
-
-// Fungsi verifikasi PIN
-async function doLoginAdmin() {
-  var pin = document.getElementById('loginPinAdmin').value.trim();
-  var errEl = document.getElementById('loginError');
-  var btn = document.getElementById('btnLoginAdmin');
-
-  if (!pin) { errEl.style.display = 'block'; errEl.innerText = 'PIN tidak boleh kosong.'; return; }
-
-  errEl.style.display = 'none';
-  btn.innerText = 'Memeriksa...';
-  btn.disabled = true;
-
-  try {
-    var res = await fetch(API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'loginAdmin', data: { nama: selectedAdminName, pin: pin } })
-    });
-    var json = await res.json();
-
-    if (json && json.ok) {
-      // Simpan nama asli dari database ke memori
-      localStorage.setItem('labcare_operator', json.nama_asli);
-      localStorage.setItem('labcare_token', json.token);
-      document.getElementById('loginOverlay').style.display = 'none';
-      updateOperatorUI();
-      toastMsg('Selamat datang, ' + json.nama_asli, 'ok');
-    } else {
-      errEl.style.display = 'block';
-      errEl.innerText = json.error || 'PIN Salah.';
-      btn.innerText = 'Masuk →';
-      btn.disabled = false;
-    }
-  } catch (e) {
-    errEl.style.display = 'block';
-    errEl.innerText = 'Error koneksi ke server.';
-    btn.innerText = 'Masuk →';
-    btn.disabled = false;
-  }
-}
-function modalResetData() {
-  var html = '<div class="modal-body">' +
-    '<div class="modal-head"><div><h3 style="color:var(--danger);">Konfirmasi Hapus Permanen</h3><p>Data yang dihapus tidak bisa dikembalikan.</p></div>' +
-    '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
-    
-    '<div class="info-box" style="background:#fee2e2; color:#991b1b; margin-bottom:16px;"><span class="info-em">🚨</span><span>Sistem akan melakukan <b>Backup otomatis</b> sebelum menghapus seluruh data pasien.</span></div>' +
-    
-    '<div style="margin-bottom:16px;">' +
-      '<label class="lbl">Pintu 1: Ketik <b>HAPUS PERMANEN</b></label>' +
-      '<input type="text" id="reset_teks" class="inp" placeholder="HAPUS PERMANEN" style="border-color:var(--danger);">' +
-    '</div>' +
-    
-    '<div style="margin-bottom:16px;">' +
-      '<label class="lbl">Pintu 2: Masukkan PIN Login Anda</label>' +
-      '<input type="password" id="reset_pin" class="inp" placeholder="••••••" style="border-color:var(--danger);">' +
-    '</div>' +
-    
-    '<p id="reset_error" style="color:var(--danger); font-size:12px; font-weight:600; display:none; margin-bottom:8px;"></p>' +
-    
-    '<div class="btn-row">' +
-      '<button class="btn btn-secondary" onclick="closeModal()" style="flex:1;">Batal</button>' +
-      '<button id="btn_reset_submit" class="btn" onclick="prosesResetData()" style="flex:1; background:var(--danger); color:#fff;">Hapus Sekarang</button>' +
-    '</div>' +
-  '</div>';
-  document.getElementById('modalContent').innerHTML = html;
-  document.getElementById('modal').classList.add('open');
-  setTimeout(function() { var el = document.getElementById('reset_teks'); if (el) el.focus(); }, 100);
-}
-
-async function prosesResetData() {
-  var teks = document.getElementById('reset_teks').value.trim();
-  var pin = document.getElementById('reset_pin').value.trim();
-  var errEl = document.getElementById('reset_error');
-  var btn = document.getElementById('btn_reset_submit');
-
-  if (teks !== 'HAPUS PERMANEN') {
-    errEl.innerText = 'Kata kunci salah. Harap ketik HAPUS PERMANEN (huruf besar).';
-    errEl.style.display = 'block';
-    return;
-  }
-  if (!pin) {
-    errEl.innerText = 'PIN wajib diisi.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  errEl.style.display = 'none';
-  btn.innerText = 'Memproses...';
-  btn.disabled = true;
-
-  showLoading(true);
-  
-  // Kirim perintah ke server beserta PIN untuk verifikasi
-  var res = await apiCall('resetPasien', { pin: pin });
-  
-  showLoading(false);
-
-  if (res && res.ok) {
-    closeModal();
-    patients = []; // Bersihkan memory lokal
-    save(); // Simpan ke localStorage
-    render(); // Refresh UI
-    toastMsg('Semua data pasien berhasil dihapus.', 'ok');
-  } else {
-    btn.innerText = 'Hapus Sekarang';
-    btn.disabled = false;
-    errEl.innerText = (res && res.error) ? res.error : 'Gagal reset. Periksa PIN atau koneksi.';
-    errEl.style.display = 'block';
-  }
-}
-function konfirmasiRestore(fileId, namaFile, tanggalFile) {
-  if (!confirm('PERINGATAN!\n\nSeluruh data pasien saat ini akan DIGANTI dengan data dari file backup:\n\nNama: ' + namaFile + '\nTanggal: ' + tanggalFile + '\n\nLanjutkan?')) return;
-
-  showLoading(true);
-  
-  // Kita gunakan apiCall agar token & operator terkirim
-  apiCall('restoreBackup', { fileId: fileId }).then(function(res) {
-    showLoading(false);
-    
-    if (res && res.ok) {
-      toastMsg('✅ ' + res.message, 'ok');
-      // Sinkronkan ulang data dari server agar tampilan web terupdate
-      syncAllFromServer(true).then(function() {
-         render(); // Render ulang tampilan
-      });
-    } else {
-      alert('GAGAL RESTORE:\n\n' + (res.error || 'Periksa koneksi atau file backup.'));
-      toastMsg('Gagal melakukan restore', 'err');
-    }
-  });
-}
 </script>
 </body>
 </html>
