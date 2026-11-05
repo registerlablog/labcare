@@ -1169,32 +1169,30 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 <!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
 <div id="loginOverlay" style="position:fixed; top:0; right:0; bottom:0; left:0; background-color:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit; overflow-y:auto;">
 
-  <!-- BLOK LOGO & TEKS INSTANSI (KIRI ATAS) -->
-  <div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:16px;">
-    
-    <!-- Kotak Logo -->
-    <div style="background:#f9f6f0; padding:8px 12px; border-radius:16px; box-shadow: 4px 4px 10px rgba(168,158,140,0.25), -4px -4px 10px rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;">
-      <img src="Logo-Kabupaten-Halaman-Login.png" alt="Logo Pemkab Bondowoso" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
-      <img src="Logo-Labkesda-Halaman-Login.png" alt="Logo Labkesda" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
-    </div>
+ <!-- LOGO & TEKS INSTANSI (KIRI ATAS HORIZONTAL) -->
+<div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:16px;">
+  
+  <!-- Kotak Logo (Efek Neumorphism Timbul) -->
+  <div style="background:#f9f6f0; padding:8px 12px; border-radius:16px; box-shadow: 4px 4px 10px rgba(168,158,140,0.25), -4px -4px 10px rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;">
+    <img src="Logo-Kabupaten-Halaman-Login.png" alt="Logo Pemkab Bondowoso" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
+    <img src="Logo-Labkesda-Halaman-Login.png" alt="Logo Labkesda" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
+  </div>
 
-    <!-- Teks Instansi -->
-    <!-- Teks Instansi (Plus Jakarta Sans) -->
-<div style="display:flex; flex-direction:column; justify-content:center; font-family: 'Plus Jakarta Sans', sans-serif;">
-  <!-- Baris 1: Tebal Sedang, Huruf Kapital, Renggang -->
-  <div style="font-size:13px; font-weight:700; color:#6b5e4e; letter-spacing:1.5px; line-height:1.2;">
-    LABORATORIUM KESEHATAN DAERAH
+  <!-- Teks Instansi (Plus Jakarta Sans) -->
+  <div style="display:flex; flex-direction:column; justify-content:center; font-family: 'Plus Jakarta Sans', sans-serif;">
+    <div style="font-size:13px; font-weight:700; color:#6b5e4e; letter-spacing:1.5px; line-height:1.2;">
+      LABORATORIUM KESEHATAN DAERAH
+    </div>
+    <div style="font-size:24px; font-weight:900; color:#4a3f33; letter-spacing:3px; line-height:1.1; margin-top:2px;">
+      BONDOWOSO
+    </div>
+    <div style="font-size:13px; font-weight:500; color:#8a7b66; letter-spacing:0.5px; margin-top:3px;">
+      Kabupaten Bondowoso
+    </div>
   </div>
-  <!-- Baris 2: Sangat Tebal, Huruf Kapital, Renggang Ekstra -->
-  <div style="font-size:24px; font-weight:900; color:#4a3f33; letter-spacing:3px; line-height:1.1; margin-top:2px;">
-    BONDOWOSO
-  </div>
-  <!-- Baris 3: Tipis/Sedang, Warna Lebih Terang -->
-  <div style="font-size:13px; font-weight:500; color:#8a7b66; letter-spacing:0.5px; margin-top:3px;">
-    Kabupaten Bondowoso
-  </div>
+
 </div>
-  <!-- END BLOK LOGO & TEKS INSTANSI -->
+<!-- END BLOK LOGO & TEKS INSTANSI -->
 
   <!-- TAHAP 1: PILIH KARTU -->
   <div id="loginStep1" style="text-align:center;">
