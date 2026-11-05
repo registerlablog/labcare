@@ -2874,3 +2874,25 @@ function konfirmasiRestore(fileId, namaFile, tanggalFile) {
     }
   });
 }
+// --- INISIALISASI APLIKASI & LOGIKA LOGIN AWAL ---
+try { var _s = localStorage.getItem('labcare_stempel_url'); if (_s) stempelUrl = _s; } catch (e) {}
+window._isDataSynced = false;
+loadTests(); loadKaryawan(); load(); renderNav();
+render();
+setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
+if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
+
+var selectedAdminName = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+  var isLoggedIn = localStorage.getItem('labcare_operator');
+  var overlay = document.getElementById('loginOverlay');
+  
+  if (isLoggedIn && isLoggedIn !== 'Admin LabCare') {
+    if(overlay) overlay.style.display = 'none';
+    updateOperatorUI();
+  } else {
+    if(overlay) overlay.style.display = 'flex';
+    loadAdminCards();
+  }
+});
