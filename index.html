@@ -1162,35 +1162,41 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 </head>
 <body>
 
-<!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
-<div id="loginOverlay" style="position:fixed; inset:0; background:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
-
-<!-- LOGO & TEKS INSTANSI (KIRI ATAS) -->
-<div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; flex-direction:column; align-items:flex-start; gap:10px;">
+<!-- LOGO & TEKS INSTANSI (KIRI ATAS HORIZONTAL) -->
+<div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:16px;">
   
-  <!-- Baris 1: Kedua Logo -->
-  <div style="display:flex; align-items:center; gap:12px;">
-    <!-- Logo Bondowoso -->
+  <!-- Kotak Logo (Efek Neumorphism Timbul) -->
+  <div style="background:#f9f6f0; padding:8px 12px; border-radius:16px; box-shadow: 4px 4px 10px rgba(168,158,140,0.25), -4px -4px 10px rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;">
     <img 
       src="Logo-Kabupaten-Halaman-Login.png" 
       alt="Logo Pemkab Bondowoso" 
-      style="height: 65px; width: auto; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));"
+      style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;"
     >
-    
-    <!-- Logo Labkesda -->
     <img 
       src="Logo-Labkesda-Halaman-Login.png" 
       alt="Logo Labkesda" 
-      style="height: 65px; width: auto; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));"
+      style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;"
     >
   </div>
 
-  <!-- Baris 2: Tulisan Instansi -->
-  <div style="font-size: 13px; font-weight: 800; color: #1c1917; text-transform: uppercase; line-height: 1.3; letter-spacing: 0.5px; max-width: 220px;">
-    Laboratorium Kesehatan<br>Daerah Bondowoso
+  <!-- Teks Instansi (Variasi Ketebalan & Warna Dark Krem) -->
+  <div style="display:flex; flex-direction:column; justify-content:center;">
+    <!-- Baris 1: Tebal Sedang -->
+    <div style="font-size:14px; font-weight:600; color:#6b5e4e; letter-spacing:0.5px; line-height:1.2;">
+      LABORATORIUM KESEHATAN DAERAH
+    </div>
+    <!-- Baris 2: Sangat Tebal (Ekstra Bold) -->
+    <div style="font-size:22px; font-weight:900; color:#4a3f33; letter-spacing:0.5px; line-height:1.1; margin-top:2px;">
+      BONDOWOSO
+    </div>
+    <!-- Baris 3: Tebal Ringan / Reguler -->
+    <div style="font-size:13px; font-weight:500; color:#8a7b66; margin-top:2px;">
+      Kabupaten Bondowoso
+    </div>
   </div>
+
+</div>
   
-</div>  
 <!-- TAHAP 1: PILIH KARTU -->
 <div id="loginStep1" style="text-align:center;">
   <div style="text-align:center; margin-bottom:26px;">
