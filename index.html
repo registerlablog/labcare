@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LabCare — Sistem Pelayanan Pasien Laboratorium</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -1175,12 +1179,21 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
     </div>
 
     <!-- Teks Instansi -->
-    <div style="display:flex; flex-direction:column; justify-content:center;">
-      <div style="font-size:14px; font-weight:700; color:#6b5e4e; letter-spacing:0.5px; line-height:1.2;">LABORATORIUM KESEHATAN DAERAH</div>
-      <div style="font-size:22px; font-weight:900; color:#4a3f33; letter-spacing:0.5px; line-height:1.1; margin-top:2px;">BONDOWOSO</div>
-      <div style="font-size:13px; font-weight:500; color:#8a7b66; margin-top:2px;">Kabupaten Bondowoso</div>
-    </div>
+    <!-- Teks Instansi (Plus Jakarta Sans) -->
+<div style="display:flex; flex-direction:column; justify-content:center; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Baris 1: Tebal Sedang, Huruf Kapital, Renggang -->
+  <div style="font-size:13px; font-weight:700; color:#6b5e4e; letter-spacing:1.5px; line-height:1.2;">
+    LABORATORIUM KESEHATAN DAERAH
   </div>
+  <!-- Baris 2: Sangat Tebal, Huruf Kapital, Renggang Ekstra -->
+  <div style="font-size:24px; font-weight:900; color:#4a3f33; letter-spacing:3px; line-height:1.1; margin-top:2px;">
+    BONDOWOSO
+  </div>
+  <!-- Baris 3: Tipis/Sedang, Warna Lebih Terang -->
+  <div style="font-size:13px; font-weight:500; color:#8a7b66; letter-spacing:0.5px; margin-top:3px;">
+    Kabupaten Bondowoso
+  </div>
+</div>
   <!-- END BLOK LOGO & TEKS INSTANSI -->
 
   <!-- TAHAP 1: PILIH KARTU -->
