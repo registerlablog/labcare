@@ -1162,77 +1162,65 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 </head>
 <body>
   
-<div id="loginOverlay" style="position:fixed; top:0; right:0; bottom:0; left:0; background-color:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit;">
-<!-- LOGO & TEKS INSTANSI (KIRI ATAS HORIZONTAL) -->
-<div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:16px;">
-  
-  <!-- Kotak Logo (Efek Neumorphism Timbul) -->
-  <div style="background:#f9f6f0; padding:8px 12px; border-radius:16px; box-shadow: 4px 4px 10px rgba(168,158,140,0.25), -4px -4px 10px rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;">
-    <img 
-      src="Logo-Kabupaten-Halaman-Login.png" 
-      alt="Logo Pemkab Bondowoso" 
-      style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;"
-    >
-    <img 
-      src="Logo-Labkesda-Halaman-Login.png" 
-      alt="Logo Labkesda" 
-      style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;"
-    >
-  </div>
+<!-- ================= LAYAR LOGIN KARTU PETUGAS ================= -->
+<div id="loginOverlay" style="position:fixed; top:0; right:0; bottom:0; left:0; background-color:#f5f2eb; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; font-family:inherit; overflow-y:auto;">
 
-  <!-- Teks Instansi (Variasi Ketebalan & Warna Dark Krem) -->
-  <div style="display:flex; flex-direction:column; justify-content:center;">
-    <!-- Baris 1: Tebal Sedang -->
-    <div style="font-size:14px; font-weight:600; color:#6b5e4e; letter-spacing:0.5px; line-height:1.2;">
-      LABORATORIUM KESEHATAN DAERAH
-    </div>
-    <!-- Baris 2: Sangat Tebal (Ekstra Bold) -->
-    <div style="font-size:22px; font-weight:900; color:#4a3f33; letter-spacing:0.5px; line-height:1.1; margin-top:2px;">
-      BONDOWOSO
-    </div>
-    <!-- Baris 3: Tebal Ringan / Reguler -->
-    <div style="font-size:13px; font-weight:500; color:#8a7b66; margin-top:2px;">
-      Kabupaten Bondowoso
-    </div>
-  </div>
-  
-<!-- TAHAP 1: PILIH KARTU -->
-<div id="loginStep1" style="text-align:center;">
-  <div style="text-align:center; margin-bottom:26px;">
-    <div class="greeting-badge">
-      <span class="dot-live"></span>
-      <span id="liveClockLogin">MEMUAT...</span>
-    </div>
+  <!-- BLOK LOGO & TEKS INSTANSI (KIRI ATAS) -->
+  <div style="position:absolute; top:24px; left:24px; z-index:10; display:flex; align-items:center; gap:16px;">
     
-    <h2 id="greetingTitle" style="color:#1c1917; font-size:19px; font-weight:700; margin-bottom:6px;">Silakan Pilih Kartu Petugas</h2>
-    <p style="color:#78716c; font-size:13px;">Pilih profil petugas laboratorium di bawah ini untuk melanjutkan.</p>
-  </div>
+    <!-- Kotak Logo -->
+    <div style="background:#f9f6f0; padding:8px 12px; border-radius:16px; box-shadow: 4px 4px 10px rgba(168,158,140,0.25), -4px -4px 10px rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;">
+      <img src="Logo-Kabupaten-Halaman-Login.png" alt="Logo Pemkab Bondowoso" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
+      <img src="Logo-Labkesda-Halaman-Login.png" alt="Logo Labkesda" style="height: 55px; width: auto; object-fit: contain; mix-blend-mode: multiply;">
+    </div>
 
-  <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px;">
-    <div class="login-view-switch">
-      <button type="button" onclick="setLoginView('vertical')" id="btnLoginVert" class="login-view-btn active">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
-        <span>Kartu Lanyard</span>
-      </button>
-      <button type="button" onclick="setLoginView('horizontal')" id="btnLoginHoriz" class="login-view-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span>Bento Grid</span>
-      </button>
+    <!-- Teks Instansi -->
+    <div style="display:flex; flex-direction:column; justify-content:center;">
+      <div style="font-size:14px; font-weight:600; color:#6b5e4e; letter-spacing:0.5px; line-height:1.2;">LABORATORIUM KESEHATAN DAERAH</div>
+      <div style="font-size:22px; font-weight:900; color:#4a3f33; letter-spacing:0.5px; line-height:1.1; margin-top:2px;">BONDOWOSO</div>
+      <div style="font-size:13px; font-weight:500; color:#8a7b66; margin-top:2px;">Kabupaten Bondowoso</div>
     </div>
   </div>
+  <!-- END BLOK LOGO & TEKS INSTANSI -->
 
-  <div style="max-width:400px; margin:0 auto 28px;">
-    <div class="login-search-box">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="loginSearch" oninput="filterAdminCards()" placeholder="Cari Nama Petugas...">
+  <!-- TAHAP 1: PILIH KARTU -->
+  <div id="loginStep1" style="text-align:center;">
+    <div style="text-align:center; margin-bottom:26px;">
+      <div class="greeting-badge">
+        <span class="dot-live"></span>
+        <span id="liveClockLogin">MEMUAT...</span>
+      </div>
+      
+      <h2 id="greetingTitle" style="color:#1c1917; font-size:19px; font-weight:700; margin-bottom:6px;">Silakan Pilih Kartu Petugas</h2>
+      <p style="color:#78716c; font-size:13px;">Pilih profil petugas laboratorium di bawah ini untuk melanjutkan.</p>
     </div>
+
+    <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px;">
+      <div class="login-view-switch">
+        <button type="button" onclick="setLoginView('vertical')" id="btnLoginVert" class="login-view-btn active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+          <span>Kartu Lanyard</span>
+        </button>
+        <button type="button" onclick="setLoginView('horizontal')" id="btnLoginHoriz" class="login-view-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Bento Grid</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="max-width:400px; margin:0 auto 28px;">
+      <div class="login-search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="loginSearch" oninput="filterAdminCards()" placeholder="Cari Nama Petugas...">
+      </div>
+    </div>
+
+    <div id="adminCardsVertical" class="admin-cards-vertical">
+      <p style="color:#a8a29e; text-align:center; width:100%;">Memuat daftar petugas...</p>
+    </div>
+    <div id="adminCardsHorizontal" class="admin-cards-horizontal"></div>
   </div>
 
-  <div id="adminCardsVertical" class="admin-cards-vertical">
-    <p style="color:#a8a29e; text-align:center; width:100%;">Memuat daftar petugas...</p>
-  </div>
-  <div id="adminCardsHorizontal" class="admin-cards-horizontal"></div>
-</div>
   <!-- TAHAP 2: INPUT PIN -->
   <div id="loginStep2" style="display:none; width:100%; max-width:400px; background:#f9f6f0; padding:35px 30px; border-radius:20px; text-align:center; box-shadow: 8px 8px 16px rgba(168,158,140,0.28), -6px -6px 14px rgba(255,255,255,0.9);">
     
@@ -1253,9 +1241,10 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
       <button id="btnLoginAdmin" onclick="doLoginAdmin()" style="flex:2; padding:12px; background:#0f766e; color:#fff; border:none; border-radius:999px; cursor:pointer; font-weight:700; box-shadow: 5px 5px 12px rgba(15,118,110,0.28);">Masuk →</button>
     </div>
   </div>
-  
-</div>
+
+</div> <!-- PENUTUP LOGIN OVERLAY -->
 <!-- ============================================================= -->
+
 <div class="loading" id="loading"><div class="spinner"></div></div>
 <div class="layout">
   <aside class="sidebar">
