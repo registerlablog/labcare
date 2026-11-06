@@ -29,7 +29,7 @@ var NAV_ITEMS = [
   { view: 'hasil',       label: 'Input Hasil', icon: 'flask' },
   { view: 'laporan',     label: 'Laporan',     icon: 'file' },
   { view: 'prolanis',    label: 'Prolanis',    icon: 'clipboard' },
-  { view: 'master',      label: 'Master Lab',  icon: 'settings' adminOnly: true }
+  { view: 'master',      label: 'Master Lab',  icon: 'settings', adminOnly: true }
 ];
 var patients = []; var view = 'dashboard'; var mobileNavOpen = false; var editKode = null; var editKaryawanId = null; var stempelUrl = '';
 var masterPuskesmasList = [];
