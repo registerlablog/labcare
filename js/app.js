@@ -309,7 +309,7 @@ function removePickedTest(kode) { delete window._pickedTests[kode]; var summary 
 function clearPickedTests() { window._pickedTests = {}; refreshPicker(); }
 function selectAllVisible() { var filter = window._katFilter; var search = (window._pickSearch || '').toLowerCase(); var filtered = TESTS.filter(function(t) { var matchKat = filter === 'semua' || t.kategori === filter; var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0 || t.kategori.toLowerCase().indexOf(search) >= 0; return matchKat && matchSearch; }); filtered.forEach(function(t) { window._pickedTests[t.kode] = true; }); refreshPicker(); toastMsg(filtered.length + ' pemeriksaan ditambahkan'); }
 var _panggilTimer;
-function mainkanChime(callback) { try { var audio = new Audio('universfield-attention-chime-123107.mp3'); audio.volume = 0.7; audio.play().then(function() { setTimeout(function() { if (callback) callback(); }, 2000); }).catch(function(error) { if (callback) callback(); }); } catch (e) { if (callback) callback(); } }
+function mainkanChime(callback) { try { var audio = new Audio('assets/audio/universfield-attention-chime-123107.mp3'); audio.volume = 0.7; audio.play().then(function() { setTimeout(function() { if (callback) callback(); }, 2000); }).catch(function(error) { if (callback) callback(); }); } catch (e) { if (callback) callback(); } }
 function panggilPasien(id) {
   var p = patients.find(function(x) { return x.id === id; }); if (!p) return;
   document.getElementById('panggilNo').textContent = p.noAntrian || 'A-000';
