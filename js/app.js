@@ -2545,7 +2545,7 @@ render();
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
 // ================= LOGIKA LOGIN KARTU PETUGAS =================
-var selectedAdminName = '';
+var selectedAdminId = '';
 
 // Cek status login saat aplikasi pertama kali dibuka
 document.addEventListener('DOMContentLoaded', function() {
@@ -2602,36 +2602,19 @@ function renderAdminCards(list) {
   var hContainer = document.getElementById('adminCardsHorizontal');
   if (!vContainer || !hContainer) return;
 
-  // SVG Barcode dekoratif untuk kartu vertikal
-  var barcodeSvg = '<svg width="100%" height="26" viewBox="0 0 200 26" preserveAspectRatio="none"><g fill="#1e293b">' +
-    '<rect x="0" y="0" width="2" height="26"/><rect x="4" y="0" width="1" height="26"/><rect x="7" y="0" width="3" height="26"/>' +
-    '<rect x="12" y="0" width="1" height="26"/><rect x="15" y="0" width="2" height="26"/><rect x="19" y="0" width="3" height="26"/>' +
-    '<rect x="24" y="0" width="1" height="26"/><rect x="27" y="0" width="2" height="26"/><rect x="31" y="0" width="3" height="26"/>' +
-    '<rect x="36" y="0" width="1" height="26"/><rect x="39" y="0" width="2" height="26"/><rect x="43" y="0" width="3" height="26"/>' +
-    '<rect x="48" y="0" width="1" height="26"/><rect x="51" y="0" width="2" height="26"/><rect x="55" y="0" width="3" height="26"/>' +
-    '<rect x="60" y="0" width="1" height="26"/><rect x="63" y="0" width="2" height="26"/><rect x="67" y="0" width="3" height="26"/>' +
-    '<rect x="72" y="0" width="1" height="26"/><rect x="75" y="0" width="2" height="26"/><rect x="79" y="0" width="3" height="26"/>' +
-    '<rect x="84" y="0" width="1" height="26"/><rect x="87" y="0" width="2" height="26"/><rect x="91" y="0" width="3" height="26"/>' +
-    '<rect x="96" y="0" width="1" height="26"/><rect x="99" y="0" width="2" height="26"/><rect x="103" y="0" width="3" height="26"/>' +
-    '<rect x="108" y="0" width="1" height="26"/><rect x="111" y="0" width="2" height="26"/><rect x="115" y="0" width="3" height="26"/>' +
-    '<rect x="120" y="0" width="1" height="26"/><rect x="123" y="0" width="2" height="26"/><rect x="127" y="0" width="3" height="26"/>' +
-    '<rect x="132" y="0" width="1" height="26"/><rect x="135" y="0" width="2" height="26"/><rect x="139" y="0" width="3" height="26"/>' +
-    '<rect x="144" y="0" width="1" height="26"/><rect x="147" y="0" width="2" height="26"/><rect x="151" y="0" width="3" height="26"/>' +
-    '<rect x="156" y="0" width="1" height="26"/><rect x="159" y="0" width="2" height="26"/><rect x="163" y="0" width="3" height="26"/>' +
-    '<rect x="168" y="0" width="1" height="26"/><rect x="171" y="0" width="2" height="26"/><rect x="175" y="0" width="3" height="26"/>' +
-    '<rect x="180" y="0" width="1" height="26"/><rect x="183" y="0" width="2" height="26"/><rect x="187" y="0" width="3" height="26"/>' +
-    '<rect x="192" y="0" width="1" height="26"/><rect x="195" y="0" width="2" height="26"/><rect x="198" y="0" width="2" height="26"/>' +
-    '</g></svg>';
-
+  var barcodeSvg = '<svg width="100%" height="26" viewBox="0 0 200 26" preserveAspectRatio="none"><g fill="#1e293b"><rect x="0" y="0" width="2" height="26"/><rect x="4" y="0" width="1" height="26"/><rect x="7" y="0" width="3" height="26"/><rect x="12" y="0" width="1" height="26"/><rect x="15" y="0" width="2" height="26"/><rect x="19" y="0" width="3" height="26"/><rect x="24" y="0" width="1" height="26"/><rect x="27" y="0" width="2" height="26"/><rect x="31" y="0" width="3" height="26"/><rect x="36" y="0" width="1" height="26"/><rect x="39" y="0" width="2" height="26"/><rect x="43" y="0" width="3" height="26"/><rect x="48" y="0" width="1" height="26"/><rect x="51" y="0" width="2" height="26"/><rect x="55" y="0" width="3" height="26"/><rect x="60" y="0" width="1" height="26"/><rect x="63" y="0" width="2" height="26"/><rect x="67" y="0" width="3" height="26"/><rect x="72" y="0" width="1" height="26"/><rect x="75" y="0" width="2" height="26"/><rect x="79" y="0" width="3" height="26"/><rect x="84" y="0" width="1" height="26"/><rect x="87" y="0" width="2" height="26"/><rect x="91" y="0" width="3" height="26"/><rect x="96" y="0" width="1" height="26"/><rect x="99" y="0" width="2" height="26"/><rect x="103" y="0" width="3" height="26"/><rect x="108" y="0" width="1" height="26"/><rect x="111" y="0" width="2" height="26"/><rect x="115" y="0" width="3" height="26"/><rect x="120" y="0" width="1" height="26"/><rect x="123" y="0" width="2" height="26"/><rect x="127" y="0" width="3" height="26"/><rect x="132" y="0" width="1" height="26"/><rect x="135" y="0" width="2" height="26"/><rect x="139" y="0" width="3" height="26"/><rect x="144" y="0" width="1" height="26"/><rect x="147" y="0" width="2" height="26"/><rect x="151" y="0" width="3" height="26"/><rect x="156" y="0" width="1" height="26"/><rect x="159" y="0" width="2" height="26"/><rect x="163" y="0" width="3" height="26"/><rect x="168" y="0" width="1" height="26"/><rect x="171" y="0" width="2" height="26"/><rect x="175" y="0" width="3" height="26"/><rect x="180" y="0" width="1" height="26"/><rect x="183" y="0" width="2" height="26"/><rect x="187" y="0" width="3" height="26"/><rect x="192" y="0" width="1" height="26"/><rect x="195" y="0" width="2" height="26"/><rect x="198" y="0" width="2" height="26"/></g></svg>';
   var arrowSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
-  // RENDER KARTU VERTIKAL (LANYARD)
-  vContainer.innerHTML = list.map(function(a) {
-    var nama = a.nama || a.nama_asli || '';
-    var initial = nama.charAt(0).toUpperCase();
-    var kode = a.kode || a.nip || '-';
+  // RENDER VERTIKAL
+  vContainer.innerHTML = list.map(function(a, index) {
+    // PERUBAHAN DI SINI: Menggunakan a['Nama'], a['Nomer NIP'], dll sesuai Header Sheet
+    var nama = a['Nama'] || '';
+    var initial = nama ? nama.charAt(0).toUpperCase() : '?';
+    var idPegawai = a['Nomer NIP'] || a['Nomer KTP'] || '-';
+    var jabatan = a['Jabatan'] || 'Petugas';
+    
     return `
-      <div class="admin-card-v" data-name="${esc(nama.toLowerCase())}" onclick="selectAdmin('${esc(nama)}')">
+      <div class="admin-card-v" data-name="${esc(nama.toLowerCase())}" onclick="selectAdminByIndex(${index})">
         <div class="lanyard-hole"></div>
         <div class="card-header">
           <div class="card-badge">KARTU PEGAWAI DIGITAL</div>
@@ -2643,36 +2626,30 @@ function renderAdminCards(list) {
             <span class="status-dot"></span>
           </div>
           <h3 class="card-name">${esc(nama)}</h3>
-          <p class="card-role">Petugas Laboratorium</p>
-          <div class="card-nip">${esc(kode)}</div>
+          <p class="card-role">${esc(jabatan)}</p>
+          <div class="card-nip">${esc(idPegawai)}</div>
         </div>
         <div class="card-footer">
-          <div class="barcode-box">
-            ${barcodeSvg}
-            <span>TAP KARTU UNTUK LOGIN</span>
-          </div>
+          <div class="barcode-box">${barcodeSvg}<span>TAP KARTU UNTUK LOGIN</span></div>
         </div>
       </div>`;
   }).join('');
 
-  // RENDER KARTU HORIZONTAL (BENTO)
-  hContainer.innerHTML = list.map(function(a) {
-    var nama = a.nama || a.nama_asli || '';
-    var initial = nama.charAt(0).toUpperCase();
-    var kode = a.kode || a.nip || '-';
+  // RENDER HORIZONTAL
+  hContainer.innerHTML = list.map(function(a, index) {
+    var nama = a['Nama'] || '';
+    var initial = nama ? nama.charAt(0).toUpperCase() : '?';
+    var idPegawai = a['Nomer NIP'] || a['Nomer KTP'] || '-';
+    var jabatan = a['Jabatan'] || 'Petugas';
+
     return `
-      <div class="admin-card-h" data-name="${esc(nama.toLowerCase())}" onclick="selectAdmin('${esc(nama)}')">
+      <div class="admin-card-h" data-name="${esc(nama.toLowerCase())}" onclick="selectAdminByIndex(${index})">
         <div class="card-h-left">
-          <div class="avatar-ring-h">
-            <div class="avatar-initial-h">${initial}</div>
-          </div>
+          <div class="avatar-ring-h"><div class="avatar-initial-h">${initial}</div></div>
           <div class="card-h-info">
-            <div class="card-h-nip">
-              <span class="nip-tag">${esc(kode)}</span>
-              <span class="dot-on"></span>
-            </div>
+            <div class="card-h-nip"><span class="nip-tag">${esc(idPegawai)}</span><span class="dot-on"></span></div>
             <h3 class="card-h-name">${esc(nama)}</h3>
-            <p class="card-h-role">Petugas Laboratorium</p>
+            <p class="card-h-role">${esc(jabatan)}</p>
           </div>
         </div>
         <div class="card-h-arrow">${arrowSvg}</div>
@@ -2726,10 +2703,22 @@ function updateLoginClockGreeting() {
   }
 }
 // Fungsi saat kartu diklik
-function selectAdmin(nama) {
-  selectedAdminName = nama;
+var selectedAdminId = ''; 
+
+function selectAdminByIndex(index) {
+  var admin = window._adminList[index];
+  if (!admin) return;
+  
+  var nama = admin['Nama'] || '';
+  selectedAdminId = admin['Nomer NIP'] || admin['Nomer KTP']; 
+  
+  if (!selectedAdminId || selectedAdminId === '') {
+      toastMsg('NIP/KTP petugas ini belum diisi di database.', 'err');
+      return;
+  }
+
   document.getElementById('nameSelected').innerText = nama;
-  document.getElementById('avatarSelected').innerText = nama.charAt(0).toUpperCase();
+  document.getElementById('avatarSelected').innerText = nama ? nama.charAt(0).toUpperCase() : '?';
   
   document.getElementById('loginStep1').style.display = 'none';
   document.getElementById('loginStep2').style.display = 'block';
@@ -2741,10 +2730,9 @@ function selectAdmin(nama) {
 function backToStep1() {
   document.getElementById('loginStep2').style.display = 'none';
   document.getElementById('loginStep1').style.display = 'block';
-  selectedAdminName = '';
+  selectedAdminId = '';
 }
 
-// Fungsi verifikasi PIN
 async function doLoginAdmin() {
   var pin = document.getElementById('loginPinAdmin').value.trim();
   var errEl = document.getElementById('loginError');
@@ -2759,17 +2747,21 @@ async function doLoginAdmin() {
   try {
     var res = await fetch(API_URL, {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'loginAdmin', data: { nama: selectedAdminName, pin: pin } })
+      // PERUBAHAN DI SINI: Kirim id (NIP/KTP), bukan nama
+      body: JSON.stringify({ action: 'loginAdmin', data: { id: selectedAdminId, pin: pin } })
     });
     var json = await res.json();
 
     if (json && json.ok) {
-      // Simpan nama asli dari database ke memori
       localStorage.setItem('labcare_operator', json.nama_asli);
+      if(json.jabatan) localStorage.setItem('labcare_role', json.jabatan);
       localStorage.setItem('labcare_token', json.token);
+      
       document.getElementById('loginOverlay').style.display = 'none';
       updateOperatorUI();
       toastMsg('Selamat datang, ' + json.nama_asli, 'ok');
+      renderNav(); 
+      render();
     } else {
       errEl.style.display = 'block';
       errEl.innerText = json.error || 'PIN Salah.';
@@ -2882,7 +2874,7 @@ render();
 setSyncState(SYNC_ENABLED ? 'syncing' : 'idle');
 if (SYNC_ENABLED) setTimeout(function() { syncAllFromServer(true); }, 300);
 
-var selectedAdminName = '';
+var selectedAdminId = '';
 
 document.addEventListener('DOMContentLoaded', function() {
   var isLoggedIn = localStorage.getItem('labcare_operator');
