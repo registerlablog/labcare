@@ -1843,6 +1843,7 @@ function viewMaster() {
   tabsArr.push('<button class="pill' + (tab === 'logbackup' ? ' active' : '') + '" onclick="window._masterTab=\'logbackup\'; render();">🛡️ Log & Backup</button>');
   tabsArr.push('<button class="pill' + (tab === 'sistem' ? ' active' : '') + '" onclick="window._masterTab=\'sistem\'; render();">⚙️ Pengaturan Sistem</button>');
   tabsArr.push('<button class="pill' + (tab === 'persetujuan' ? ' active' : '') + '" onclick="window._masterTab=\'persetujuan\'; render();">👥 Persetujuan Petugas</button>');
+  tabsArr.push('<button class="pill' + (tab === 'kelolapetugas' ? ' active' : '') + '" onclick="window._masterTab=\'kelolapetugas\'; render();">👨‍💼 Kelola Petugas</button>');
   
   var tabsHtml = tabsArr.join('');
   var content = '';
@@ -1854,6 +1855,7 @@ function viewMaster() {
   else if (tab === 'logbackup') content = viewMasterLogBackup();
   else if (tab === 'persetujuan') content = viewMasterPersetujuan(); 
   else if (tab === 'sistem') content = viewMasterSistem();
+  else if (tab === 'kelolapetugas') content = viewMasterKelolaPetugas();
   return '<div class="page-header"><h2>🧬 Master Lab</h2><p>Kelola master data laboratorium: pemeriksaan, analis, dan dokter.</p></div><div class="pill-row">' + tabsHtml + '</div>' + content;
 }
 function viewMasterPemeriksaan() {
@@ -3048,5 +3050,102 @@ async function tolakPetugas(id) {
     loadDataPersetujuan(); // Muat ulang tabel
   } else {
     alert('Gagal menolak: ' + (res ? res.error : 'Error koneksi'));
+  }
+}
+// ==========================================
+// UI KELOLA PETUGAS (SEMUA STATUS)
+// ==========================================
+
+function viewMasterKelolaPetugas() {
+  setTimeout(loadDataKelolaPetugas, 100);
+  
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Kelola Petugas</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar seluruh petugas. Anda dapat menonaktifkan atau menghapus akun.</p></div></div>' +
+    '<div id="kelolaPetugasTableWrap"><div class="empty-state"><span class="em">⏳</span><p>Memuat data...</p></div></div>';
+}
+
+async function loadDataKelolaPetugas() {
+  var wrap = document.getElementById('kelolaPetugasTableWrap');
+  if (!wrap) return;
+  
+  var res = await apiCall('getAllAdminsForManagement');
+  if (!res || !res.ok) {
+    wrap.innerHTML = '<div class="empty-state"><span class="em">❌</span><p>Gagal memuat data petugas.</p></div>';
+    return;
+  }
+  
+  // Urutkan: Pending dulu, lalu Aktif, lalu Nonaktif
+  var sortedList = res.list.sort(function(a, b) {
+    var statusA = String(a['Status'] || '').toLowerCase();
+    var statusB = String(b['Status'] || '').toLowerCase();
+    if (statusA === 'pending' && statusB !== 'pending') return -1;
+    if (statusB === 'pending' && statusA !== 'pending') return 1;
+    if (statusA === 'aktif' && statusB === 'nonaktif') return -1;
+    if (statusB === 'aktif' && statusA === 'nonaktif') return 1;
+    return 0;
+  });
+
+  if (sortedList.length === 0) {
+    wrap.innerHTML = '<div class="empty-state"><span class="em">📭</span><p>Belum ada data petugas.</p></div>';
+    return;
+  }
+  
+  var currentAdminName = localStorage.getItem('labcare_operator'); // Cegah hapus/nonaktif diri sendiri
+  
+  var rows = sortedList.map(function(u, i) {
+    var idPegawai = u['Nomer NIP'] || u['Nomer KTP'] || '-';
+    var nama = u['Nama'] || '-';
+    var jabatan = u['Jabatan'] || '-';
+    var status = String(u['Status'] || '').trim();
+    var statusLower = status.toLowerCase();
+    
+    // Tentukan Badge Warna
+    var badgeHtml = '';
+    if (statusLower === 'aktif') badgeHtml = '<span class="badge badge-selesai">Aktif</span>';
+    else if (statusLower === 'pending') badgeHtml = '<span class="badge badge-menunggu">Pending</span>';
+    else badgeHtml = '<span class="badge badge-danger" style="background:#fee2e2;color:#dc2626;">Nonaktif</span>';
+    
+    // Tentukan Tombol Aksi
+    var actionHtml = '';
+    if (statusLower === 'pending') {
+      actionHtml += '<button class="btn btn-primary btn-sm" onclick="setujuiPetugas(\'' + esc(idPegawai) + '\')">✔️ Setujui</button> ';
+    } else if (statusLower === 'aktif') {
+      if (nama !== currentAdminName) {
+        actionHtml += '<button class="btn btn-secondary btn-sm" style="color:#d97706;border-color:#d97706;" onclick="ubahStatusPetugas(\'' + esc(idPegawai) + '\', \'Nonaktif\')">🚫 Nonaktifkan</button> ';
+      }
+    } else if (statusLower === 'nonaktif') {
+      actionHtml += '<button class="btn btn-secondary btn-sm" style="color:#16a34a;border-color:#16a34a;" onclick="ubahStatusPetugas(\'' + esc(idPegawai) + '\', \'Aktif\')">✔️ Aktifkan</button> ';
+    }
+    
+    if (nama !== currentAdminName) {
+      actionHtml += '<button class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#dc2626;" onclick="tolakPetugas(\'' + esc(idPegawai) + '\')">🗑️ Hapus</button>';
+    } else {
+      actionHtml += '<span style="font-size:11px;color:var(--slate-400);font-style:italic;">(Akun Anda)</span>';
+    }
+    
+    return '<tr>' +
+      '<td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td>' +
+      '<td style="font-weight:600;">' + esc(nama) + '</td>' +
+      '<td style="font-size:12px;">' + esc(idPegawai) + '</td>' +
+      '<td style="font-size:12px;">' + esc(jabatan) + '</td>' +
+      '<td>' + badgeHtml + '</td>' +
+      '<td style="text-align:right;white-space:nowrap;">' + actionHtml + '</td>' +
+      '</tr>';
+  }).join('');
+  
+  wrap.innerHTML = '<div class="table-wrap"><table><thead><tr><th style="width:50px;">No</th><th>Nama Lengkap</th><th>NIP / KTP</th><th>Jabatan</th><th>Status</th><th style="text-align:right;width:220px;">Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function ubahStatusPetugas(id, statusBaru) {
+  if (!confirm('Ubah status petugas ini menjadi "' + statusBaru + '"?')) return;
+  
+  showLoading(true);
+  var res = await apiCall('updateAdminStatus', { id: id, status: statusBaru });
+  showLoading(false);
+  
+  if (res && res.ok) {
+    toastMsg('✅ Status berhasil diubah menjadi ' + statusBaru, 'ok');
+    loadDataKelolaPetugas(); 
+  } else {
+    alert('Gagal mengubah status: ' + (res ? res.error : 'Error koneksi'));
   }
 }
