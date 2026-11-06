@@ -2775,6 +2775,81 @@ async function doLoginAdmin() {
     btn.disabled = false;
   }
 }
+// ==========================================
+// FUNGSI PENDAFTARAN PETUGAS BARU (SISI LOGIN)
+// ==========================================
+
+function bukaModalDaftar() {
+  document.getElementById('modalDaftarPetugas').classList.add('open');
+  document.getElementById('formDaftarPetugas').reset();
+  document.getElementById('reg_error').style.display = 'none';
+}
+
+function tutupModalDaftar() {
+  document.getElementById('modalDaftarPetugas').classList.remove('open');
+}
+
+async function prosesDaftarPetugas(e) {
+  e.preventDefault();
+  
+  var btn = document.getElementById('btnRegSubmit');
+  var errEl = document.getElementById('reg_error');
+
+  var nama = document.getElementById('reg_nama').value.trim();
+  var nip = document.getElementById('reg_nip').value.trim();
+  var ktp = document.getElementById('reg_ktp').value.trim();
+  var jabatan = document.getElementById('reg_jabatan').value.trim();
+  var telp = document.getElementById('reg_telp').value.trim();
+  var pin = document.getElementById('reg_pin').value.trim();
+
+  // Validasi Sederhana di Frontend
+  if (!nama || !jabatan || !telp || !pin) {
+    errEl.innerText = 'Harap lengkapi semua kolom bertanda bintang (*).';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pin.length !== 6) {
+    errEl.innerText = 'PIN harus terdiri dari 6 angka.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!nip && !ktp) {
+    errEl.innerText = 'Isi salah satu: NIP atau KTP.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  btn.innerText = 'Mengirim...';
+  btn.disabled = true;
+
+  try {
+    var res = await fetch(API_URL, {
+      method: 'POST', 
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ 
+        action: 'registerAdmin', 
+        data: { nama: nama, nip: nip, ktp: ktp, jabatan: jabatan, telp: telp, pin: pin } 
+      })
+    });
+    var json = await res.json();
+
+    if (json && json.ok) {
+      tutupModalDaftar();
+      toastMsg('✅ Pendaftaran berhasil! Tunggu persetujuan Admin.', 'ok');
+    } else {
+      errEl.innerText = json.error || 'Gagal mendaftar. Silakan coba lagi.';
+      errEl.style.display = 'block';
+      btn.innerText = 'Kirim Pendaftaran';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    errEl.innerText = 'Error koneksi ke server. Periksa internet Anda.';
+    errEl.style.display = 'block';
+    btn.innerText = 'Kirim Pendaftaran';
+    btn.disabled = false;
+  }
+}
 function modalResetData() {
   var html = '<div class="modal-body">' +
     '<div class="modal-head"><div><h3 style="color:var(--danger);">Konfirmasi Hapus Permanen</h3><p>Data yang dihapus tidak bisa dikembalikan.</p></div>' +
