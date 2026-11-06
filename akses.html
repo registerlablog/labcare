@@ -89,7 +89,7 @@
     <!-- Wadah Logo: Diperbesar ke w-32 (128px) -->
     <div class="w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 flex items-center justify-center">
         <!-- Tambahkan scale-125 agar logo membesar memenuhi kotak -->
-        <img src="logo-labkesda.png" alt="Logo Labkesda" class="w-full h-full object-contain drop-shadow-2xl scale-125">
+        <img src="assets/images/logo-labkesda.png" alt="assets/images/Logo Labkesda" class="w-full h-full object-contain drop-shadow-2xl scale-125">
     </div>
     
     <!-- Wadah Teks -->
@@ -108,7 +108,7 @@
            <div class="relative z-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
     <!-- Wadah Logo -->
     <div class="flex items-center gap-4 sm:gap-6">
-      <img src="logo-daerah-bondowoso.png" alt="Pemkab Bondowoso" class="h-8 sm:h-10 w-auto object-contain opacity-80 hover:opacity-100 transition duration-300 drop-shadow-md">
+      <img src="assets/images/logo-daerah-bondowoso.png" alt="Pemkab Bondowoso" class="h-8 sm:h-10 w-auto object-contain opacity-80 hover:opacity-100 transition duration-300 drop-shadow-md">
         <img src="kemenkes.png" alt="Akreditasi" class="h-10 sm:h-12 w-auto object-contain opacity-80 hover:opacity-100 transition duration-300 drop-shadow-md">
     </div>
     
@@ -158,7 +158,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
-    <img src="logo-labkesda.png" alt="Logo Labkesda" class="w-full h-full object-contain scale-[1.7] drop-shadow-xl">
+    <img src="assets/images/logo-labkesda.png" alt="assets/images/Logo Labkesda" class="w-full h-full object-contain scale-[1.7] drop-shadow-xl">
 </div>
                     <div>
                         <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
@@ -355,7 +355,7 @@
     <script>
         // --- KONFIGURASI & VARIABEL GLOBAL ---
         var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
-        var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png' };
+        var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', logoKiri: 'assets/images/bondowoso.jpg', logoKanan: 'assets/images/kemenkes.png' };
         var currentPuskesmas = ''; var currentKegiatan = [];
         var MASTER_TESTS = []; var GLOBAL_ANALIS = []; var GLOBAL_DOKTER = []; var GLOBAL_STEMPEL = '';
         
@@ -654,7 +654,7 @@ myBarChart = new Chart(ctxBar, {
             var isLast = (i === pages.length - 1);
             var breakStyle = isLast ? '' : 'page-break-after:always; break-after:page;';
             return '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:297mm;overflow:hidden;margin:16px auto;background:#fff;box-shadow:0 4px 25px rgba(0,0,0,.15);' + breakStyle + '">' +
-              '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none;">' +
+              '<img src="assets/images/border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:fill;z-index:0;pointer-events:none;">' +
               '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + p.content + '</div>' +
               (p.footer ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + p.footer + '</div>' : '') +
               '</div>';
