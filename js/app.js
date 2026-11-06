@@ -1,5 +1,5 @@
 var API_URL = 'https://script.google.com/macros/s/AKfycbzvDFJuyrswvUIsS7Jw-OxfQTjf_8AU4SGj9c5a_9UB8MSrE3dfxRERz7XllhlwIDT_/exec';
-var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', telp: '085172185410', logoKiri: 'bondowoso.jpg', logoKanan: 'kemenkes.png', warnaHijau: '#16a34a', warnaHijauMuda: '#dcfce7', warnaOranye: '#f59e0b' };
+var CLINIC = { baris1: 'PEMERINTAH KABUPATEN BONDOWOSO', baris2: 'DINAS KESEHATAN', baris3: 'UPTD. LABKESDA BONDOWOSO', alamat: 'Jln. Santawi No. 08 Nangkaan', website: 'https://labkesda.bondowoso.go.id', telp: '085172185410', logoKiri: 'assets/images/bondowoso.jpg', logoKanan: 'kemenkes.png', warnaHijau: '#16a34a', warnaHijauMuda: '#dcfce7', warnaOranye: '#f59e0b' };
 var SYNC_ENABLED = /^https?:\/\//.test(API_URL);
 var syncState = 'idle';
 var DEFAULT_TESTS = [
