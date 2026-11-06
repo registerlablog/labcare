@@ -1842,6 +1842,8 @@ function viewMaster() {
   tabsArr.push('<button class="pill' + (tab === 'puskesmas' ? ' active' : '') + '" onclick="window._masterTab=\'puskesmas\'; render();">🔐 Akses Puskesmas</button>');
   tabsArr.push('<button class="pill' + (tab === 'logbackup' ? ' active' : '') + '" onclick="window._masterTab=\'logbackup\'; render();">🛡️ Log & Backup</button>');
   tabsArr.push('<button class="pill' + (tab === 'sistem' ? ' active' : '') + '" onclick="window._masterTab=\'sistem\'; render();">⚙️ Pengaturan Sistem</button>');
+  tabsArr.push('<button class="pill' + (tab === 'persetujuan' ? ' active' : '') + '" onclick="window._masterTab=\'persetujuan\'; render();">👥 Persetujuan Petugas</button>');
+  
   var tabsHtml = tabsArr.join('');
   var content = '';
   if (tab === 'pemeriksaan') content = viewMasterPemeriksaan();
@@ -1850,6 +1852,7 @@ function viewMaster() {
   else if (tab === 'stempel') content = viewMasterStempel();
   else if (tab === 'puskesmas') content = viewMasterPuskesmas();
   else if (tab === 'logbackup') content = viewMasterLogBackup();
+  else if (tab === 'persetujuan') content = viewMasterPersetujuan(); 
   else if (tab === 'sistem') content = viewMasterSistem();
   return '<div class="page-header"><h2>🧬 Master Lab</h2><p>Kelola master data laboratorium: pemeriksaan, analis, dan dokter.</p></div><div class="pill-row">' + tabsHtml + '</div>' + content;
 }
@@ -2963,3 +2966,87 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAdminCards();
   }
 });
+// ==========================================
+// UI PERSETUJUAN PETUGAS (MASTER LAB)
+// ==========================================
+
+function viewMasterPersetujuan() {
+  // Tampilkan loading sementara
+  setTimeout(loadDataPersetujuan, 100);
+  
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Persetujuan Petugas</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Daftar petugas baru yang menunggu persetujuan akses.</p></div></div>' +
+    '<div id="persetujuanTableWrap"><div class="empty-state"><span class="em">⏳</span><p>Memuat data...</p></div></div>';
+}
+
+async function loadDataPersetujuan() {
+  var wrap = document.getElementById('persetujuanTableWrap');
+  if (!wrap) return;
+  
+  var res = await apiCall('getAllAdminsForManagement');
+  if (!res || !res.ok) {
+    wrap.innerHTML = '<div class="empty-state"><span class="em">❌</span><p>Gagal memuat data petugas.</p></div>';
+    return;
+  }
+  
+  // Filter HANYA yang statusnya 'Pending'
+  var pendingList = res.list.filter(function(u) {
+    return String(u['Status'] || '').trim().toLowerCase() === 'pending';
+  });
+  
+  if (pendingList.length === 0) {
+    wrap.innerHTML = '<div class="empty-state"><span class="em">✅</span><p>Tidak ada pendaftar baru. Semua sudah diproses.</p></div>';
+    return;
+  }
+  
+  var rows = pendingList.map(function(u, i) {
+    var idPegawai = u['Nomer NIP'] || u['Nomer KTP'] || '-';
+    var nama = u['Nama'] || '-';
+    var jabatan = u['Jabatan'] || '-';
+    var telp = u['Nomer Telpon'] || '-';
+    
+    return '<tr>' +
+      '<td style="color:var(--slate-500);font-size:12px;">' + (i + 1) + '</td>' +
+      '<td style="font-weight:600;">' + esc(nama) + '</td>' +
+      '<td style="font-size:12px;">' + esc(idPegawai) + '</td>' +
+      '<td style="font-size:12px;">' + esc(jabatan) + '</td>' +
+      '<td style="font-size:12px;">' + esc(telp) + '</td>' +
+      '<td><span class="badge badge-menunggu">Pending</span></td>' +
+      '<td style="text-align:right;white-space:nowrap;">' +
+        '<button class="btn btn-primary btn-sm" onclick="setujuiPetugas(\'' + esc(idPegawai) + '\')">✔️ Setujui</button> ' +
+        '<button class="btn btn-secondary btn-sm" style="color:#dc2626; border-color:#dc2626;" onclick="tolakPetugas(\'' + esc(idPegawai) + '\')">✖️ Tolak</button>' +
+      '</td>' +
+      '</tr>';
+  }).join('');
+  
+  wrap.innerHTML = '<div class="table-wrap"><table><thead><tr><th style="width:50px;">No</th><th>Nama Lengkap</th><th>NIP / KTP</th><th>Jabatan</th><th>No. Telp</th><th>Status</th><th style="text-align:right;width:180px;">Aksi</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function setujuiPetugas(id) {
+  if (!confirm('Setujui akses untuk petugas ini? Mereka akan bisa login.')) return;
+  
+  showLoading(true);
+  var res = await apiCall('updateAdminStatus', { id: id, status: 'Aktif' });
+  showLoading(false);
+  
+  if (res && res.ok) {
+    toastMsg('✅ Petugas berhasil disetujui', 'ok');
+    loadDataPersetujuan(); // Muat ulang tabel
+  } else {
+    alert('Gagal menyetujui: ' + (res ? res.error : 'Error koneksi'));
+  }
+}
+
+async function tolakPetugas(id) {
+  if (!confirm('Tolak dan hapus pendaftaran ini secara permanen?')) return;
+  
+  showLoading(true);
+  var res = await apiCall('deleteAdmin', { id: id });
+  showLoading(false);
+  
+  if (res && res.ok) {
+    toastMsg('🗑️ Pendaftaran ditolak dan dihapus', 'ok');
+    loadDataPersetujuan(); // Muat ulang tabel
+  } else {
+    alert('Gagal menolak: ' + (res ? res.error : 'Error koneksi'));
+  }
+}
