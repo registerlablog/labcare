@@ -2412,7 +2412,7 @@ function showPrintPreview(html, title, options) {
   if (!overlay) { overlay = document.createElement('div'); overlay.id = 'printOverlay'; document.body.appendChild(overlay); }
   overlay.innerHTML = '<div class="print-toolbar"><button class="print-btn-cancel" onclick="closePrintPreview()">✕ Tutup</button><div class="print-title">' + esc(title || 'Pratinjau Cetak') + '</div><button class="print-btn-print" onclick="window.print()">Cetak / PDF</button></div>' +
     '<div class="print-page" style="position:relative;padding:0;box-sizing:border-box;width:210mm;height:287mm;overflow:hidden;">' +
-    '<img src="border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:287mm;object-fit:fill;z-index:0;pointer-events:none;">' +
+    '<img src="assets/images/border.png" alt="" style="position:absolute;top:0;left:0;width:100%;height:287mm;object-fit:fill;z-index:0;pointer-events:none;">' +
     '<div style="position:absolute;top:13mm;left:20mm;right:20mm;bottom:72mm;overflow:hidden;z-index:1;">' + html + '</div>' +
     (footerHtml ? '<div style="position:absolute;bottom:20mm;left:20mm;right:20mm;z-index:2;">' + footerHtml + '</div>' : '') +
     '</div>';
