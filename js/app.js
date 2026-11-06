@@ -29,7 +29,7 @@ var NAV_ITEMS = [
   { view: 'hasil',       label: 'Input Hasil', icon: 'flask' },
   { view: 'laporan',     label: 'Laporan',     icon: 'file' },
   { view: 'prolanis',    label: 'Prolanis',    icon: 'clipboard' },
-  { view: 'master',      label: 'Master Lab',  icon: 'settings' }
+  { view: 'master',      label: 'Master Lab',  icon: 'settings' adminOnly: true }
 ];
 var patients = []; var view = 'dashboard'; var mobileNavOpen = false; var editKode = null; var editKaryawanId = null; var stempelUrl = '';
 var masterPuskesmasList = [];
@@ -204,14 +204,25 @@ function navIcon(name) {
   return icons[name] || '';
 }
 function renderNav() {
-  var html = NAV_ITEMS.map(function(i) {
+  // Ambil jabatan user
+  var userRole = (localStorage.getItem('labcare_role') || '').toLowerCase();
+  var isAdmin = userRole.indexOf('admin') !== -1; // HANYA ADMIN
+
+  // Filter menu: Jika adminOnly tapi bukan admin, jangan tampilkan
+  var html = NAV_ITEMS.filter(function(i) {
+    if (i.adminOnly && !isAdmin) return false;
+    return true;
+  }).map(function(i) {
     return '<button class="nav-btn' + (view === i.view ? ' active' : '') + '" data-view="' + i.view + '"><span class="nav-icon">' + navIcon(i.icon) + '</span><span>' + i.label + '</span></button>';
   }).join('');
+
   document.getElementById('nav').innerHTML = html;
+  
   document.getElementById('mobileNav').innerHTML = html + 
   '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">' +
     '<button class="nav-btn" onclick="doLogoutAdmin()" style="color: #dc2626;"><span class="nav-icon">' + navIcon('logout') + '</span><span>Logout</span></button>' +
   '</div>';
+  
   document.querySelectorAll('.nav-btn[data-view]').forEach(function(b) {
     b.onclick = function() {
       view = b.dataset.view;
@@ -224,6 +235,15 @@ function renderNav() {
 }
 function toggleMobileNav() { mobileNavOpen = !mobileNavOpen; document.getElementById('mobileNav').classList.toggle('open', mobileNavOpen); }
 function render() {
+  // Cek Hak Akses
+  var userRole = (localStorage.getItem('labcare_role') || '').toLowerCase();
+  var isAdmin = userRole.indexOf('admin') !== -1;
+  
+  // HANYA MASTER LAB yang dikunci
+  if (view === 'master' && !isAdmin) {
+    view = 'dashboard';
+    toastMsg('Akses ditolak: Anda tidak memiliki izin ke Master Lab.', 'err');
+  }
   var app = document.getElementById('app');
   app.className = 'fade-in';
   if (view === 'dashboard')        app.innerHTML = viewDashboard();
