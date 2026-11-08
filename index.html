@@ -160,7 +160,7 @@
   <aside class="sidebar">
     
 <!-- ========================================== -->
-<!-- KARTU PROFIL BARU (TINGGI 290PX & REVISI)  -->
+<!-- KARTU PROFIL BARU (RAPI & TOMBOL IKON)     -->
 <!-- ========================================== -->
 <div style="position: relative; width: calc(100% - 24px); height: 290px; border-radius: 20px; overflow: hidden; margin: 24px auto 20px auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #dcd7c7; flex-shrink: 0;">
   
@@ -181,40 +181,38 @@
       <span id="greetingDynamic" style="color: white; font-weight: 700;">Selamat Siang</span>. Siap melayani hari ini.
     </p>
     
-    <!-- Garis Pemisah -->
-    <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <!-- Garis Pemisah & Area Bawah -->
+    <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
       
       <!-- KIRI: Jam & Status Sinkron -->
-      <div style="font-size: 10px; color: #d1d5db; display: flex; flex-direction: column; gap: 5px;">
-        <div style="display: flex; align-items: center; gap: 5px;">
+      <div style="font-size: 10px; color: #d1d5db; display: flex; flex-direction: column; gap: 4px;">
+        <!-- Tambahan white-space: nowrap agar jam tidak terpotong -->
+        <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span id="liveClockSidebar" style="font-family: monospace; font-size: 11px;">00:00 WIB</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 5px; color: #34d399;">
+        <div style="display: flex; align-items: center; gap: 4px; color: #34d399;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <span>Tersinkron</span>
         </div>
       </div>
 
-      <!-- KANAN: Tombol Aksi (Logout & Sinkron) -->
-      <div style="display: flex; gap: 6px;">
-        <!-- Tombol Logout (Pindahan dari Dropdown) -->
-        <button onclick="doLogoutAdmin()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 6px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px); transition: 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'" title="Logout Admin">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Keluar
+      <!-- KANAN: Tombol Aksi (Ikon Bulat) -->
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <!-- Tombol Logout -->
+        <button onclick="doLogoutAdmin()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; backdrop-filter: blur(4px);" onmouseover="this.style.background='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'" title="Logout Admin">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
         
         <!-- Tombol Sinkron -->
-        <button onclick="manualSync()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; padding: 6px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px); transition: 0.2s;" onmouseover="this.style.background='rgba(16,185,129,0.4)'" onmouseout="this.style.background='rgba(16,185,129,0.2)'" title="Sinkronisasi Data">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sinkron
+        <button onclick="manualSync()" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; backdrop-filter: blur(4px);" onmouseover="this.style.background='rgba(16,185,129,0.4)'" onmouseout="this.style.background='rgba(16,185,129,0.2)'" title="Sinkronisasi Data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
       </div>
     </div>
   </div>
 </div>
 <!-- ========================================== -->
-
     <nav class="sidebar-nav" id="nav"></nav>
     
     <!-- Footer Sidebar sudah dihilangkan tombol Sinkron & Logout-nya, menyisakan versi -->
