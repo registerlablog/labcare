@@ -13,7 +13,7 @@ var CLINIC = {
   website: 'https://labkesda.bondowoso.go.id',
   telp: '085172185410',
   logoKiri: 'assets/images/bondowoso.jpg',
-  logoKanan: 'kemenkes.png',
+  logoKanan: 'assets/images/kemenkes.png',
   warnaHijau: '#16a34a',
   warnaHijauMuda: '#dcfce7',
   warnaOranye: '#f59e0b'
