@@ -16,9 +16,11 @@ function viewDashboard() {
   
   var cardsHtml = cards.map(function(x, index) { 
     var clickAction = "";
-    // HANYA KARTU PERTAMA YANG BISA DIKLIK
+    
     if (index === 0) {
       clickAction = 'onclick="bukaModalPasienHariIni()" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 6px 15px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'"';
+    } else if (index === 1) {
+      clickAction = 'onclick="bukaModalMenunggu()" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 6px 15px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'"';
     }
     
     return '<div class="stat-card ' + x.cls + '" ' + clickAction + '>' +
@@ -69,21 +71,116 @@ function viewDashboard() {
 }
 
 // ==========================================
-// FUNGSI KLIK KARTU PASIEN HARI INI (MODAL)
+// FUNGSI KLIK KARTU: PASIEN HARI INI
 // ==========================================
 function bukaModalPasienHariIni() {
   var todayPatients = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
+  tampilkanModalDaftarPasien(
+    "Pasien Hari Ini", 
+    "Total: " + todayPatients.length + " pasien terdaftar hari ini.", 
+    todayPatients, 
+    "#0f766e", 
+    "lanjutKeFormPendaftaran()", 
+    "Daftarkan Pasien Baru",
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+  );
+}
+
+// ==========================================
+// FUNGSI KLIK KARTU: MENUNGGU (DENGAN TOMBOL PANGGIL)
+// ==========================================
+function bukaModalMenunggu() {
+  var waitingPatients = patients.filter(function(p) { 
+    return p.status === 'menunggu' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); 
+  });
   
   var listHtml = '';
-  if (todayPatients.length === 0) {
-    listHtml = '<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span><p>Belum ada pasien terdaftar hari ini.</p></div>';
+  if (waitingPatients.length === 0) {
+    listHtml = '<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">☕</span><p>Tidak ada pasien yang menunggu saat ini.</p></div>';
+  } else {
+    listHtml = '<div class="table-wrap" style="max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">' +
+      '<table style="width: 100%; font-size: 13px; margin: 0;">' +
+      '<thead><tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">' +
+      '<th style="padding: 10px; text-align:center;">Antrian</th>' +
+      '<th style="padding: 10px;">Nama Pasien</th>' +
+      '<th style="padding: 10px; text-align:center;">Aksi</th>' +
+      '</tr></thead><tbody>' +
+      waitingPatients.map(function(p) {
+        return '<tr style="border-bottom: 1px solid #f1f5f9;">' +
+          '<td class="mono" style="color: #d97706; font-weight: 700; padding: 10px; text-align:center; font-size: 14px;">' + esc(p.noAntrian) + '</td>' +
+          '<td style="font-weight: 500; padding: 10px;">' + esc(p.nama) + '</td>' +
+          '<td style="padding: 10px; text-align:center;">' +
+            '<button onclick="panggilDariDashboard(\'' + p.id + '\')" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; background: #d97706; border: none; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border-radius: 6px;">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' +
+              'Panggil' +
+            '</button>' +
+          '</td>' +
+          '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  var html = `
+    <div class="modal-body" style="padding: 0;">
+      <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 16px 16px 0 0;">
+        <div>
+          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">Pasien Menunggu</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Ada <b>${waitingPatients.length}</b> pasien dalam antrean.</p>
+        </div>
+        <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #a8a29e;">&times;</button>
+      </div>
+      
+      <div style="padding: 20px 24px;">
+        ${listHtml}
+      </div>
+
+      <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end;">
+        <button onclick="closeModal()" class="btn btn-secondary" style="padding: 10px 24px; width: 100%;">Tutup</button>
+      </div>
+    </div>
+  `;
+
+  var modalContent = document.getElementById('modalContent');
+  var modalOverlay = document.getElementById('modal');
+  if(modalContent && modalOverlay) {
+    modalContent.innerHTML = html;
+    modalContent.style.padding = "0"; 
+    modalOverlay.classList.add('open');
+  }
+}
+
+// ==========================================
+// FUNGSI PANGGIL PASIEN DARI DASHBOARD
+// ==========================================
+function panggilDariDashboard(id) {
+  // 1. Tutup modal daftar pasien
+  closeModal();
+  
+  // 2. Panggil fungsi panggilPasien yang ada di app.js
+  if (typeof panggilPasien === 'function') {
+    panggilPasien(id);
+  } else {
+    alert('Fungsi panggilPasien tidak ditemukan di app.js');
+  }
+  
+  // 3. Dashboard akan otomatis ter-render ulang oleh fungsi panggilPasien di app.js
+  // sehingga pasien yang dipanggil akan hilang dari daftar "Menunggu"
+}
+
+// ==========================================
+// FUNGSI MODAL GENERIK (Untuk Pasien Hari Ini)
+// ==========================================
+function tampilkanModalDaftarPasien(title, subtitle, patientList, btnColor, nextAction, btnText, btnIcon) {
+  var listHtml = '';
+  
+  if (patientList.length === 0) {
+    listHtml = '<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span><p>Tidak ada data pasien.</p></div>';
   } else {
     listHtml = '<div class="table-wrap" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">' +
       '<table style="width: 100%; font-size: 13px; margin: 0;">' +
       '<thead><tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;"><th style="padding: 10px;">Antrian</th><th style="padding: 10px;">Nama Pasien</th><th style="padding: 10px;">Status</th></tr></thead><tbody>' +
-      todayPatients.map(function(p) {
+      patientList.map(function(p) {
         return '<tr style="border-bottom: 1px solid #f1f5f9;">' +
-          '<td class="mono" style="color: var(--primary); font-weight: 700; padding: 10px; text-align:center;">' + esc(p.noAntrian) + '</td>' +
+          '<td class="mono" style="color: ' + btnColor + '; font-weight: 700; padding: 10px; text-align:center;">' + esc(p.noAntrian) + '</td>' +
           '<td style="font-weight: 500; padding: 10px;">' + esc(p.nama) + '</td>' +
           '<td style="padding: 10px;"><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
           '</tr>';
@@ -94,8 +191,8 @@ function bukaModalPasienHariIni() {
     <div class="modal-body" style="padding: 0;">
       <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 16px 16px 0 0;">
         <div>
-          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">Pasien Hari Ini</h3>
-          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Total: <b>${todayPatients.length}</b> pasien terdaftar.</p>
+          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">${title}</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">${subtitle}</p>
         </div>
         <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #a8a29e;">&times;</button>
       </div>
@@ -106,40 +203,35 @@ function bukaModalPasienHariIni() {
 
       <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; gap: 10px;">
         <button onclick="closeModal()" class="btn btn-secondary" style="flex: 1; padding: 12px;">Tutup</button>
-        <button onclick="lanjutKeFormPendaftaran()" class="btn btn-primary" style="flex: 2; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Daftarkan Pasien Baru
+        <button onclick="${nextAction}" class="btn" style="flex: 2; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; background: ${btnColor}; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+          ${btnIcon}
+          ${btnText}
         </button>
       </div>
     </div>
   `;
 
-  // Tampilkan modal
   var modalContent = document.getElementById('modalContent');
   var modalOverlay = document.getElementById('modal');
   if(modalContent && modalOverlay) {
     modalContent.innerHTML = html;
-    modalContent.style.padding = "0"; // Menghilangkan padding bawaan modal
+    modalContent.style.padding = "0"; 
     modalOverlay.classList.add('open');
   }
 }
 
 // ==========================================
-// FUNGSI PINDAH KE HALAMAN FORM
+// FUNGSI NAVIGASI
 // ==========================================
 function lanjutKeFormPendaftaran() {
-  closeModal(); // Tutup pop-up
-  
-  // Kembalikan padding modal ke semula (jaga-jaga)
+  closeModal();
   var modalContent = document.getElementById('modalContent');
   if (modalContent) modalContent.style.padding = ""; 
 
-  // Pindah halaman ke Pendaftaran
   window.view = 'pendaftaran';
   if (typeof renderNav === 'function') renderNav();
   if (typeof render === 'function') render();
 
-  // Fokuskan kursor ke input nama setelah form muncul
   setTimeout(function() {
     var inputNama = document.querySelector('input[name="nama"]');
     if (inputNama) {
@@ -150,7 +242,7 @@ function lanjutKeFormPendaftaran() {
 }
 
 // ==========================================
-// FUNGSI INTERAKSI (KLIK) LAINNYA
+// FUNGSI INTERAKSI LAINNYA
 // ==========================================
 function showDetailPasienDashboard(noRM) {
   var pasien = patients.find(function(p) { return p.noRM === noRM; });
@@ -176,7 +268,7 @@ function showDetailPasienDashboard(noRM) {
   var modalOverlay = document.getElementById('modal');
   if(modalContent && modalOverlay) {
     modalContent.innerHTML = html;
-    modalContent.style.padding = ""; // Pastikan padding normal
+    modalContent.style.padding = ""; 
     modalOverlay.classList.add('open');
   }
 }
