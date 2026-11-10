@@ -207,18 +207,63 @@ function showDetailPasienDashboard(noRM) {
   if(!pasien) return;
 
   var html = `
-    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-      <h3 style="margin:0; font-size:18px; color:#1c1917;">Detail Pasien</h3>
-      <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#a8a29e;">&times;</button>
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:14px;">
-      <div><strong style="color:#78716c; font-size:12px; display:block;">NAMA PASIEN</strong><span style="font-weight:600; color:#1c1917;">${esc(pasien.nama)}</span></div>
-      <div><strong style="color:#78716c; font-size:12px; display:block;">NO. REKAM MEDIS</strong><span class="mono" style="font-weight:600; color:#1c1917;">${esc(pasien.noRM)}</span></div>
-      <div><strong style="color:#78716c; font-size:12px; display:block;">NO. ANTRIAN</strong><span class="mono" style="font-weight:600; color:var(--primary);">${esc(pasien.noAntrian)}</span></div>
-      <div><strong style="color:#78716c; font-size:12px; display:block;">STATUS</strong><span class="badge ${STATUS[pasien.status].cls}">${STATUS[pasien.status].label}</span></div>
-    </div>
-    <div style="margin-top: 25px; text-align: right;">
-      <button onclick="closeModal()" class="btn btn-secondary" style="padding: 8px 20px;">Tutup</button>
+    <div class="modal-body" style="padding: 0;">
+      <!-- Header Modal -->
+      <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 16px 16px 0 0;">
+        <div>
+          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">Detail Pasien</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Informasi lengkap pasien</p>
+        </div>
+        <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #a8a29e;">&times;</button>
+      </div>
+      
+      <!-- Body Modal (Isi Data) -->
+      <div style="padding: 24px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px;">
+          
+          <!-- Nama Pasien (Full Width) -->
+          <div style="grid-column: 1 / -1; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0; margin-bottom: 4px;">
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">NAMA PASIEN</strong>
+            <span style="font-weight:700; color:#1c1917; font-size: 16px;">${esc(pasien.nama)}</span>
+          </div>
+
+          <!-- No RM -->
+          <div>
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">NO. REKAM MEDIS</strong>
+            <span class="mono" style="font-weight:600; color:#1c1917; background: #f1f5f9; padding: 2px 8px; border-radius: 4px;">${esc(pasien.noRM)}</span>
+          </div>
+
+          <!-- No Antrian -->
+          <div>
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">NO. ANTRIAN</strong>
+            <span class="mono" style="font-weight:700; color:var(--primary); font-size: 15px;">${esc(pasien.noAntrian)}</span>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">STATUS</strong>
+            <span class="badge ${STATUS[pasien.status].cls}">${STATUS[pasien.status].label}</span>
+          </div>
+
+          <!-- Tanggal Daftar -->
+          <div>
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">TANGGAL DAFTAR</strong>
+            <span style="font-weight:500; color:#1c1917;">${esc(fmtDate(pasien.tglDaftar))}</span>
+          </div>
+          
+          <!-- Total Tes -->
+          <div style="grid-column: 1 / -1; margin-top: 8px;">
+            <strong style="color:#78716c; font-size:11px; display:block; letter-spacing: 0.5px; margin-bottom: 4px;">PEMERIKSAAN</strong>
+            <span style="font-weight:500; color:#1c1917;">${pasien.tests ? pasien.tests.length : 0} Jenis Tes Laboratorium</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Modal (Tombol) -->
+      <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end;">
+        <button onclick="closeModal()" class="btn btn-secondary" style="padding: 10px 24px;">Tutup</button>
+      </div>
     </div>
   `;
 
@@ -226,7 +271,7 @@ function showDetailPasienDashboard(noRM) {
   var modalOverlay = document.getElementById('modal');
   if(modalContent && modalOverlay) {
     modalContent.innerHTML = html;
-    modalContent.style.padding = ""; 
+    modalContent.style.padding = "0"; // Tetap 0 karena padding sudah diatur di dalam div
     modalOverlay.classList.add('open');
   }
 }
