@@ -1142,64 +1142,71 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   .admin-cards-vertical { flex-direction:column; align-items:center; }
 }
 /* ==========================================
-   FITUR MINIMIZE SIDEBAR (DESKTOP)
+   FITUR MINIMIZE SIDEBAR & RUNNING TEXT (FIXED)
    ========================================== */
-.sidebar {
-  transition: all 0.3s ease-in-out;
-}
-.layout {
-  transition: all 0.3s ease-in-out;
-}
+
+/* 1. Transisi Halus */
+.sidebar { transition: all 0.3s ease-in-out; }
+.layout { transition: all 0.3s ease-in-out; }
+
+/* 2. Kondisi Saat Sidebar Disembunyikan (Collapsed) */
 .layout.sidebar-collapsed .sidebar {
   width: 0 !important;
+  min-width: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
+  opacity: 0;
   overflow: hidden;
   border-right: none;
-  opacity: 0;
 }
-/* ==========================================
-   FITUR MINIMIZE SIDEBAR (DESKTOP) - UPDATE
-   ========================================== */
+
+/* Konten utama melebar penuh (INI YANG TADI HILANG) */
+.layout.sidebar-collapsed .main-wrapper {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 3. Tombol Hamburger (☰) */
 .sidebar-open-btn {
   display: none; /* Sembunyikan default */
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%; /* Agar setinggi kotak kuning */
-  padding: 0 12px;
+  height: 40px; /* Setinggi kotak running text */
+  width: 45px;
   z-index: 1000;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #b45309; /* Warnanya disamakan dengan teks kuning */
+  color: #b45309; /* Warnanya senada dengan teks kuning */
   align-items: center;
   justify-content: center;
 }
 
+/* Munculkan tombol saat sidebar tertutup */
 .layout.sidebar-collapsed .sidebar-open-btn {
-  display: flex; /* Munculkan saat tertutup */
+  display: flex; 
 }
 
-/* ==========================================
-   DESAIN RUNNING TEXT (PENGUMUMAN) - UPDATE
-   ========================================== */
+/* 4. Desain Kotak Running Text (Pengumuman) */
 .announcement-bar {
   display: flex;
-  background: #fffbeb;
+  background: #fffbeb; /* Warna kuning lembut */
   border-bottom: 1px solid #fde68a;
   color: #b45309;
-  padding: 8px 16px; /* Padding normal saat sidebar terbuka */
+  padding: 8px 16px;
   overflow: hidden;
   align-items: center;
   font-size: 13px;
   font-weight: 500;
   position: relative;
-  height: 40px;
+  height: 40px; /* Tinggi tetap */
   transition: padding-left 0.3s ease-in-out;
 }
 
-/* Saat sidebar tertutup, beri jarak kiri agar tidak tertutup tombol ☰ */
+/* Geser label INFO saat sidebar tertutup agar tidak tertutup tombol ☰ */
 .layout.sidebar-collapsed .announcement-bar {
   padding-left: 45px; 
 }
@@ -1236,4 +1243,10 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
 @keyframes marquee {
   0% { transform: translate(0, 0); }
   100% { transform: translate(-100%, 0); }
+}
+
+/* 5. Media Query (Mobile) - Pastikan fitur ini tidak aktif di HP */
+@media (max-width: 768px) {
+  .sidebar-open-btn { display: none !important; }
+  .layout.sidebar-collapsed .sidebar { width: 260px !important; opacity: 1; }
 }
