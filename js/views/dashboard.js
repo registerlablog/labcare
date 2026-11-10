@@ -1,55 +1,66 @@
 // ==========================================
 // TAMPILAN: DASHBOARD
 // ==========================================
-
-// Variabel global untuk menyimpan instance grafik agar bisa dihapus/diperbarui
 var dashboardChartInstance = null; 
 
 function viewDashboard() {
   var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
   var c = function(s) { return t.filter(function(p) { return p.status === s; }).length; };
+  
   var cards = [
-    { label: 'Pasien Hari Ini', val: t.length,       cls: 'stat-blue',   icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-    { label: 'Menunggu',        val: c('menunggu'),  cls: 'stat-amber',  icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
-    { label: 'Diproses',        val: c('proses') + c('sampling'), cls: 'stat-purple', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>' },
-    { label: 'Selesai',         val: c('selesai'),   cls: 'stat-green',  icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' }
+    { label: 'Pasien Hari Ini', val: t.length, cls: 'stat-blue', filter: 'semua', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { label: 'Menunggu', val: c('menunggu'), cls: 'stat-amber', filter: 'menunggu', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+    { label: 'Diproses', val: c('proses') + c('sampling'), cls: 'stat-purple', filter: 'proses', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 8a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-8V3z"/><path d="M9 3h6"/></svg>' },
+    { label: 'Selesai', val: c('selesai'), cls: 'stat-green', filter: 'selesai', icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' }
   ];
   
-  var cardsHtml = cards.map(function(x) { return '<div class="stat-card ' + x.cls + '"><div class="icon">' + x.icon + '</div><div class="val">' + x.val + '</div><div class="lbl">' + x.label + '</div></div>'; }).join('');
+  var cardsHtml = cards.map(function(x, index) { 
+    var clickAction = "";
+    // Hanya Kartu Pertama (Pasien Hari Ini) yang memiliki efek klik
+    if (index === 0) {
+      clickAction = 'onclick="bukaPendaftaranPasien()" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 6px 15px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'"';
+    }
+    
+    return '<div class="stat-card ' + x.cls + '" ' + clickAction + '>' +
+           '<div class="icon">' + x.icon + '</div>' +
+           '<div class="val">' + x.val + '</div>' +
+           '<div class="lbl">' + x.label + '</div></div>'; 
+  }).join('');
   
-  // --- SENTUHAN AKHIR: DESAIN GRAFIK & DROPDOWN FILTER ---
   var chartHtml = `
     <div class="chart-card" style="background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-top: 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <h3 style="margin: 0; font-size: 16px; color: #1c1917; font-weight: 700;">Tren Kunjungan Pasien</h3>
-        
-        <!-- Dropdown Filter Waktu -->
         <select onchange="updateChartFilter(this.value)" style="font-size: 12px; color: #57534e; background: #f5f2eb; padding: 6px 12px; border-radius: 20px; border: 1px solid #e7e5e4; outline: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; transition: all 0.2s;">
           <option value="7">7 Hari Terakhir</option>
           <option value="14">14 Hari Terakhir</option>
           <option value="30">30 Hari Terakhir</option>
         </select>
       </div>
-      
-      <!-- Wadah Canvas Grafik (Responsif) -->
       <div style="position: relative; height: 250px; width: 100%; min-height: 250px;">
-        <canvas id="trenKunjunganChart"></canvas>
+        <canvas id="trenKunjunganChart" style="cursor: pointer;" title="Klik titik untuk melihat laporan harian"></canvas>
       </div>
     </div>
   `;
 
   var recent = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
   var recentHtml;
-  if (recent.length === 0) { recentHtml = '<div class="empty-state"><span class="em">📭</span><p>Belum ada data pasien.</p></div>'; }
-  else {
+  if (recent.length === 0) { 
+    recentHtml = '<div class="empty-state"><span class="em">📭</span><p>Belum ada data pasien.</p></div>'; 
+  } else {
     recentHtml = '<div class="table-wrap"><table><thead><tr><th>Antrian</th><th>No. RM</th><th>Nama</th><th>Tes</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>' +
-      recent.map(function(p) { return '<tr><td class="mono" style="color:var(--primary);font-weight:700;">' + esc(p.noAntrian) + '</td><td class="mono" style="font-size:12px;">' + esc(p.noRM) + '</td><td style="font-weight:500;">' + esc(p.nama) + '</td><td style="font-size:12px;color:var(--slate-500);">' + (p.tests ? p.tests.length : 0) + ' tes</td><td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td><td style="font-size:12px;color:var(--slate-500);">' + esc(fmtDate(p.tglDaftar)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+      recent.map(function(p) { 
+        return '<tr class="clickable-row" onclick="showDetailPasienDashboard(\'' + esc(p.noRM) + '\')">' +
+               '<td class="mono" style="color:var(--primary);font-weight:700;">' + esc(p.noAntrian) + '</td>' +
+               '<td class="mono" style="font-size:12px;">' + esc(p.noRM) + '</td>' +
+               '<td style="font-weight:500;">' + esc(p.nama) + '</td>' +
+               '<td style="font-size:12px;color:var(--slate-500);">' + (p.tests ? p.tests.length : 0) + ' tes</td>' +
+               '<td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
+               '<td style="font-size:12px;color:var(--slate-500);">' + esc(fmtDate(p.tglDaftar)) + '</td></tr>'; 
+      }).join('') + '</tbody></table></div>';
   }
 
-  // Panggil fungsi render grafik default 7 hari
-  setTimeout(function() {
-    renderTrenChart(7);
-  }, 100);
+  setTimeout(function() { renderTrenChart(7); }, 100);
 
   return '<div class="page-header"><h2>Dashboard</h2><p>Ringkasan pelayanan — ' + esc(fmtDate(new Date().toISOString())) + '</p></div>' +
          '<div class="stats-grid">' + cardsHtml + '</div>' + 
@@ -58,49 +69,88 @@ function viewDashboard() {
 }
 
 // ==========================================
-// FUNGSI UNTUK MENGUBAH FILTER GRAFIK
+// FUNGSI KLIK KARTU PASIEN HARI INI
 // ==========================================
-function updateChartFilter(days) {
-  renderTrenChart(parseInt(days));
+function bukaPendaftaranPasien() {
+  // 1. Ubah halaman aktif ke pendaftaran
+  window.view = 'pendaftaran';
+  
+  // 2. Render ulang navigasi dan halaman
+  if (typeof renderNav === 'function') renderNav();
+  if (typeof render === 'function') render();
+
+  // 3. Beri jeda sedikit agar form pendaftaran muncul, lalu fokuskan kursor ke kolom "Nama Lengkap"
+  setTimeout(function() {
+    var inputNama = document.querySelector('input[name="nama"]');
+    if (inputNama) {
+      // Scroll ke atas dengan halus
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Fokuskan kursor
+      inputNama.focus();
+    }
+  }, 150);
 }
 
 // ==========================================
-// FUNGSI RENDER GRAFIK (CHART.JS)
+// FUNGSI INTERAKSI (KLIK) LAINNYA
 // ==========================================
+function showDetailPasienDashboard(noRM) {
+  var pasien = patients.find(function(p) { return p.noRM === noRM; });
+  if(!pasien) return;
+
+  var html = `
+    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
+      <h3 style="margin:0; font-size:18px; color:#1c1917;">Detail Pasien</h3>
+      <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#a8a29e;">&times;</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:14px;">
+      <div><strong style="color:#78716c; font-size:12px; display:block;">NAMA PASIEN</strong><span style="font-weight:600; color:#1c1917;">${esc(pasien.nama)}</span></div>
+      <div><strong style="color:#78716c; font-size:12px; display:block;">NO. REKAM MEDIS</strong><span class="mono" style="font-weight:600; color:#1c1917;">${esc(pasien.noRM)}</span></div>
+      <div><strong style="color:#78716c; font-size:12px; display:block;">NO. ANTRIAN</strong><span class="mono" style="font-weight:600; color:var(--primary);">${esc(pasien.noAntrian)}</span></div>
+      <div><strong style="color:#78716c; font-size:12px; display:block;">STATUS</strong><span class="badge ${STATUS[pasien.status].cls}">${STATUS[pasien.status].label}</span></div>
+      <div><strong style="color:#78716c; font-size:12px; display:block;">TANGGAL DAFTAR</strong><span style="font-weight:500;">${esc(fmtDate(pasien.tglDaftar))}</span></div>
+      <div><strong style="color:#78716c; font-size:12px; display:block;">TOTAL TES</strong><span style="font-weight:500;">${pasien.tests ? pasien.tests.length : 0} Jenis Tes</span></div>
+    </div>
+    <div style="margin-top: 25px; text-align: right;">
+      <button onclick="closeModal()" class="btn btn-secondary" style="padding: 8px 20px;">Tutup</button>
+    </div>
+  `;
+
+  if (typeof openModal === 'function') {
+    openModal(html);
+  } else {
+    var modalContent = document.getElementById('modalContent');
+    var modalOverlay = document.getElementById('modal');
+    if(modalContent && modalOverlay) {
+      modalContent.innerHTML = html;
+      modalOverlay.classList.add('active');
+    }
+  }
+}
+
+// ==========================================
+// FUNGSI GRAFIK (CHART.JS)
+// ==========================================
+function updateChartFilter(days) { renderTrenChart(parseInt(days)); }
+
 function renderTrenChart(days) {
   var ctx = document.getElementById('trenKunjunganChart');
   if (!ctx) return;
-
-  // Hapus grafik lama jika ada, agar tidak tumpang tindih saat ganti filter
-  if (dashboardChartInstance) {
-    dashboardChartInstance.destroy();
-  }
+  if (dashboardChartInstance) dashboardChartInstance.destroy();
 
   var labels = [];
   var dataKunjungan = [];
   var todayObj = new Date();
   var bulanIndo = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
 
-  // Looping mundur sesuai jumlah hari yang dipilih
   for (var i = days - 1; i >= 0; i--) {
     var d = new Date(todayObj);
     d.setDate(todayObj.getDate() - i);
-    
     var dateStr = d.toISOString().slice(0, 10); 
-    
-    // Label: "04 Nov". Jika 30 hari, buat format lebih ringkas jika perlu (contoh: hanya tanggal)
-    var labelStr = String(d.getDate()).padStart(2, '0') + ' ' + bulanIndo[d.getMonth()];
-    labels.push(labelStr);
-
-    // Hitung pasien
-    var count = patients.filter(function(p) {
-      return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr;
-    }).length;
-    
-    dataKunjungan.push(count);
+    labels.push(String(d.getDate()).padStart(2, '0') + ' ' + bulanIndo[d.getMonth()]);
+    dataKunjungan.push(patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr; }).length);
   }
 
-  // Render Grafik Baru
   dashboardChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
@@ -114,8 +164,8 @@ function renderTrenChart(days) {
         pointBackgroundColor: '#ffffff',
         pointBorderColor: '#0f766e',
         pointBorderWidth: 2,
-        pointRadius: days > 14 ? 2 : 4, // Perkecil titik jika datanya banyak (30 hari)
-        pointHoverRadius: 6,
+        pointRadius: days > 14 ? 3 : 4,
+        pointHoverRadius: 7,
         fill: true,
         tension: 0.4
       }]
@@ -126,31 +176,13 @@ function renderTrenChart(days) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1c1917',
-          padding: 10,
-          displayColors: false,
-          callbacks: {
-            label: function(context) {
-              return context.parsed.y + ' Pasien';
-            }
-          }
+          backgroundColor: '#1c1917', padding: 10, displayColors: false,
+          callbacks: { label: function(context) { return context.parsed.y + ' Pasien'; } }
         }
       },
       scales: {
-        x: {
-          grid: { display: false },
-          ticks: { 
-            color: '#78716c', 
-            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
-            maxRotation: 45, // Miringkan teks jika datanya banyak (30 hari)
-            minRotation: 0
-          }
-        },
-        y: {
-          beginAtZero: true,
-          grid: { color: '#f5f2eb' },
-          ticks: { color: '#78716c', stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }
-        }
+        x: { grid: { display: false }, ticks: { color: '#78716c', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }, maxRotation: 45, minRotation: 0 } },
+        y: { beginAtZero: true, grid: { color: '#f5f2eb' }, ticks: { color: '#78716c', stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } } }
       }
     }
   });
