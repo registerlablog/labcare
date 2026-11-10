@@ -96,7 +96,34 @@ function viewMasterLogBackup() {
     '</div>';
 }
 function viewMasterSistem() {
-  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">⚙️ Pengaturan Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Zona Berbahaya (Hanya untuk Admin).</p></div></div>' +
+  // Beri jeda sejenak untuk mengisi textarea dengan pengumuman yang aktif saat ini
+  setTimeout(function() {
+    var inputPeng = document.getElementById('inputPengumuman');
+    if (inputPeng) {
+      var teksDefault = 'Selamat datang di Sistem Informasi LabCare. Pastikan Sebelum Kerja Teriak " Saya Akan Lawan !!! ".';
+      inputPeng.value = localStorage.getItem('labcare_pengumuman') || teksDefault;
+    }
+  }, 100);
+
+  return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">⚙️ Pengaturan Sistem</h3><p style="font-size:13px;color:var(--slate-500);margin-top:2px;">Kelola pengumuman dashboard dan tindakan khusus admin.</p></div></div>' +
+    
+    // --- KARTU BARU: PENGATURAN PENGUMUMAN ---
+    '<div class="card" style="margin-bottom: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">' +
+      '<h3 style="color: #1c1917; margin-bottom: 8px; font-size: 16px; font-weight: 700;">📢 Pengaturan Running Text (Dashboard)</h3>' +
+      '<p style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px;">Ubah teks pengumuman yang berjalan di bagian paling atas halaman Dashboard.</p>' +
+      '<div class="form-row" style="grid-template-columns: 1fr;">' +
+        '<div>' +
+          '<label class="lbl">Teks Pengumuman</label>' +
+          '<textarea id="inputPengumuman" class="inp-ta" rows="3" placeholder="Ketik pengumuman di sini..."></textarea>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display: flex; gap: 10px; margin-top: 12px;">' +
+        '<button type="button" class="btn btn-primary" onclick="simpanPengumumanBaru()">💾 Simpan Pengumuman</button>' +
+      '</div>' +
+    '</div>' +
+    // ------------------------------------------
+
+    // --- KARTU LAMA: ZONA BERBAHAYA ---
     '<div class="card" style="border: 2px solid var(--danger); background: #fff5f5;">' +
       '<h3 style="color: var(--danger); margin-bottom: 8px;">⚠️ Reset Data Pasien</h3>' +
       '<p style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px;">Fitur ini akan <b>menghapus permanen</b> seluruh data pasien (Nama, Hasil Lab, Riwayat). Hanya gunakan fitur ini di akhir tahun untuk mereset penomoran RM.</p>' +
