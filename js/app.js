@@ -1761,3 +1761,19 @@ function toggleDesktopSidebar() {
     }, 350); 
   }
 }
+// ==========================================
+// FITUR RUNNING TEXT DINAMIS
+// ==========================================
+function muatPengumuman() {
+  // Ambil dari localStorage, jika kosong pakai teks default ini
+  var teksDefault = 'Selamat datang di Sistem Informasi LabCare. Pastikan Sebelum Kerja Teriak " Saya Akan Lawan !!! ".';
+  var teksAktif = localStorage.getItem('labcare_pengumuman') || teksDefault;
+  
+  var el = document.getElementById('teksPengumuman');
+  if (el) {
+    el.textContent = teksAktif;
+  }
+}
+
+// Panggil saat halaman selesai dimuat
+document.addEventListener('DOMContentLoaded', muatPengumuman);
