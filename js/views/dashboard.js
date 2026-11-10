@@ -1,6 +1,10 @@
 // ==========================================
 // TAMPILAN: DASHBOARD
 // ==========================================
+
+// Variabel global untuk menyimpan instance grafik agar bisa dihapus/diperbarui
+var dashboardChartInstance = null; 
+
 function viewDashboard() {
   var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
   var c = function(s) { return t.filter(function(p) { return p.status === s; }).length; };
@@ -13,14 +17,22 @@ function viewDashboard() {
   
   var cardsHtml = cards.map(function(x) { return '<div class="stat-card ' + x.cls + '"><div class="icon">' + x.icon + '</div><div class="val">' + x.val + '</div><div class="lbl">' + x.label + '</div></div>'; }).join('');
   
-  // --- [LANGKAH 2] HTML UNTUK GRAFIK ---
+  // --- SENTUHAN AKHIR: DESAIN GRAFIK & DROPDOWN FILTER ---
   var chartHtml = `
     <div class="chart-card" style="background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-top: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <h3 style="margin: 0; font-size: 16px; color: #1c1917; font-weight: 700;">Tren Kunjungan Pasien</h3>
-        <span style="font-size: 12px; color: #78716c; background: #f5f2eb; padding: 4px 10px; border-radius: 20px;">7 Hari Terakhir</span>
+        
+        <!-- Dropdown Filter Waktu -->
+        <select onchange="updateChartFilter(this.value)" style="font-size: 12px; color: #57534e; background: #f5f2eb; padding: 6px 12px; border-radius: 20px; border: 1px solid #e7e5e4; outline: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; transition: all 0.2s;">
+          <option value="7">7 Hari Terakhir</option>
+          <option value="14">14 Hari Terakhir</option>
+          <option value="30">30 Hari Terakhir</option>
+        </select>
       </div>
-      <div style="position: relative; height: 250px; width: 100%;">
+      
+      <!-- Wadah Canvas Grafik (Responsif) -->
+      <div style="position: relative; height: 250px; width: 100%; min-height: 250px;">
         <canvas id="trenKunjunganChart"></canvas>
       </div>
     </div>
@@ -34,13 +46,11 @@ function viewDashboard() {
       recent.map(function(p) { return '<tr><td class="mono" style="color:var(--primary);font-weight:700;">' + esc(p.noAntrian) + '</td><td class="mono" style="font-size:12px;">' + esc(p.noRM) + '</td><td style="font-weight:500;">' + esc(p.nama) + '</td><td style="font-size:12px;color:var(--slate-500);">' + (p.tests ? p.tests.length : 0) + ' tes</td><td><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td><td style="font-size:12px;color:var(--slate-500);">' + esc(fmtDate(p.tglDaftar)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
   }
 
-  // --- [LANGKAH 3] Panggil fungsi render grafik setelah HTML dirender ---
-  // Menggunakan setTimeout agar canvas sudah masuk ke DOM sebelum digambar
+  // Panggil fungsi render grafik default 7 hari
   setTimeout(function() {
-    renderTrenChart();
+    renderTrenChart(7);
   }, 100);
 
-  // Gabungkan semua HTML (Perhatikan penambahan chartHtml di sini)
   return '<div class="page-header"><h2>Dashboard</h2><p>Ringkasan pelayanan — ' + esc(fmtDate(new Date().toISOString())) + '</p></div>' +
          '<div class="stats-grid">' + cardsHtml + '</div>' + 
          chartHtml + 
@@ -48,30 +58,41 @@ function viewDashboard() {
 }
 
 // ==========================================
+// FUNGSI UNTUK MENGUBAH FILTER GRAFIK
+// ==========================================
+function updateChartFilter(days) {
+  renderTrenChart(parseInt(days));
+}
+
+// ==========================================
 // FUNGSI RENDER GRAFIK (CHART.JS)
 // ==========================================
-function renderTrenChart() {
+function renderTrenChart(days) {
   var ctx = document.getElementById('trenKunjunganChart');
-  if (!ctx) return; // Hentikan jika canvas belum ada
+  if (!ctx) return;
+
+  // Hapus grafik lama jika ada, agar tidak tumpang tindih saat ganti filter
+  if (dashboardChartInstance) {
+    dashboardChartInstance.destroy();
+  }
 
   var labels = [];
   var dataKunjungan = [];
   var todayObj = new Date();
   var bulanIndo = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
 
-  // Looping mundur 7 hari ke belakang
-  for (var i = 6; i >= 0; i--) {
+  // Looping mundur sesuai jumlah hari yang dipilih
+  for (var i = days - 1; i >= 0; i--) {
     var d = new Date(todayObj);
     d.setDate(todayObj.getDate() - i);
     
-    // Format YYYY-MM-DD untuk mencocokkan dengan data tglDaftar
     var dateStr = d.toISOString().slice(0, 10); 
     
-    // Format label (contoh: "04 Nov")
+    // Label: "04 Nov". Jika 30 hari, buat format lebih ringkas jika perlu (contoh: hanya tanggal)
     var labelStr = String(d.getDate()).padStart(2, '0') + ' ' + bulanIndo[d.getMonth()];
     labels.push(labelStr);
 
-    // Hitung jumlah pasien pada tanggal tersebut
+    // Hitung pasien
     var count = patients.filter(function(p) {
       return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr;
     }).length;
@@ -79,8 +100,8 @@ function renderTrenChart() {
     dataKunjungan.push(count);
   }
 
-  // Render Chart menggunakan library Chart.js
-  new Chart(ctx, {
+  // Render Grafik Baru
+  dashboardChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels,
@@ -93,7 +114,7 @@ function renderTrenChart() {
         pointBackgroundColor: '#ffffff',
         pointBorderColor: '#0f766e',
         pointBorderWidth: 2,
-        pointRadius: 4,
+        pointRadius: days > 14 ? 2 : 4, // Perkecil titik jika datanya banyak (30 hari)
         pointHoverRadius: 6,
         fill: true,
         tension: 0.4
@@ -118,7 +139,12 @@ function renderTrenChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: '#78716c', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }
+          ticks: { 
+            color: '#78716c', 
+            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+            maxRotation: 45, // Miringkan teks jika datanya banyak (30 hari)
+            minRotation: 0
+          }
         },
         y: {
           beginAtZero: true,
