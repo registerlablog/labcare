@@ -16,9 +16,9 @@ function viewDashboard() {
   
   var cardsHtml = cards.map(function(x, index) { 
     var clickAction = "";
-    // Hanya Kartu Pertama (Pasien Hari Ini) yang memiliki efek klik
+    // HANYA KARTU PERTAMA YANG BISA DIKLIK
     if (index === 0) {
-      clickAction = 'onclick="bukaPendaftaranPasien()" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 6px 15px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'"';
+      clickAction = 'onclick="bukaModalPasienHariIni()" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 6px 15px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'"';
     }
     
     return '<div class="stat-card ' + x.cls + '" ' + clickAction + '>' +
@@ -38,7 +38,7 @@ function viewDashboard() {
         </select>
       </div>
       <div style="position: relative; height: 250px; width: 100%; min-height: 250px;">
-        <canvas id="trenKunjunganChart" style="cursor: pointer;" title="Klik titik untuk melihat laporan harian"></canvas>
+        <canvas id="trenKunjunganChart"></canvas>
       </div>
     </div>
   `;
@@ -69,23 +69,81 @@ function viewDashboard() {
 }
 
 // ==========================================
-// FUNGSI KLIK KARTU PASIEN HARI INI
+// FUNGSI KLIK KARTU PASIEN HARI INI (MODAL)
 // ==========================================
-function bukaPendaftaranPasien() {
-  // 1. Ubah halaman aktif ke pendaftaran
-  window.view = 'pendaftaran';
+function bukaModalPasienHariIni() {
+  var todayPatients = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
   
-  // 2. Render ulang navigasi dan halaman
+  var listHtml = '';
+  if (todayPatients.length === 0) {
+    listHtml = '<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span><p>Belum ada pasien terdaftar hari ini.</p></div>';
+  } else {
+    listHtml = '<div class="table-wrap" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">' +
+      '<table style="width: 100%; font-size: 13px; margin: 0;">' +
+      '<thead><tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;"><th style="padding: 10px;">Antrian</th><th style="padding: 10px;">Nama Pasien</th><th style="padding: 10px;">Status</th></tr></thead><tbody>' +
+      todayPatients.map(function(p) {
+        return '<tr style="border-bottom: 1px solid #f1f5f9;">' +
+          '<td class="mono" style="color: var(--primary); font-weight: 700; padding: 10px; text-align:center;">' + esc(p.noAntrian) + '</td>' +
+          '<td style="font-weight: 500; padding: 10px;">' + esc(p.nama) + '</td>' +
+          '<td style="padding: 10px;"><span class="badge ' + STATUS[p.status].cls + '">' + STATUS[p.status].label + '</span></td>' +
+          '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  var html = `
+    <div class="modal-body" style="padding: 0;">
+      <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 16px 16px 0 0;">
+        <div>
+          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">Pasien Hari Ini</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Total: <b>${todayPatients.length}</b> pasien terdaftar.</p>
+        </div>
+        <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #a8a29e;">&times;</button>
+      </div>
+      
+      <div style="padding: 20px 24px;">
+        ${listHtml}
+      </div>
+
+      <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; gap: 10px;">
+        <button onclick="closeModal()" class="btn btn-secondary" style="flex: 1; padding: 12px;">Tutup</button>
+        <button onclick="lanjutKeFormPendaftaran()" class="btn btn-primary" style="flex: 2; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Daftarkan Pasien Baru
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Tampilkan modal
+  var modalContent = document.getElementById('modalContent');
+  var modalOverlay = document.getElementById('modal');
+  if(modalContent && modalOverlay) {
+    modalContent.innerHTML = html;
+    modalContent.style.padding = "0"; // Menghilangkan padding bawaan modal
+    modalOverlay.classList.add('open');
+  }
+}
+
+// ==========================================
+// FUNGSI PINDAH KE HALAMAN FORM
+// ==========================================
+function lanjutKeFormPendaftaran() {
+  closeModal(); // Tutup pop-up
+  
+  // Kembalikan padding modal ke semula (jaga-jaga)
+  var modalContent = document.getElementById('modalContent');
+  if (modalContent) modalContent.style.padding = ""; 
+
+  // Pindah halaman ke Pendaftaran
+  window.view = 'pendaftaran';
   if (typeof renderNav === 'function') renderNav();
   if (typeof render === 'function') render();
 
-  // 3. Beri jeda sedikit agar form pendaftaran muncul, lalu fokuskan kursor ke kolom "Nama Lengkap"
+  // Fokuskan kursor ke input nama setelah form muncul
   setTimeout(function() {
     var inputNama = document.querySelector('input[name="nama"]');
     if (inputNama) {
-      // Scroll ke atas dengan halus
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      // Fokuskan kursor
       inputNama.focus();
     }
   }, 150);
@@ -108,23 +166,18 @@ function showDetailPasienDashboard(noRM) {
       <div><strong style="color:#78716c; font-size:12px; display:block;">NO. REKAM MEDIS</strong><span class="mono" style="font-weight:600; color:#1c1917;">${esc(pasien.noRM)}</span></div>
       <div><strong style="color:#78716c; font-size:12px; display:block;">NO. ANTRIAN</strong><span class="mono" style="font-weight:600; color:var(--primary);">${esc(pasien.noAntrian)}</span></div>
       <div><strong style="color:#78716c; font-size:12px; display:block;">STATUS</strong><span class="badge ${STATUS[pasien.status].cls}">${STATUS[pasien.status].label}</span></div>
-      <div><strong style="color:#78716c; font-size:12px; display:block;">TANGGAL DAFTAR</strong><span style="font-weight:500;">${esc(fmtDate(pasien.tglDaftar))}</span></div>
-      <div><strong style="color:#78716c; font-size:12px; display:block;">TOTAL TES</strong><span style="font-weight:500;">${pasien.tests ? pasien.tests.length : 0} Jenis Tes</span></div>
     </div>
     <div style="margin-top: 25px; text-align: right;">
       <button onclick="closeModal()" class="btn btn-secondary" style="padding: 8px 20px;">Tutup</button>
     </div>
   `;
 
-  if (typeof openModal === 'function') {
-    openModal(html);
-  } else {
-    var modalContent = document.getElementById('modalContent');
-    var modalOverlay = document.getElementById('modal');
-    if(modalContent && modalOverlay) {
-      modalContent.innerHTML = html;
-      modalOverlay.classList.add('active');
-    }
+  var modalContent = document.getElementById('modalContent');
+  var modalOverlay = document.getElementById('modal');
+  if(modalContent && modalOverlay) {
+    modalContent.innerHTML = html;
+    modalContent.style.padding = ""; // Pastikan padding normal
+    modalOverlay.classList.add('open');
   }
 }
 
