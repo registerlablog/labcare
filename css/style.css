@@ -1175,13 +1175,71 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
    ========================================== */
 .layout.sidebar-collapsed .main-wrapper {
   margin-left: 0 !important;
-  /* Ubah padding-left dari 0 menjadi 60px agar tidak tertutup tombol */
-  padding-left: 60px !important; 
+  padding-left: 0 !important; /* Full lebar */
   width: 100% !important;
   max-width: 100% !important;
-  transition: all 0.3s ease-in-out;
 }
-/* Memberi sedikit ruang di kiri agar judul "Dashboard" tidak tertutup tombol hamburger */
-.layout.sidebar-collapsed .main {
-  padding-top: 20px;
+
+/* Hilangkan padding aneh pada main */
+.main {
+  padding-top: 10px;
+}
+
+/* ==========================================
+   DESAIN RUNNING TEXT (PENGUMUMAN)
+   ========================================== */
+.announcement-bar {
+  display: flex;
+  background: #fffbeb; /* Warna kuning lembut */
+  border-bottom: 1px solid #fde68a;
+  color: #b45309;
+  padding: 8px 16px;
+  overflow: hidden;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+  height: 40px; /* Tinggi tetap agar rapi */
+}
+
+.announcement-label {
+  background: #f59e0b;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 12px;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.announcement-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+}
+
+.marquee {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 25s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused; /* Berhenti saat di-hover mouse */
+}
+
+@keyframes marquee {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-100%, 0); }
+}
+
+/* Penyesuaian tombol open sidebar */
+.sidebar-open-btn {
+  display: none; /* Sembunyikan default */
+}
+.layout.sidebar-collapsed .sidebar-open-btn {
+  display: flex; /* Munculkan saat sidebar tertutup */
 }
