@@ -1745,3 +1745,19 @@ function konfirmasiRestore(fileId, namaFile, tanggalFile) {
   });
 }
 document.addEventListener('DOMContentLoaded', initLoginState);
+// ==========================================
+// FUNGSI MINIMIZE SIDEBAR (DESKTOP)
+// ==========================================
+function toggleDesktopSidebar() {
+  var layout = document.querySelector('.layout');
+  if (layout) {
+    // Toggle class untuk menyembunyikan/menampilkan sidebar
+    layout.classList.toggle('sidebar-collapsed');
+    
+    // Beri jeda sejenak agar animasi CSS selesai, 
+    // lalu paksa Chart.js untuk menyesuaikan ukuran grafiknya
+    setTimeout(function() {
+      window.dispatchEvent(new Event('resize'));
+    }, 350); 
+  }
+}
