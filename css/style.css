@@ -1175,11 +1175,12 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
    ========================================== */
 .layout.sidebar-collapsed .main-wrapper {
   margin-left: 0 !important;
-  padding-left: 0 !important;
+  /* Ubah padding-left dari 0 menjadi 60px agar tidak tertutup tombol */
+  padding-left: 60px !important; 
   width: 100% !important;
   max-width: 100% !important;
+  transition: all 0.3s ease-in-out;
 }
-
 /* Memberi sedikit ruang di kiri agar judul "Dashboard" tidak tertutup tombol hamburger */
 .layout.sidebar-collapsed .main {
   padding-top: 20px;
