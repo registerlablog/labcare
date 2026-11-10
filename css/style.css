@@ -1141,3 +1141,32 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   .admin-card-v { width:100%; max-width:320px; }
   .admin-cards-vertical { flex-direction:column; align-items:center; }
 }
+/* ==========================================
+   FITUR MINIMIZE SIDEBAR (DESKTOP)
+   ========================================== */
+.sidebar {
+  transition: all 0.3s ease-in-out;
+}
+.layout {
+  transition: all 0.3s ease-in-out;
+}
+.layout.sidebar-collapsed .sidebar {
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border-right: none;
+  opacity: 0;
+}
+.sidebar-open-btn {
+  display: none; /* Sembunyikan tombol buka secara default */
+}
+.layout.sidebar-collapsed .sidebar-open-btn {
+  display: flex; /* Munculkan tombol buka saat sidebar tertutup */
+}
+
+/* Pastikan di Mobile (HP) fitur ini tidak mengganggu */
+@media (max-width: 768px) {
+  .sidebar-open-btn { display: none !important; }
+  .layout.sidebar-collapsed .sidebar { width: 260px !important; opacity: 1; } 
+}
