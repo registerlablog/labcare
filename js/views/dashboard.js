@@ -126,7 +126,7 @@ function handleChartClick(event, elements) {
 }
 
 // ==========================================
-// FUNGSI PEMBUAT MODAL UNIVERSAL
+// FUNGSI PEMBUAT MODAL UNIVERSAL (DIPERBARUI)
 // ==========================================
 function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, btnCloseAction, accentColor, btnMainHtml) {
   var listHtml = '';
@@ -142,10 +142,12 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
       '<th style="padding: 10px; text-align:center;">Aksi / Status</th>' +
       '</tr></thead><tbody>' +
       list.map(function(p) {
-        return '<tr style="border-bottom: 1px solid #f1f5f9;">' +
+        // TAMBAHAN: onclick pada baris (tr) untuk buka detail
+        return '<tr onclick="bukaDetailDariModal(\'' + p.noRM + '\')" style="border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'transparent\'">' +
           '<td class="mono" style="color: ' + accentColor + '; font-weight: 700; padding: 10px; text-align:center; font-size: 14px;">' + esc(p.noAntrian) + '</td>' +
           '<td style="font-weight: 500; padding: 10px;">' + esc(p.nama) + '</td>' +
-          '<td style="padding: 10px; text-align:center;">' + actionBuilder(p) + '</td>' +
+          // TAMBAHAN: event.stopPropagation() agar saat tombol aksi diklik, tidak memicu klik baris
+          '<td style="padding: 10px; text-align:center;" onclick="event.stopPropagation()">' + actionBuilder(p) + '</td>' +
           '</tr>';
       }).join('') + '</tbody></table></div>';
   }
@@ -177,6 +179,14 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
     modalContent.style.padding = "0"; 
     modalOverlay.classList.add('open');
   }
+}
+
+// FUNGSI BARU UNTUK KLIK BARIS DI DALAM MODAL
+function bukaDetailDariModal(noRM) {
+  closeModal(); // Tutup modal daftar
+  setTimeout(function() {
+    showDetailPasienDashboard(noRM); // Buka modal detail setelah jeda sedikit
+  }, 200);
 }
 
 // ==========================================
