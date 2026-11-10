@@ -1170,3 +1170,17 @@ tbody tr:hover { background: rgba(13, 148, 136, 0.04); }
   .sidebar-open-btn { display: none !important; }
   .layout.sidebar-collapsed .sidebar { width: 260px !important; opacity: 1; } 
 }
+/* ==========================================
+   PENYESUAIAN LEBAR KONTEN SAAT SIDEBAR TERTUTUP
+   ========================================== */
+.layout.sidebar-collapsed .main-wrapper {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Memberi sedikit ruang di kiri agar judul "Dashboard" tidak tertutup tombol hamburger */
+.layout.sidebar-collapsed .main {
+  padding-top: 20px;
+}
