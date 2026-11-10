@@ -1777,3 +1777,24 @@ function muatPengumuman() {
 
 // Panggil saat halaman selesai dimuat
 document.addEventListener('DOMContentLoaded', muatPengumuman);
+// Fungsi untuk menyimpan pengumuman baru
+function simpanPengumumanBaru() {
+  var inputEl = document.getElementById('inputPengumuman');
+  if (!inputEl) return;
+  
+  var teksBaru = inputEl.value.trim();
+  if (teksBaru === '') {
+    if (!confirm('Pengumuman kosong. Apakah Anda ingin mengembalikannya ke teks default?')) return;
+    localStorage.removeItem('labcare_pengumuman');
+  } else {
+    localStorage.setItem('labcare_pengumuman', teksBaru);
+  }
+  
+  muatPengumuman(); // Update teks berjalan secara langsung
+  
+  if (typeof toastMsg === 'function') {
+    toastMsg('✅ Pengumuman berhasil diperbarui!', 'ok');
+  } else {
+    alert('Pengumuman berhasil diperbarui!');
+  }
+}
