@@ -76,11 +76,43 @@ function viewDashboard() {
 // ==========================================
 function bukaModalPasienHariIni() {
   var list = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
-  renderModalPasien("Pasien Hari Ini", "Total: " + list.length + " pasien terdaftar hari ini.", list, function(p) {
-    return ''; // Tidak ada tombol aksi khusus di baris
-  }, "Tutup", "closeModal()", "#0f766e", '');
+  
+  // Buat tombol tambah pasien
+  var btnAddHtml = `<button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="flex: 2; padding: 10px 24px; background: #0f766e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    Tambah Pasien
+  </button>`;
+
+  renderModalPasien(
+    "Pasien Hari Ini", 
+    "Total: " + list.length + " pasien terdaftar hari ini.", 
+    list, 
+    function(p) {
+      return ''; // Tidak ada tombol aksi khusus di baris
+    }, 
+    "Tutup", 
+    "closeModal()", 
+    "#0f766e", 
+    btnAddHtml // Masukkan tombol ke parameter terakhir
+  );
 }
 
+// FUNGSI BARU: Untuk pindah ke halaman pendaftaran
+function bukaFormPendaftaran() {
+  closeModal(); // 1. Tutup modal
+  
+  // 2. Pindah halaman (Sesuaikan dengan routing di app.js milikmu)
+  // Jika kamu punya fungsi navigate() atau showPage():
+  if (typeof navigate === 'function') {
+    navigate('pendaftaran');
+  } else if (typeof showPage === 'function') {
+    showPage('pendaftaran');
+  } else {
+    // Alternatif: Klik otomatis menu "Pendaftaran" di sidebar
+    var navBtn = document.querySelector('a[href="#pendaftaran"]') || document.querySelector('a[onclick*="pendaftaran"]');
+    if(navBtn) navBtn.click();
+  }
+}
 function bukaModalMenunggu() {
   var list = patients.filter(function(p) { return p.status === 'menunggu' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
   renderModalPasien("Pasien Menunggu", "Ada " + list.length + " pasien dalam antrean.", list, function(p) {
@@ -132,7 +164,14 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
   var listHtml = '';
   
   if (list.length === 0) {
-    listHtml = '<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span><p>Tidak ada data pasien.</p></div>';
+    // KITA TAMBAHKAN TOMBOL DI DALAM KOTAK KOSONG (EMPTY STATE)
+    var tombolKosong = btnMainHtml ? `<div style="margin-top: 15px; display: flex; justify-content: center;">${btnMainHtml}</div>` : '';
+    
+    listHtml = `<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+      <span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span>
+      <p style="margin-bottom: 0;">Tidak ada data pasien.</p>
+      ${tombolKosong}
+    </div>`;
   } else {
     listHtml = '<div class="table-wrap" style="max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">' +
       '<table style="width: 100%; font-size: 13px; margin: 0;">' +
@@ -142,11 +181,9 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
       '<th style="padding: 10px; text-align:center;">Aksi / Status</th>' +
       '</tr></thead><tbody>' +
       list.map(function(p) {
-        // TAMBAHAN: onclick pada baris (tr) untuk buka detail
         return '<tr onclick="bukaDetailDariModal(\'' + p.noRM + '\')" style="border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'transparent\'">' +
           '<td class="mono" style="color: ' + accentColor + '; font-weight: 700; padding: 10px; text-align:center; font-size: 14px;">' + esc(p.noAntrian) + '</td>' +
           '<td style="font-weight: 500; padding: 10px;">' + esc(p.nama) + '</td>' +
-          // TAMBAHAN: event.stopPropagation() agar saat tombol aksi diklik, tidak memicu klik baris
           '<td style="padding: 10px; text-align:center;" onclick="event.stopPropagation()">' + actionBuilder(p) + '</td>' +
           '</tr>';
       }).join('') + '</tbody></table></div>';
@@ -166,8 +203,10 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
         ${listHtml}
       </div>
 
-      <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end;">
-        <button onclick="${btnCloseAction}" class="btn btn-secondary" style="padding: 10px 24px; width: 100%;">${btnCloseText}</button>
+      <!-- FOOTER: KITA BAGI 2 KOLOM (Tutup & Tambah) -->
+      <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="${btnCloseAction}" class="btn btn-secondary" style="flex: 1; padding: 10px 24px; background: #efeae2; color: #57534e; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">${btnCloseText}</button>
+        ${btnMainHtml ? btnMainHtml : ''}
       </div>
     </div>
   `;
