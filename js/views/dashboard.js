@@ -164,13 +164,10 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
   var listHtml = '';
   
   if (list.length === 0) {
-    // KITA TAMBAHKAN TOMBOL DI DALAM KOTAK KOSONG (EMPTY STATE)
-    var tombolKosong = btnMainHtml ? `<div style="margin-top: 15px; display: flex; justify-content: center;">${btnMainHtml}</div>` : '';
-    
+    // TOMBOL DI KOTAK KOSONG SUDAH DIHAPUS
     listHtml = `<div class="empty-state" style="padding: 30px 10px; text-align: center; color: #a8a29e; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
       <span class="em" style="font-size: 32px; display: block; margin-bottom: 10px;">📭</span>
       <p style="margin-bottom: 0;">Tidak ada data pasien.</p>
-      ${tombolKosong}
     </div>`;
   } else {
     listHtml = '<div class="table-wrap" style="max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">' +
@@ -203,7 +200,6 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
         ${listHtml}
       </div>
 
-      <!-- FOOTER: KITA BAGI 2 KOLOM (Tutup & Tambah) -->
       <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; display: flex; gap: 10px; justify-content: flex-end;">
         <button onclick="${btnCloseAction}" class="btn btn-secondary" style="flex: 1; padding: 10px 24px; background: #efeae2; color: #57534e; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">${btnCloseText}</button>
         ${btnMainHtml ? btnMainHtml : ''}
@@ -219,7 +215,6 @@ function renderModalPasien(title, subtitle, list, actionBuilder, btnCloseText, b
     modalOverlay.classList.add('open');
   }
 }
-
 // FUNGSI BARU UNTUK KLIK BARIS DI DALAM MODAL
 function bukaDetailDariModal(noRM) {
   closeModal(); // Tutup modal daftar
