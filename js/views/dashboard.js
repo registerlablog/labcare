@@ -134,9 +134,11 @@ function bukaFormPendaftaran() {
               <input type="text" name="nama" class="inp" required placeholder="Nama pasien">
             </div>
             <div>
-              <label class="lbl">No. RM *</label>
-              <input type="text" name="noRM" class="inp" required placeholder="Contoh: RM-001" value="RM-${String(patients.length + 1).padStart(3, '0')}">
-            </div>
+  <label class="lbl">No. RM *</label>
+  <!-- Tambahkan readonly, autocomplete="off", dan styling abu-abu -->
+  <input type="text" name="noRM" class="inp" required readonly autocomplete="off" value="RM-${String(patients.length + 1).padStart(4, '0')}" style="background: #f1f5f9; color: #64748b; cursor: not-allowed; font-weight: 600;">
+  <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">*Dibuat otomatis oleh sistem</div>
+</div>
             <div>
               <label class="lbl">Tgl Lahir *</label>
               <input type="date" name="tglLahir" class="inp" required>
