@@ -99,11 +99,13 @@ function bukaModalPasienHariIni() {
 
 // FUNGSI BARU: Untuk pindah ke halaman pendaftaran
 // ==========================================
-// FITUR PENDAFTARAN CEPAT DI DASHBOARD
+// FITUR PENDAFTARAN CEPAT DI DASHBOARD (DENGAN FILTER KATEGORI)
 // ==========================================
 function bukaFormPendaftaran() {
-  // Reset pilihan tes agar tidak bentrok dengan form lain
+  // Reset pilihan tes dan filter
   window._pickedTests = {};
+  window._quickKatFilter = 'semua';
+  window._quickSearch = '';
   
   // Siapkan opsi dropdown dokter & analis
   var dokterField = dokterList.length > 0 
@@ -113,17 +115,6 @@ function bukaFormPendaftaran() {
   var analisField = analisList.length > 0 
     ? '<select name="analis" class="inp-sel"><option value="">— Pilih Analis —</option>' + analisList.map(a => '<option value="' + esc(a.nama) + '">' + esc(a.nama) + '</option>').join('') + '</select>'
     : '<input type="text" name="analis" class="inp" placeholder="Nama analis">';
-
-  // Render daftar checkbox tes lab
-  var testsHtml = TESTS.map(function(t) {
-    return '<label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer;">' +
-      '<input type="checkbox" name="tests" value="' + esc(t.kode) + '" onchange="toggleDashTest(\'' + esc(t.kode) + '\', this.checked)" style="margin-top: 3px; width: 16px; height: 16px;">' +
-      '<div>' +
-        '<div style="font-size: 13px; font-weight: 600; color: #1c1917;">' + esc(t.nama) + '</div>' +
-        '<div style="font-size: 11px; color: #78716c;">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div>' +
-      '</div>' +
-    '</label>';
-  }).join('');
 
   var html = `
     <div class="modal-body" style="padding: 0;">
@@ -184,16 +175,37 @@ function bukaFormPendaftaran() {
               <label class="lbl">Alamat</label>
               <textarea name="alamat" class="inp-ta" rows="2" placeholder="Alamat lengkap"></textarea>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <label class="lbl">Catatan Klinis</label>
-              <textarea name="catatan" class="inp-ta" rows="2" placeholder="Catatan tambahan"></textarea>
-            </div>
           </div>
 
-          <div style="margin-bottom: 16px;">
-            <label class="lbl" style="margin-bottom: 8px;">Pilih Pemeriksaan Lab *</label>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; max-height: 200px; overflow-y: auto;">
-              ${testsHtml}
+          <!-- BAGIAN PEMILIHAN TES YANG BARU -->
+          <div style="margin-bottom: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px;">
+            <label class="lbl" style="font-size: 14px; margin-bottom: 10px;">B. Pemeriksaan Laboratorium *</label>
+            
+            <!-- Filter Kategori & Search -->
+            <div class="pick-bar" style="margin-bottom: 10px;">
+              <div>
+                <select class="inp-sel" id="quick_kat" onchange="window._quickKatFilter=this.value; renderQuickPickItems();">
+                  <option value="semua">📋 Semua Kategori</option>
+                  ${Array.from(new Set(TESTS.map(t => t.kategori))).sort().map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <input type="text" class="inp" id="quick_search" placeholder="Cari nama atau kode..." oninput="window._quickSearch=this.value; renderQuickPickItems();">
+              </div>
+            </div>
+
+            <!-- Tombol Aksi Massal -->
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+              <button type="button" class="btn btn-secondary" onclick="pilihSemuaQuickTests()" style="font-size: 11px; padding: 6px 12px;">✔️ Pilih Semua (Tampil)</button>
+              <button type="button" class="btn btn-secondary" onclick="bersihkanQuickTests()" style="font-size: 11px; padding: 6px 12px;">🗑️ Bersihkan Semua</button>
+            </div>
+
+            <!-- Ringkasan Tes yang Dipilih (Chips) -->
+            <div id="quick_summary_wrap" style="margin-bottom: 10px;"></div>
+
+            <!-- Grid Tes -->
+            <div class="pick-grid" id="quick_pick_grid" style="max-height: 250px; overflow-y: auto;">
+              <!-- Item tes akan dimuat oleh JS -->
             </div>
           </div>
 
@@ -212,9 +224,89 @@ function bukaFormPendaftaran() {
     modalContent.innerHTML = html;
     modalContent.style.padding = "0"; 
     modalOverlay.classList.add('open');
+    
+    // Panggil fungsi untuk merender item tes pertama kali
+    renderQuickPickItems();
   }
 }
 
+// ==========================================
+// FUNGSI BANTUAN UNTUK FILTER & PILIH TES
+// ==========================================
+function renderQuickPickItems() {
+  var filter = window._quickKatFilter || 'semua';
+  var search = (window._quickSearch || '').toLowerCase();
+  
+  // 1. Render Ringkasan (Chips)
+  var picked = Object.keys(window._pickedTests || {});
+  var summaryHtml = '';
+  if (picked.length === 0) {
+    summaryHtml = '<div class="pick-chip-row"><span class="empty-text" style="font-size: 12px; color: #a8a29e;">Belum ada pemeriksaan yang dipilih.</span></div>';
+  } else {
+    summaryHtml = '<div class="pick-chip-row">' + picked.map(function(kode) {
+      var t = findTest(kode);
+      var nama = t ? t.nama : kode;
+      return '<span class="pick-chip">' + esc(nama) + ' <button type="button" onclick="removeQuickPickedTest(\'' + esc(kode) + '\')" title="Hapus">&times;</button></span>';
+    }).join('') + '</div>';
+  }
+  var summaryWrap = document.getElementById('quick_summary_wrap');
+  if (summaryWrap) summaryWrap.innerHTML = summaryHtml;
+
+  // 2. Render Grid Item Tes
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+
+  var grid = document.getElementById('quick_pick_grid');
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="pick-empty">Tidak ada pemeriksaan yang cocok.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(function(t) {
+    var isPicked = !!window._pickedTests[t.kode];
+    return '<label class="pick-item' + (isPicked ? ' picked' : '') + '" style="padding: 10px;">' +
+      '<input type="checkbox" ' + (isPicked ? 'checked' : '') + ' onchange="toggleQuickTest(\'' + esc(t.kode) + '\', this.checked)">' +
+      '<div class="pi-body"><div class="pi-name" style="font-size: 13px;">' + esc(t.nama) + '</div>' +
+      '<div class="pi-detail" style="font-size: 11px;">Rujukan: ' + esc(t.rujukan) + '</div></div>' +
+      '</label>';
+  }).join('');
+}
+
+function toggleQuickTest(kode, checked) {
+  window._pickedTests = window._pickedTests || {};
+  if (checked) window._pickedTests[kode] = true;
+  else delete window._pickedTests[kode];
+  renderQuickPickItems();
+}
+
+function removeQuickPickedTest(kode) {
+  delete window._pickedTests[kode];
+  renderQuickPickItems();
+}
+
+function pilihSemuaQuickTests() {
+  var filter = window._quickKatFilter || 'semua';
+  var search = (window._quickSearch || '').toLowerCase();
+  
+  var filtered = TESTS.filter(function(t) {
+    var matchKat = filter === 'semua' || t.kategori === filter;
+    var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0;
+    return matchKat && matchSearch;
+  });
+
+  filtered.forEach(function(t) { window._pickedTests[t.kode] = true; });
+  renderQuickPickItems();
+}
+
+function bersihkanQuickTests() {
+  window._pickedTests = {};
+  renderQuickPickItems();
+}
 // Fungsi untuk mencatat tes yang dicentang
 function toggleDashTest(kode, checked) {
   window._pickedTests = window._pickedTests || {};
