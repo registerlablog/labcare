@@ -98,20 +98,128 @@ function bukaModalPasienHariIni() {
 }
 
 // FUNGSI BARU: Untuk pindah ke halaman pendaftaran
+// ==========================================
+// FITUR PENDAFTARAN CEPAT DI DASHBOARD
+// ==========================================
 function bukaFormPendaftaran() {
-  closeModal(); // 1. Tutup modal
+  // Reset pilihan tes agar tidak bentrok dengan form lain
+  window._pickedTests = {};
   
-  // 2. Pindah halaman (Sesuaikan dengan routing di app.js milikmu)
-  // Jika kamu punya fungsi navigate() atau showPage():
-  if (typeof navigate === 'function') {
-    navigate('pendaftaran');
-  } else if (typeof showPage === 'function') {
-    showPage('pendaftaran');
-  } else {
-    // Alternatif: Klik otomatis menu "Pendaftaran" di sidebar
-    var navBtn = document.querySelector('a[href="#pendaftaran"]') || document.querySelector('a[onclick*="pendaftaran"]');
-    if(navBtn) navBtn.click();
+  // Siapkan opsi dropdown dokter & analis
+  var dokterField = dokterList.length > 0 
+    ? '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(d => '<option value="' + esc(d.nama) + '">' + esc(d.nama) + '</option>').join('') + '</select>'
+    : '<input type="text" name="dokter" class="inp" placeholder="Nama dokter">';
+    
+  var analisField = analisList.length > 0 
+    ? '<select name="analis" class="inp-sel"><option value="">— Pilih Analis —</option>' + analisList.map(a => '<option value="' + esc(a.nama) + '">' + esc(a.nama) + '</option>').join('') + '</select>'
+    : '<input type="text" name="analis" class="inp" placeholder="Nama analis">';
+
+  // Render daftar checkbox tes lab
+  var testsHtml = TESTS.map(function(t) {
+    return '<label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer;">' +
+      '<input type="checkbox" name="tests" value="' + esc(t.kode) + '" onchange="toggleDashTest(\'' + esc(t.kode) + '\', this.checked)" style="margin-top: 3px; width: 16px; height: 16px;">' +
+      '<div>' +
+        '<div style="font-size: 13px; font-weight: 600; color: #1c1917;">' + esc(t.nama) + '</div>' +
+        '<div style="font-size: 11px; color: #78716c;">Rujukan: ' + esc(t.rujukan) + (t.satuan ? ' • ' + esc(t.satuan) : '') + '</div>' +
+      '</div>' +
+    '</label>';
+  }).join('');
+
+  var html = `
+    <div class="modal-body" style="padding: 0;">
+      <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 16px 16px 0 0;">
+        <div>
+          <h3 style="margin: 0; font-size: 18px; color: #1c1917;">Pendaftaran Cepat</h3>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Daftarkan pasien baru langsung dari Dashboard</p>
+        </div>
+        <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #a8a29e;">&times;</button>
+      </div>
+
+      <div style="padding: 20px 24px; max-height: 65vh; overflow-y: auto;">
+        <form id="formDaftar">
+          <div class="form-row" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Nama Lengkap *</label>
+              <input type="text" name="nama" class="inp" required placeholder="Nama pasien">
+            </div>
+            <div>
+              <label class="lbl">No. RM *</label>
+              <input type="text" name="noRM" class="inp" required placeholder="Contoh: RM-001" value="RM-${String(patients.length + 1).padStart(3, '0')}">
+            </div>
+            <div>
+              <label class="lbl">Tgl Lahir *</label>
+              <input type="date" name="tglLahir" class="inp" required>
+            </div>
+            <div>
+              <label class="lbl">Jenis Kelamin</label>
+              <select name="jk" class="inp-sel">
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl">No. Telepon</label>
+              <input type="text" name="telepon" class="inp" placeholder="08xxxxxxxxxx">
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Pengirim</label>
+              <input type="text" name="pengirim" class="inp" placeholder="Contoh: Umum / Puskesmas" value="Umum">
+            </div>
+            <div>
+              <label class="lbl">Dokter Penanggung Jawab</label>
+              ${dokterField}
+            </div>
+            <div>
+              <label class="lbl">Nama Analis</label>
+              ${analisField}
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Status Spesimen</label>
+              <select name="spesimen" class="inp-sel">
+                <option value="belum">📦 Belum Ada (Menunggu)</option>
+                <option value="ada">📦 Sudah Ada (Langsung Proses)</option>
+              </select>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Alamat</label>
+              <textarea name="alamat" class="inp-ta" rows="2" placeholder="Alamat lengkap"></textarea>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Catatan Klinis</label>
+              <textarea name="catatan" class="inp-ta" rows="2" placeholder="Catatan tambahan"></textarea>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="lbl" style="margin-bottom: 8px;">Pilih Pemeriksaan Lab *</label>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; max-height: 200px; overflow-y: auto;">
+              ${testsHtml}
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary" style="flex: 1;">Batal</button>
+            <button type="submit" class="btn btn-primary" style="flex: 2;">Daftarkan Pasien</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  var modalContent = document.getElementById('modalContent');
+  var modalOverlay = document.getElementById('modal');
+  if(modalContent && modalOverlay) {
+    modalContent.innerHTML = html;
+    modalContent.style.padding = "0"; 
+    modalOverlay.classList.add('open');
   }
+}
+
+// Fungsi untuk mencatat tes yang dicentang
+function toggleDashTest(kode, checked) {
+  window._pickedTests = window._pickedTests || {};
+  if (checked) window._pickedTests[kode] = true;
+  else delete window._pickedTests[kode];
 }
 function bukaModalMenunggu() {
   var list = patients.filter(function(p) { return p.status === 'menunggu' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
