@@ -1798,3 +1798,15 @@ function simpanPengumumanBaru() {
     alert('Pengumuman berhasil diperbarui!');
   }
 }
+// ==========================================
+// FUNGSI NAVIGASI GLOBAL (TAMBAHAN BARU)
+// ==========================================
+function navigate(page) {
+  view = page;
+  mobileNavOpen = false;
+  var mn = document.getElementById('mobileNav');
+  if (mn) mn.classList.remove('open');
+  renderNav();
+  render();
+  window.scrollTo(0, 0);
+}
