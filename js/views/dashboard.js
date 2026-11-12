@@ -65,10 +65,74 @@ function viewDashboard() {
 
   setTimeout(function() { renderTrenChart(7); }, 100);
 
-  return '<div class="page-header"><h2>Dashboard</h2><p>Ringkasan pelayanan — ' + esc(fmtDate(new Date().toISOString())) + '</p></div>' +
-         '<div class="stats-grid">' + cardsHtml + '</div>' + 
-         chartHtml + 
-         '<h3 class="section-title">Pasien Terbaru</h3>' + recentHtml;
+  // 1. Ambil Data Petugas dari Login
+  var namaPetugas = localStorage.getItem('labcare_nama') || 'Petugas LabCare';
+  var jabatanPetugas = localStorage.getItem('labcare_role') || 'Analis Laboratorium';
+  var inisial = namaPetugas.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
+
+  // 2. Desain ID Card Petugas
+  var idCardHtml = `
+    <div style="flex: 1; min-width: 300px; display: flex; align-items: center; justify-content: space-between; background: #f9f6f0; padding: 16px 20px; border-radius: 16px; border: 1px solid #e7e5e4; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 48px; height: 48px; background: #0f766e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; box-shadow: 0 3px 8px rgba(15,118,110,0.3); flex-shrink: 0;">
+          ${inisial}
+        </div>
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: #0f766e; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;">Petugas Aktif</div>
+          <div style="font-size: 16px; font-weight: 800; color: #1c1917; line-height: 1.1;">${esc(namaPetugas)}</div>
+          <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px;">${esc(jabatanPetugas)}</div>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <span style="font-size: 10px; color: #059669; font-weight: 700; background: #d1fae5; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px;">
+          <span style="width: 6px; height: 6px; background: #059669; border-radius: 50%; display: inline-block;"></span> Online
+        </span>
+      </div>
+    </div>
+  `;
+
+  // 3. Hitung Info Pendaftaran
+  var totalHariIni = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }).length;
+  var nextQ = 'A-' + String(typeof nextQueueNo === 'function' ? nextQueueNo() : totalHariIni + 1).padStart(3, '0');
+
+  // 4. Desain Widget Pendaftaran
+  var daftarActionHtml = `
+    <div style="flex: 1; min-width: 300px; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
+      <div>
+        <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Antrian Pendaftaran</div>
+        <div style="font-size: 18px; font-weight: 900; color: #047857; line-height: 1.1;">Berikutnya: ${nextQ}</div>
+        <div style="font-size: 11px; color: #64748b; font-weight: 500; margin-top: 4px;">Total hari ini: ${totalHariIni} pasien</div>
+      </div>
+      <button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Daftarkan
+      </button>
+    </div>
+  `;
+
+  // 5. Gabungkan Semua Layout
+  return `
+    <div class="page-header" style="margin-bottom: 16px;">
+      <h2 style="margin: 0;">Dashboard</h2>
+      <p style="margin: 4px 0 0 0;">Ringkasan pelayanan — ${esc(fmtDate(new Date().toISOString()))}</p>
+    </div>
+
+    <!-- BARIS BARU: ID CARD & WIDGET PENDAFTARAN -->
+    <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+      ${idCardHtml}
+      ${daftarActionHtml}
+    </div>
+    
+    <!-- 4 KARTU STATISTIK -->
+    <div class="stats-grid">${cardsHtml}</div>
+    
+    <!-- GRAFIK -->
+    ${chartHtml}
+    
+    <!-- TABEL PASIEN TERBARU -->
+    <h3 class="section-title">Pasien Terbaru</h3>
+    ${recentHtml}
+  `;
 }
 
 // ==========================================
