@@ -668,3 +668,31 @@ function renderTrenChart(days) {
     }
   });
 }
+// ==========================================
+// FUNGSI CETAK TIKET ANTRIAN (DARI DASHBOARD)
+// ==========================================
+function cetakTiketAntrian(nomor) {
+  // Ambil tanggal hari ini
+  var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  
+  // Desain tiket antrean (ukuran kertas A4 tapi kontennya di tengah)
+  var tiketHtml = `
+    <div style="text-align: center; margin-top: 50px;">
+      <div style="font-size: 24px; font-weight: 900; color: #000; margin-bottom: 10px;">LABKESDA BONDOWOSO</div>
+      <div style="font-size: 14px; color: #333; margin-bottom: 40px;">Sistem Pelayanan Laboratorium</div>
+      
+      <div style="font-size: 18px; color: #555;">Nomor Antrean Anda</div>
+      <div style="font-size: 120px; font-weight: 900; color: #0f766e; line-height: 1; margin: 20px 0;">${nomor}</div>
+      
+      <div style="font-size: 14px; color: #333; margin-top: 40px;">Silakan menunggu nomor Anda dipanggil</div>
+      <div style="font-size: 12px; color: #666; margin-top: 10px;">${tgl}</div>
+    </div>
+  `;
+
+  // Panggil fungsi print preview bawaan app.js
+  if (typeof showPrintPreview === 'function') {
+    showPrintPreview(tiketHtml, 'Cetak Antrean - ' + nomor);
+  } else {
+    alert('Fungsi cetak tidak ditemukan.');
+  }
+}
