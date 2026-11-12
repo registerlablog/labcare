@@ -95,16 +95,16 @@ var idCardHtml = `
 var totalHariIni = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }).length;
 var nextQ = 'A-' + String(typeof nextQueueNo === 'function' ? nextQueueNo() : totalHariIni + 1).padStart(3, '0');
 
-// 4. Desain Widget Antrian Berikutnya (Kanan Atas)
+  // 4. Desain Widget Antrian Berikutnya (Kanan Atas)
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
       <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Antrian Menunggu (Pendaftaran)</div>
       <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextQ}</div>
     </div>
-    <button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-      Daftarkan
+    <button onclick="cetakTiketAntrian('${nextQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Cetak Antrian
     </button>
   </div>
 `;
