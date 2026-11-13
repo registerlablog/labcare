@@ -95,7 +95,7 @@ var idCardHtml = `
 var totalHariIni = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }).length;
 var nextQ = 'A-' + String(typeof nextQueueNo === 'function' ? nextQueueNo() : totalHariIni + 1).padStart(3, '0');
 
-  // 4. Desain Widget Antrian Berikutnya (Kanan Atas)
+// 4. Desain Widget Antrian Berikutnya (Kanan Atas)
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
@@ -109,31 +109,28 @@ var nextQHtml = `
   </div>
 `;
 
-// 5. Hitung Antrian Saat Ini (Proses/Sampling)
-var activePatient = patients.find(function(p) {
-  return (p.status === 'proses' || p.status === 'sampling') && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
-});
-var currentQ = activePatient ? activePatient.noAntrian : '-';
-
-// 6. Desain Widget Antrian Saat Ini (Kanan Bawah)
-var currentQHtml = `
-  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #fff7ed; padding: 16px 20px; border-radius: 16px; border: 1px solid #ffedd5; box-shadow: 0 4px 12px rgba(249,115,22,0.05);">
+// 5. Desain Widget Pintasan Pendaftaran (Kanan Bawah)
+var registerShortcutHtml = `
+  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #eff6ff; padding: 16px 20px; border-radius: 16px; border: 1px solid #bfdbfe; box-shadow: 0 4px 12px rgba(59,130,246,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #c2410c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Antrian Saat Ini (Sampling)</div>
-      <div style="font-size: 28px; font-weight: 900; color: #ea580c; line-height: 1;">${currentQ}</div>
+      <div style="font-size: 10px; font-weight: 700; color: #1d4ed8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Pendaftaran Pasien</div>
+      <div style="font-size: 14px; font-weight: 700; color: #1e3a8a;">Input Data & Pemeriksaan</div>
     </div>
-    ${activePatient ? `<div style="font-size: 12px; font-weight: 700; color: #9a3412; background: #ffedd5; padding: 8px 12px; border-radius: 8px; border: 1px solid #fed7aa;">${esc(activePatient.nama)}</div>` : '<div style="font-size: 12px; color: #9a3412; font-weight: 500;">Belum ada</div>'}
+    <button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.3); transition: all 0.2s;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      Daftarkan
+    </button>
   </div>
 `;
 
-// 7. Gabungkan Semua Layout
+// 6. Gabungkan Semua Layout
 return `
   <div class="page-header" style="margin-bottom: 16px;">
     <h2 style="margin: 0;">Dashboard</h2>
     <p style="margin: 4px 0 0 0;">Ringkasan pelayanan — ${esc(fmtDate(new Date().toISOString()))}</p>
   </div>
 
-  <!-- BARIS BARU: KIRI (ID CARD) & KANAN (2 WIDGET ANTRIAN) -->
+  <!-- BARIS BARU: KIRI (ID CARD) & KANAN (CETAK & DAFTAR) -->
   <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: stretch;">
     
     <!-- KOLOM KIRI -->
@@ -144,7 +141,7 @@ return `
     <!-- KOLOM KANAN -->
     <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
       ${nextQHtml}
-      ${currentQHtml}
+      ${registerShortcutHtml}
     </div>
 
   </div>
