@@ -91,30 +91,41 @@ var idCardHtml = `
   </div>
 `;
 
-// 3. Hitung Antrian Cetak & Panggil (Disimpan di localStorage agar tidak reset saat refresh)
+// ✅ BARU: Ambil pasien hari ini yang belum dicetak tiketnya
+var pasienBelumCetak = patients.filter(function(p) {
+  return p.tglDaftar
+      && p.tglDaftar.slice(0, 10) === today()
+      && !p.tiketDicetak;
+}).sort(function(a, b) {
+  return (a.noAntrian || '').localeCompare(b.noAntrian || '');
+});
+
+var nextTicketPatient = pasienBelumCetak[0] || null;
+var nextPrintQ = nextTicketPatient ? nextTicketPatient.noAntrian : '—';
+var sisaCetak = pasienBelumCetak.length;
+
+// (call queue tetap seperti sebelumnya untuk sementara — fokus P1 dulu)
 var tglKey = today();
-var printKey = 'labcare_printQ_' + tglKey;
 var callKey = 'labcare_callQ_' + tglKey;
-
-// Ambil antrian cetak
-var currentPrintQ = parseInt(localStorage.getItem(printKey));
-if (isNaN(currentPrintQ)) currentPrintQ = typeof nextQueueNo === 'function' ? nextQueueNo() : 1;
-
-// Ambil antrian panggil
 var currentCallQ = parseInt(localStorage.getItem(callKey));
 if (isNaN(currentCallQ)) currentCallQ = 1;
-
-var nextPrintQ = 'A-' + String(currentPrintQ).padStart(3, '0');
 var nextCallQ = 'A-' + String(currentCallQ).padStart(3, '0');
 
-// 4. Desain Widget Cetak Antrian (Kanan Atas)
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Cetak Antrian Pendaftaran</div>
+      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">
+        Cetak Antrian Pendaftaran ${sisaCetak > 0 ? '(' + sisaCetak + ' menunggu)' : ''}
+      </div>
       <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextPrintQ}</div>
+      ${nextTicketPatient
+        ? `<div style="font-size: 11px; color: #047857; margin-top: 2px; font-weight: 600;">${esc(nextTicketPatient.nama)}</div>`
+        : `<div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Semua tiket sudah tercetak</div>`}
     </div>
-    <button onclick="cetakTiketAntrian('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
+    <button ${nextTicketPatient ? '' : 'disabled'}
+            onclick="${nextTicketPatient ? `cetakTiketAntrian('${nextTicketPatient.noRM}')` : ''}"
+            class="btn btn-primary"
+            style="background: ${nextTicketPatient ? '#059669' : '#cbd5e1'}; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: ${nextTicketPatient ? 'pointer' : 'not-allowed'}; box-shadow: ${nextTicketPatient ? '0 4px 10px rgba(5,150,105,0.3)' : 'none'}; transition: all 0.2s;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Cetak
     </button>
@@ -677,37 +688,65 @@ function renderTrenChart(days) {
   });
 }
 // ==========================================
-// FUNGSI CETAK TIKET ANTRIAN (DARI DASHBOARD)
+// CETAK TIKET ANTRIAN (DIPERBAIKI - PAKAI noAntrian PASIEN)
 // ==========================================
-function cetakTiketAntrian(nomor) {
-  var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  
+function cetakTiketAntrian(noRM) {
+  var pasien = patients.find(function(p) { return p.noRM === noRM; });
+  if (!pasien) {
+    alert('Pasien tidak ditemukan.');
+    return;
+  }
+
+  // Kalau sudah pernah dicetak → konfirmasi cetak ulang
+  if (pasien.tiketDicetak) {
+    var waktuCetak = pasien.waktuCetak
+      ? new Date(pasien.waktuCetak).toLocaleString('id-ID')
+      : '(waktu tidak tercatat)';
+    if (!confirm('Tiket pasien ini sudah pernah dicetak pada ' + waktuCetak + '.\n\nCetak ulang?')) {
+      return;
+    }
+  }
+
+  var nomor = pasien.noAntrian;
+  var tgl = new Date().toLocaleDateString('id-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
   var tiketHtml = `
     <div style="text-align: center; margin-top: 50px;">
       <div style="font-size: 24px; font-weight: 900; color: #000; margin-bottom: 10px;">LABKESDA BONDOWOSO</div>
       <div style="font-size: 14px; color: #333; margin-bottom: 40px;">Sistem Pelayanan Laboratorium</div>
-      
+
       <div style="font-size: 18px; color: #555;">Nomor Antrean Pendaftaran</div>
-      <div style="font-size: 120px; font-weight: 900; color: #0f766e; line-height: 1; margin: 20px 0;">${nomor}</div>
-      
+      <div style="font-size: 120px; font-weight: 900; color: #0f766e; line-height: 1; margin: 20px 0;">${esc(nomor)}</div>
+
+      <div style="font-size: 16px; color: #333; font-weight: 600; margin-top: 20px;">${esc(pasien.nama)}</div>
+      <div style="font-size: 12px; color: #666; margin-top: 4px;">${esc(pasien.noRM)}</div>
+
       <div style="font-size: 14px; color: #333; margin-top: 40px;">Silakan menunggu nomor Anda dipanggil ke meja administrasi</div>
       <div style="font-size: 12px; color: #666; margin-top: 10px;">${tgl}</div>
     </div>
   `;
 
-  if (typeof showPrintPreview === 'function') {
-    showPrintPreview(tiketHtml, 'Cetak Antrean - ' + nomor);
-    
-    // Tambah antrean cetak ke angka selanjutnya
-    var tglKey = today();
-    var printKey = 'labcare_printQ_' + tglKey;
-    var currentPrintQ = parseInt(localStorage.getItem(printKey)) || 1;
-    localStorage.setItem(printKey, currentPrintQ + 1);
-    
-    render(); // Refresh tampilan dashboard
-  } else {
+  if (typeof showPrintPreview !== 'function') {
     alert('Fungsi cetak tidak ditemukan.');
+    return;
   }
+
+  showPrintPreview(tiketHtml, 'Cetak Antrean - ' + nomor);
+
+  // ✅ Tandai tiket sudah dicetak
+  pasien.tiketDicetak = true;
+  pasien.waktuCetak = new Date().toISOString();
+
+  // Simpan ke storage (sesuaikan dengan fungsi persist aplikasi)
+  if (typeof saveData === 'function') saveData();
+  else if (typeof savePatients === 'function') savePatients();
+  else if (typeof persist === 'function') persist();
+  else console.warn('[LabCare] Fungsi penyimpanan tidak ditemukan — perubahan tiketDicetak belum tersimpan permanen.');
+
+  // Refresh dashboard agar widget langsung update
+  render();
 }
 // ==========================================
 // FUNGSI PANGGIL ANTRIAN PENDAFTARAN
