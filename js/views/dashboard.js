@@ -91,38 +91,49 @@ var idCardHtml = `
   </div>
 `;
 
-// 3. Hitung Antrian Berikutnya (Pendaftaran)
-var totalHariIni = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }).length;
-var nextQ = 'A-' + String(typeof nextQueueNo === 'function' ? nextQueueNo() : totalHariIni + 1).padStart(3, '0');
+// 3. Hitung Antrian Cetak & Panggil (Disimpan di localStorage agar tidak reset saat refresh)
+var tglKey = today();
+var printKey = 'labcare_printQ_' + tglKey;
+var callKey = 'labcare_callQ_' + tglKey;
 
-// 4. Desain Widget Antrian Berikutnya (Kanan Atas)
+// Ambil antrian cetak
+var currentPrintQ = parseInt(localStorage.getItem(printKey));
+if (isNaN(currentPrintQ)) currentPrintQ = typeof nextQueueNo === 'function' ? nextQueueNo() : 1;
+
+// Ambil antrian panggil
+var currentCallQ = parseInt(localStorage.getItem(callKey));
+if (isNaN(currentCallQ)) currentCallQ = 1;
+
+var nextPrintQ = 'A-' + String(currentPrintQ).padStart(3, '0');
+var nextCallQ = 'A-' + String(currentCallQ).padStart(3, '0');
+
+// 4. Desain Widget Cetak Antrian (Kanan Atas)
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Antrian Menunggu (Pendaftaran)</div>
-      <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextQ}</div>
+      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Cetak Antrian Pendaftaran</div>
+      <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextPrintQ}</div>
     </div>
-    <button onclick="cetakTiketAntrian('${nextQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
+    <button onclick="cetakTiketAntrian('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Cetak Antrian
+      Cetak
     </button>
   </div>
 `;
 
-// 5. Desain Widget Pintasan Pendaftaran (Kanan Bawah)
-var registerShortcutHtml = `
-  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #eff6ff; padding: 16px 20px; border-radius: 16px; border: 1px solid #bfdbfe; box-shadow: 0 4px 12px rgba(59,130,246,0.05);">
+// 5. Desain Widget Panggil Antrian (Kanan Bawah)
+var callQHtml = `
+  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #fff7ed; padding: 16px 20px; border-radius: 16px; border: 1px solid #ffedd5; box-shadow: 0 4px 12px rgba(249,115,22,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #1d4ed8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Pendaftaran Pasien</div>
-      <div style="font-size: 14px; font-weight: 700; color: #1e3a8a;">Input Data & Pemeriksaan</div>
+      <div style="font-size: 10px; font-weight: 700; color: #c2410c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Panggil Antrian Pendaftaran</div>
+      <div style="font-size: 28px; font-weight: 900; color: #ea580c; line-height: 1;">${nextCallQ}</div>
     </div>
-    <button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.3); transition: all 0.2s;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      Daftarkan
+    <button onclick="panggilAntrianPendaftaran('${nextCallQ}')" class="btn btn-primary" style="background: #ea580c; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(234,88,12,0.3); transition: all 0.2s;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      Panggil
     </button>
   </div>
 `;
-
 // 6. Gabungkan Semua Layout
 return `
   <div class="page-header" style="margin-bottom: 16px;">
@@ -141,7 +152,7 @@ return `
     <!-- KOLOM KANAN -->
     <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
       ${nextQHtml}
-      ${registerShortcutHtml}
+      ${callQHtml}
     </div>
 
   </div>
@@ -669,27 +680,84 @@ function renderTrenChart(days) {
 // FUNGSI CETAK TIKET ANTRIAN (DARI DASHBOARD)
 // ==========================================
 function cetakTiketAntrian(nomor) {
-  // Ambil tanggal hari ini
   var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   
-  // Desain tiket antrean (ukuran kertas A4 tapi kontennya di tengah)
   var tiketHtml = `
     <div style="text-align: center; margin-top: 50px;">
       <div style="font-size: 24px; font-weight: 900; color: #000; margin-bottom: 10px;">LABKESDA BONDOWOSO</div>
       <div style="font-size: 14px; color: #333; margin-bottom: 40px;">Sistem Pelayanan Laboratorium</div>
       
-      <div style="font-size: 18px; color: #555;">Nomor Antrean Anda</div>
+      <div style="font-size: 18px; color: #555;">Nomor Antrean Pendaftaran</div>
       <div style="font-size: 120px; font-weight: 900; color: #0f766e; line-height: 1; margin: 20px 0;">${nomor}</div>
       
-      <div style="font-size: 14px; color: #333; margin-top: 40px;">Silakan menunggu nomor Anda dipanggil</div>
+      <div style="font-size: 14px; color: #333; margin-top: 40px;">Silakan menunggu nomor Anda dipanggil ke meja administrasi</div>
       <div style="font-size: 12px; color: #666; margin-top: 10px;">${tgl}</div>
     </div>
   `;
 
-  // Panggil fungsi print preview bawaan app.js
   if (typeof showPrintPreview === 'function') {
     showPrintPreview(tiketHtml, 'Cetak Antrean - ' + nomor);
+    
+    // Tambah antrean cetak ke angka selanjutnya
+    var tglKey = today();
+    var printKey = 'labcare_printQ_' + tglKey;
+    var currentPrintQ = parseInt(localStorage.getItem(printKey)) || 1;
+    localStorage.setItem(printKey, currentPrintQ + 1);
+    
+    render(); // Refresh tampilan dashboard
   } else {
     alert('Fungsi cetak tidak ditemukan.');
+  }
+}
+// ==========================================
+// FUNGSI PANGGIL ANTRIAN PENDAFTARAN
+// ==========================================
+function panggilAntrianPendaftaran(nomor) {
+  var ov = document.getElementById('panggilOverlay');
+  if(ov) {
+    document.getElementById('panggilNo').textContent = nomor;
+    document.getElementById('panggilNama').textContent = 'Antrian Pendaftaran';
+    
+    // Ubah teks ruang menjadi meja administrasi
+    var ruangEl = ov.querySelector('.panggil-ruang');
+    var teksRuangAsli = ruangEl ? ruangEl.textContent : 'Silakan menuju ruang sampling';
+    if(ruangEl) ruangEl.textContent = 'Silakan menuju meja administrasi';
+
+    ov.classList.add('open');
+
+    if (typeof mainkanChime === 'function') {
+      mainkanChime(function() {
+        try {
+          speechSynthesis.cancel();
+          var angka = nomor.replace('A-', '').split('').join(' ');
+          var teks = 'Nomor antrian pendaftaran A - ' + angka + ', silakan menuju meja administrasi';
+          var voices = speechSynthesis.getVoices();
+          var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
+          
+          var utt = new SpeechSynthesisUtterance(teks);
+          utt.lang = 'id-ID';
+          utt.rate = 0.85;
+          utt.pitch = 0.85;
+          if (suaraID) utt.voice = suaraID;
+          
+          utt.onend = function() {
+            setTimeout(function() {
+              if (typeof tutupPanggil === 'function') tutupPanggil();
+              if(ruangEl) ruangEl.textContent = teksRuangAsli; // Kembalikan teks aslinya
+            }, 1000);
+          };
+          
+          speechSynthesis.speak(utt);
+        } catch(e) {}
+      });
+    }
+
+    // Tambah antrean panggil ke angka selanjutnya
+    var tglKey = today();
+    var callKey = 'labcare_callQ_' + tglKey;
+    var currentCallQ = parseInt(localStorage.getItem(callKey)) || 1;
+    localStorage.setItem(callKey, currentCallQ + 1);
+    
+    render(); // Refresh tampilan dashboard
   }
 }
