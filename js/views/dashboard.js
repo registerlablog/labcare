@@ -100,43 +100,33 @@ var pasienBelumCetak = patients.filter(function(p) {
   return (a.noAntrian || '').localeCompare(b.noAntrian || '');
 });
 
-var nextTicketPatient = pasienBelumCetak[0] || null;
-var nextPrintQ = nextTicketPatient ? nextTicketPatient.noAntrian : '—';
-var sisaCetak = pasienBelumCetak.length;
-
-// (call queue tetap seperti sebelumnya untuk sementara — fokus P1 dulu)
+// ✅ MESIN TIKET MANDIRI (Tidak butuh data pasien dulu)
 var tglKey = today();
+var printKey = 'labcare_printQ_' + tglKey;
 var callKey = 'labcare_callQ_' + tglKey;
-var currentCallQ = parseInt(localStorage.getItem(callKey));
-if (isNaN(currentCallQ)) currentCallQ = 1;
-var nextCallQ = 'A-' + String(currentCallQ).padStart(3, '0');
 
+var currentPrintQ = parseInt(localStorage.getItem(printKey)) || 1;
+var currentCallQ = parseInt(localStorage.getItem(callKey)) || 1;
+
+var nextPrintQ = 'A-' + String(currentPrintQ).padStart(3, '0');
+var nextCallQ = 'A-' + String(currentCallQ).padStart(3, '0');
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">
-        Cetak Antrian Pendaftaran ${sisaCetak > 0 ? '(' + sisaCetak + ' menunggu)' : ''}
-      </div>
+      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Mesin Tiket Antrian</div>
       <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextPrintQ}</div>
-      ${nextTicketPatient
-        ? `<div style="font-size: 11px; color: #047857; margin-top: 2px; font-weight: 600;">${esc(nextTicketPatient.nama)}</div>`
-        : `<div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Semua tiket sudah tercetak</div>`}
     </div>
-    <button ${nextTicketPatient ? '' : 'disabled'}
-            onclick="${nextTicketPatient ? `cetakTiketAntrian('${nextTicketPatient.noRM}')` : ''}"
-            class="btn btn-primary"
-            style="background: ${nextTicketPatient ? '#059669' : '#cbd5e1'}; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: ${nextTicketPatient ? 'pointer' : 'not-allowed'}; box-shadow: ${nextTicketPatient ? '0 4px 10px rgba(5,150,105,0.3)' : 'none'}; transition: all 0.2s;">
+    <button onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Cetak
     </button>
   </div>
 `;
 
-// 5. Desain Widget Panggil Antrian (Kanan Bawah)
 var callQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #fff7ed; padding: 16px 20px; border-radius: 16px; border: 1px solid #ffedd5; box-shadow: 0 4px 12px rgba(249,115,22,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #c2410c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Panggil Antrian Pendaftaran</div>
+      <div style="font-size: 10px; font-weight: 700; color: #c2410c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Panggil Antrian Loket</div>
       <div style="font-size: 28px; font-weight: 900; color: #ea580c; line-height: 1;">${nextCallQ}</div>
     </div>
     <button onclick="panggilAntrianPendaftaran('${nextCallQ}')" class="btn btn-primary" style="background: #ea580c; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(234,88,12,0.3); transition: all 0.2s;">
