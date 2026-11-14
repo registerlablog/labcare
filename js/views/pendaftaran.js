@@ -128,8 +128,8 @@ document.addEventListener('submit', function(e) {
   var spesimen = f.get('spesimen') || 'belum';
   var statusAwal = spesimen === 'ada' ? 'proses' : 'menunggu';
   
-  var p = { 
-    id: uid(), 
+    var p = { 
+    id: f.get('id') || uid(), // <-- Ambil dari hidden input, jika kosong baru pakai uid()
     noRM: f.get('noRM'), 
     nama: f.get('nama').trim(), 
     tglLahir: f.get('tglLahir'), 
@@ -144,8 +144,8 @@ document.addEventListener('submit', function(e) {
     hasil: {}, 
     status: statusAwal, 
     spesimen: spesimen, 
-    noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'), 
-    tglDaftar: new Date().toISOString(), 
+    noAntrian: f.get('noAntrian'), // <-- Ambil dari hidden input (hasil fetchAutoNumbers)
+    tglDaftar: f.get('tglDaftar') || new Date().toISOString(), 
     kesimpulan: '' 
   };
   
