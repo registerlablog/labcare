@@ -242,4 +242,83 @@ function viewDetailKegiatan() {
     '<tbody id="prolanisTbody">' + (result.rowsHtml || '<tr><td colspan="13" style="padding:40px;text-align:center;color:var(--slate-400);">Belum ada peserta.</td></tr>') + '</tbody>' +
     '</table></div>';
 }
+// ==========================================
+// FUNGSI HAPUS KEGIATAN (AMAN & TERKUNCI)
+// ==========================================
+function hapusKegiatanProlanis(id, nama) {
+  if (!confirm('⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus kegiatan "' + nama + '"?\nSeluruh data peserta di dalamnya juga akan terhapus permanen.')) {
+    return;
+  }
 
+  // Ambil token sesi
+  var tokenSesi = localStorage.getItem('labcare_token') || ''; 
+  if (typeof showLoading === 'function') showLoading(true);
+
+  var payload = {
+    id: id,
+    nama: nama,
+    token: tokenSesi // <-- Wajib dikirim agar backend mengizinkan
+  };
+
+  // Menggunakan apiCall (sesuai standar di app.js Anda)
+  apiCall('deleteProlanisKegiatan', payload).then(function(res) {
+    if (typeof showLoading === 'function') showLoading(false);
+
+    if (res && res.ok) {
+      if (typeof toastMsg === 'function') toastMsg('Kegiatan dihapus', 'ok');
+      else alert('Kegiatan berhasil dihapus');
+      
+      // Refresh data dari server agar UI terupdate
+      if (typeof syncAllFromServer === 'function') syncAllFromServer(false); 
+      else render(); 
+    } else {
+      alert('Gagal menghapus: ' + (res.error || 'Terjadi kesalahan sistem'));
+      if (res.error && res.error.indexOf('AKSES DITOLAK') !== -1) {
+        if (typeof doLogoutAdmin === 'function') doLogoutAdmin();
+      }
+    }
+  }).catch(function(err) {
+    if (typeof showLoading === 'function') showLoading(false);
+    alert('Koneksi gagal: ' + err.toString());
+  });
+}
+
+// ==========================================
+// FUNGSI HAPUS PESERTA (AMAN & TERKUNCI)
+// ==========================================
+function hapusPesertaProlanis(idx) {
+  var k = window._prolanisDetail;
+  if (!k || !k.peserta || !k.peserta[idx]) return;
+  
+  var peserta = k.peserta[idx];
+  var idPeserta = peserta.id;
+  var namaPeserta = peserta.nama || 'Peserta ini';
+
+  if (!confirm('Yakin ingin menghapus peserta "' + namaPeserta + '" dari kegiatan ini?')) return;
+
+  var tokenSesi = localStorage.getItem('labcare_token') || ''; 
+  if (typeof showLoading === 'function') showLoading(true);
+
+  apiCall('deleteProlanisPeserta', { 
+    id: idPeserta, 
+    token: tokenSesi 
+  }).then(function(res) {
+    if (typeof showLoading === 'function') showLoading(false);
+
+    if (res && res.ok) {
+      if (typeof toastMsg === 'function') toastMsg('Peserta dihapus', 'ok');
+      
+      // Hapus dari array lokal agar UI langsung update
+      k.peserta.splice(idx, 1); 
+      render(); 
+    } else {
+      alert('Gagal menghapus peserta: ' + (res.error || 'Error tidak diketahui'));
+      if (res.error && res.error.indexOf('AKSES DITOLAK') !== -1) {
+        if (typeof doLogoutAdmin === 'function') doLogoutAdmin();
+      }
+    }
+  }).catch(function(err) {
+    if (typeof showLoading === 'function') showLoading(false);
+    alert('Koneksi gagal: ' + err.toString());
+  });
+}
