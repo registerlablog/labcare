@@ -16,11 +16,23 @@ function viewPendaftaran() {
     '<h3 class="section-title" style="margin-top:0;">A. Data Pasien</h3>' +
     
     // TAMBAHKAN ID PADA INPUT AGAR BISA DIUBAH OLEH JAVASCRIPT
-    '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">' +
-      '<div><label class="lbl">ID Pasien</label><input id="autoIdPasien" name="idPasien" value="Memuat..." readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
-      '<div><label class="lbl">No. Antrian</label><input id="autoNoAntrian" name="noAntrian" value="Memuat..." readonly class="inp" style="background-color:#ecfdf5; color:#047857; font-weight:700; border:1.5px solid #10b981; cursor:not-allowed;"></div>' +
-      '<div><label class="lbl">No. Rekam Medis</label><input id="autoNoRM" name="noRM" value="Memuat..." readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
-    '</div>' +
+'<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; border-bottom: 2px dashed #e5e7eb; padding-bottom: 16px;">' +
+  '<div>' +
+    '<label class="lbl" style="color: #6b7280;">ID Pasien</label>' +
+    '<div id="autoIdPasien" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>' +
+    '<input type="hidden" name="idPasien" id="hiddenIdPasien">' +
+  '</div>' +
+  '<div>' +
+    '<label class="lbl" style="color: #6b7280;">No. Antrian</label>' +
+    '<div id="autoNoAntrian" style="font-size: 20px; font-weight: 800; color: #0f766e; margin-top: 2px;">Memuat...</div>' +
+    '<input type="hidden" name="noAntrian" id="hiddenNoAntrian">' +
+  '</div>' +
+  '<div>' +
+    '<label class="lbl" style="color: #6b7280;">No. Rekam Medis</label>' +
+    '<div id="autoNoRM" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>' +
+    '<input type="hidden" name="noRM" id="hiddenNoRM">' +
+  '</div>' +
+'</div>' +
     
     '<div class="form-row">' +
     '<div><label class="lbl">Nama Lengkap *</label><input name="nama" required class="inp" placeholder="Nama pasien"></div>' +
@@ -48,21 +60,30 @@ async function fetchAutoNumbers() {
   var res = await apiCall('getNextNumbers');
   
   if (res && res.ok) {
+    // 1. Update Tampilan Teks (Div)
     var elId = document.getElementById('autoIdPasien');
     var elAnt = document.getElementById('autoNoAntrian');
     var elRM = document.getElementById('autoNoRM');
+    if (elId) elId.textContent = res.id;
+    if (elAnt) elAnt.textContent = res.antrian;
+    if (elRM) elRM.textContent = res.rm;
     
-    if (elId) elId.value = res.id;
-    if (elAnt) elAnt.value = res.antrian;
-    if (elRM) elRM.value = res.rm;
+    // 2. Update Nilai Hidden Input (Agar bisa disimpan ke database)
+    var hidId = document.getElementById('hiddenIdPasien');
+    var hidAnt = document.getElementById('hiddenNoAntrian');
+    var hidRM = document.getElementById('hiddenNoRM');
+    if (hidId) hidId.value = res.id;
+    if (hidAnt) hidAnt.value = res.antrian;
+    if (hidRM) hidRM.value = res.rm;
+
   } else {
     console.error('Gagal ambil nomor dari server:', res ? res.error : 'Unknown Error');
     var elId = document.getElementById('autoIdPasien');
     var elAnt = document.getElementById('autoNoAntrian');
     var elRM = document.getElementById('autoNoRM');
-    if (elId) elId.value = 'Error';
-    if (elAnt) elAnt.value = 'Error';
-    if (elRM) elRM.value = 'Error';
+    if (elId) elId.textContent = 'Error';
+    if (elAnt) elAnt.textContent = 'Error';
+    if (elRM) elRM.textContent = 'Error';
     if (typeof toastMsg === 'function') toastMsg('Gagal memuat nomor otomatis', 'err');
   }
 }
