@@ -20,7 +20,8 @@ function viewPendaftaran() {
   '<div>' +
     '<label class="lbl" style="color: #6b7280;">ID Pasien</label>' +
     '<div id="autoIdPasien" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>' +
-    '<input type="hidden" name="idPasien" id="hiddenIdPasien">' +
+    // PERBAIKAN: Ubah name="idPasien" menjadi name="id"
+    '<input type="hidden" name="id" id="hiddenIdPasien">' + 
   '</div>' +
   '<div>' +
     '<label class="lbl" style="color: #6b7280;">No. Antrian</label>' +
@@ -32,6 +33,8 @@ function viewPendaftaran() {
     '<div id="autoNoRM" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>' +
     '<input type="hidden" name="noRM" id="hiddenNoRM">' +
   '</div>' +
+  // PERBAIKAN: Tambahkan input tersembunyi untuk tanggal pendaftaran
+  '<input type="hidden" name="tglDaftar" value="' + new Date().toISOString() + '">' +
 '</div>' +
     
     '<div class="form-row">' +
