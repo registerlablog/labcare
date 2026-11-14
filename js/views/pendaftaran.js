@@ -54,7 +54,7 @@ function viewPendaftaran() {
     '<h3 class="section-title">B. Pemeriksaan Laboratorium *</h3>' +
     '<div id="testPickerWrap">' + renderTestPicker() + '</div>' +
     '<div style="margin-top:24px;"><label class="lbl">Catatan Klinis</label><textarea name="catatan" rows="2" class="inp-ta" placeholder="Keluhan / diagnosis / catatan"></textarea></div>' +
-    '<div class="btn-row"><button type="submit" class="btn btn-primary">Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
+    '<div class="btn-row"><button type="button" class="btn btn-primary" onclick="prosesSimpanPasien()">Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
 }
 
 // FUNGSI BARU UNTUK MENGAMBIL NOMOR DARI DATABASE
@@ -113,11 +113,9 @@ function toggleTestPick(kode, checked) { if (checked) window._pickedTests[kode] 
 function removePickedTest(kode) { delete window._pickedTests[kode]; var summary = document.getElementById('pickSummaryWrap'); if (summary) summary.innerHTML = renderPickSummary(); var grid = document.getElementById('pickGrid'); if (grid) grid.innerHTML = renderPickItems(); }
 function clearPickedTests() { window._pickedTests = {}; refreshPicker(); }
 function selectAllVisible() { var filter = window._katFilter; var search = (window._pickSearch || '').toLowerCase(); var filtered = TESTS.filter(function(t) { var matchKat = filter === 'semua' || t.kategori === filter; var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0 || t.kategori.toLowerCase().indexOf(search) >= 0; return matchKat && matchSearch; }); filtered.forEach(function(t) { window._pickedTests[t.kode] = true; }); refreshPicker(); toastMsg(filtered.length + ' pemeriksaan ditambahkan'); }
-document.addEventListener('submit', function(e) {
-  if (e.target.id !== 'formDaftar') return;
-  e.preventDefault(); // Pastikan tidak reload
-
-  var f = new FormData(e.target);
+function prosesSimpanPasien() {
+  var form = document.getElementById('formDaftar');
+  var f = new FormData(form);
   var tests = Object.keys(window._pickedTests || {});
   
   if (tests.length === 0) { 
@@ -128,8 +126,8 @@ document.addEventListener('submit', function(e) {
   var spesimen = f.get('spesimen') || 'belum';
   var statusAwal = spesimen === 'ada' ? 'proses' : 'menunggu';
   
-    var p = { 
-    id: f.get('id') || uid(), // <-- Ambil dari hidden input, jika kosong baru pakai uid()
+  var p = { 
+    id: f.get('id') || uid(), 
     noRM: f.get('noRM'), 
     nama: f.get('nama').trim(), 
     tglLahir: f.get('tglLahir'), 
@@ -144,8 +142,8 @@ document.addEventListener('submit', function(e) {
     hasil: {}, 
     status: statusAwal, 
     spesimen: spesimen, 
-    noAntrian: f.get('noAntrian'), // <-- Ambil dari hidden input (hasil fetchAutoNumbers)
-    tglDaftar: f.get('tglDaftar') || new Date().toISOString(), 
+    noAntrian: f.get('noAntrian'), 
+    tglDaftar: new Date().toISOString(), 
     kesimpulan: '' 
   };
   
@@ -153,16 +151,15 @@ document.addEventListener('submit', function(e) {
   save(); 
   apiCall('savePasien', p);
   
-  e.target.reset(); 
+  form.reset(); 
   window._pickedTests = {}; 
   window._katFilter = 'semua'; 
   window._pickSearch = '';
   
-  // Tampilkan modal sukses
   document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em">✅</div><h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
     '<div style="display:flex;gap:8px;">' +
     '<button class="btn btn-secondary" style="flex:1;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">📋 Antrian</button>' +
     '<button class="btn btn-primary" style="flex:1;" onclick="inputHasilPasien(\'' + p.id + '\')">🔬 Input Hasil</button>' +
     '</div></div>';
   document.getElementById('modal').classList.add('open');
-});
+}
