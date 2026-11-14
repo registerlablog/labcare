@@ -1,5 +1,18 @@
 // TAMPILAN: PENDAFTARAN & TEST PICKER
 // ==========================================
+// --- FUNGSI BANTUAN UNTUK ID & ANTRIAN (PLACEHOLDER) ---
+function nextID() {
+  // CATATAN: Idealnya ID ini di-generate dari database / Google Apps Script.
+  // Untuk sementara kita buat dummy berbasis waktu (Unix Timestamp).
+  return 'P-' + Date.now().toString().slice(-6);
+}
+
+function nextAntrian() {
+  // CATATAN: Logika antrian asli harus mengambil sisa antrian dari server.
+  // Untuk sementara kita buat dummy acak 1-20.
+  var nomor = Math.floor(Math.random() * 20) + 1;
+  return 'A-' + nomor.toString().padStart(3, '0');
+}
 function viewPendaftaran() {
   var dokterField;
   if (dokterList.length > 0) { dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(function(d) { return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
@@ -10,9 +23,13 @@ function viewPendaftaran() {
   return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Daftarkan pasien baru beserta pemeriksaan yang diminta.</p></div>' +
     '<form id="formDaftar" class="card">' +
     '<h3 class="section-title" style="margin-top:0;">A. Data Pasien</h3>' +
+    '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">' +
+      '<div><label class="lbl">ID Pasien</label><input name="idPasien" value="' + nextID() + '" readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
+      '<div><label class="lbl">No. Antrian</label><input name="noAntrian" value="' + nextAntrian() + '" readonly class="inp" style="background-color:#ecfdf5; color:#047857; font-weight:700; border:1.5px solid #10b981; cursor:not-allowed;"></div>' +
+      '<div><label class="lbl">No. Rekam Medis</label><input name="noRM" value="' + nextRM() + '" readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
+    '</div>' +
     '<div class="form-row">' +
     '<div><label class="lbl">Nama Lengkap *</label><input name="nama" required class="inp" placeholder="Nama pasien"></div>' +
-    '<div><label class="lbl">No. Rekam Medis</label><input name="noRM" value="' + nextRM() + '" readonly class="inp"></div>' +
     '<div><label class="lbl">Tanggal Lahir *</label><input type="date" name="tglLahir" required class="inp"></div>' +
     '<div><label class="lbl">Jenis Kelamin *</label><select name="jk" class="inp-sel"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>' +
     '<div><label class="lbl">No. Telepon</label><input name="telepon" class="inp" placeholder="08xxxxxxxxxx"></div>' +
