@@ -1611,17 +1611,58 @@ function cetakLaporan() {
 }
 function updateClock() { var d = new Date(); var t = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); var dd = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }); var el = document.getElementById('clock'); if (el) el.textContent = t + ' • ' + dd; }
 setInterval(updateClock, 1000); updateClock();
-document.addEventListener('submit', function(e) {
+document.addEventListener('submit', async function(e) {
   if (e.target.id !== 'formDaftar') return;
   e.preventDefault();
+  
   var f = new FormData(e.target);
   var tests = Object.keys(window._pickedTests);
   if (tests.length === 0) { alert('Pilih minimal satu pemeriksaan laboratorium.'); return; }
+  
   var spesimen = f.get('spesimen') || 'belum';
   var statusAwal = spesimen === 'ada' ? 'proses' : 'menunggu';
-  var p = { id: uid(), noRM: f.get('noRM'), nama: f.get('nama').trim(), tglLahir: f.get('tglLahir'), jk: f.get('jk'), telepon: f.get('telepon'), pengirim: (f.get('pengirim') || '').trim(), dokter: f.get('dokter'), analis: f.get('analis'), alamat: f.get('alamat'), catatan: f.get('catatan'), tests: tests, hasil: {}, status: statusAwal, spesimen: spesimen, noAntrian: 'A-' + String(nextQueueNo()).padStart(3, '0'), tglDaftar: new Date().toISOString(), kesimpulan: '' };
-  patients.push(p); save(); apiCall('savePasien', p);
-  e.target.reset(); window._pickedTests = {}; window._katFilter = 'semua'; window._pickSearch = '';
+  
+  // PERBAIKAN: Ambil data ID, Antrian, dan Tanggal langsung dari form
+  var p = { 
+    id: f.get('id'), 
+    noRM: f.get('noRM'), 
+    noAntrian: f.get('noAntrian'), 
+    tglDaftar: f.get('tglDaftar') || new Date().toISOString(),
+    nama: f.get('nama').trim(), 
+    tglLahir: f.get('tglLahir'), 
+    jk: f.get('jk'), 
+    telepon: f.get('telepon'), 
+    pengirim: (f.get('pengirim') || '').trim(), 
+    dokter: f.get('dokter'), 
+    analis: f.get('analis'), 
+    alamat: f.get('alamat'), 
+    catatan: f.get('catatan'), 
+    tests: tests, 
+    hasil: {}, 
+    status: statusAwal, 
+    spesimen: spesimen, 
+    kesimpulan: '' 
+  };
+  
+  showLoading(true);
+  // PERBAIKAN: Tunggu balasan dari database, dan tangkap jika ada error
+  var res = await apiCall('savePasien', p);
+  showLoading(false);
+
+  if (!res || !res.ok) {
+    alert('GAGAL MENYIMPAN KE DATABASE:\n\n' + (res && res.error ? res.error : 'Sesi Login habis. Silakan Logout lalu Login kembali.'));
+    return; // Hentikan proses, jangan tampilkan pop-up sukses
+  }
+
+  // Jika berhasil, simpan ke aplikasi dan tampilkan pop-up sukses
+  patients.push(p); 
+  save(); 
+  
+  e.target.reset(); 
+  window._pickedTests = {}; 
+  window._katFilter = 'semua'; 
+  window._pickSearch = '';
+  
   document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
     '<div style="display:flex;gap:8px;">' +
     '<button class="btn btn-secondary" style="flex:1;" onclick="closeModal(); view=\'antrian\'; renderNav(); render();">Antrian</button>' +
