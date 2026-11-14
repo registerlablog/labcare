@@ -12,7 +12,7 @@ function viewPendaftaran() {
   setTimeout(fetchAutoNumbers, 100);
 
   return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Daftarkan pasien baru beserta pemeriksaan yang diminta.</p></div>' +
-    '<form id="formDaftar" class="card">' +
+    '<form id="formDaftar" class="card" onsubmit="event.preventDefault();">' +
     '<h3 class="section-title" style="margin-top:0;">A. Data Pasien</h3>' +
     
     // TAMBAHKAN ID PADA INPUT AGAR BISA DIUBAH OLEH JAVASCRIPT
