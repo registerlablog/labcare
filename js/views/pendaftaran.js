@@ -1,33 +1,27 @@
 // TAMPILAN: PENDAFTARAN & TEST PICKER
-// ==========================================
-// --- FUNGSI BANTUAN UNTUK ID & ANTRIAN (PLACEHOLDER) ---
-function nextID() {
-  // CATATAN: Idealnya ID ini di-generate dari database / Google Apps Script.
-  // Untuk sementara kita buat dummy berbasis waktu (Unix Timestamp).
-  return 'P-' + Date.now().toString().slice(-6);
-}
-
-function nextAntrian() {
-  // CATATAN: Logika antrian asli harus mengambil sisa antrian dari server.
-  // Untuk sementara kita buat dummy acak 1-20.
-  var nomor = Math.floor(Math.random() * 20) + 1;
-  return 'A-' + nomor.toString().padStart(3, '0');
-}
 function viewPendaftaran() {
   var dokterField;
   if (dokterList.length > 0) { dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(function(d) { return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
   else { dokterField = '<input name="dokter" class="inp" placeholder="Ketik nama dokter"><div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data dokter. Tambahkan di <a onclick="goToMaster(\'dokter\')">Master Lab → Dokter</a>.</span></div>'; }
+  
   var analisField;
   if (analisList.length > 0) { analisField = '<select name="analis" class="inp-sel"><option value="">— Pilih Analis —</option>' + analisList.map(function(a) { return '<option value="' + esc(a.nama) + '">' + esc(a.nama) + (a.kode ? ' (' + esc(a.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
   else { analisField = '<input name="analis" class="inp" placeholder="Ketik nama analis"><div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data analis. Tambahkan di <a onclick="goToMaster(\'analis\')">Master Lab → Analis</a>.</span></div>'; }
+
+  // Panggil fungsi pengambil nomor secara async (di latar belakang)
+  setTimeout(fetchAutoNumbers, 100);
+
   return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Daftarkan pasien baru beserta pemeriksaan yang diminta.</p></div>' +
     '<form id="formDaftar" class="card">' +
     '<h3 class="section-title" style="margin-top:0;">A. Data Pasien</h3>' +
+    
+    // TAMBAHKAN ID PADA INPUT AGAR BISA DIUBAH OLEH JAVASCRIPT
     '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">' +
-      '<div><label class="lbl">ID Pasien</label><input name="idPasien" value="' + nextID() + '" readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
-      '<div><label class="lbl">No. Antrian</label><input name="noAntrian" value="' + nextAntrian() + '" readonly class="inp" style="background-color:#ecfdf5; color:#047857; font-weight:700; border:1.5px solid #10b981; cursor:not-allowed;"></div>' +
-      '<div><label class="lbl">No. Rekam Medis</label><input name="noRM" value="' + nextRM() + '" readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
+      '<div><label class="lbl">ID Pasien</label><input id="autoIdPasien" name="idPasien" value="Memuat..." readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
+      '<div><label class="lbl">No. Antrian</label><input id="autoNoAntrian" name="noAntrian" value="Memuat..." readonly class="inp" style="background-color:#ecfdf5; color:#047857; font-weight:700; border:1.5px solid #10b981; cursor:not-allowed;"></div>' +
+      '<div><label class="lbl">No. Rekam Medis</label><input id="autoNoRM" name="noRM" value="Memuat..." readonly class="inp" style="background-color:#f3f4f6; color:#6b7280; cursor:not-allowed;"></div>' +
     '</div>' +
+    
     '<div class="form-row">' +
     '<div><label class="lbl">Nama Lengkap *</label><input name="nama" required class="inp" placeholder="Nama pasien"></div>' +
     '<div><label class="lbl">Tanggal Lahir *</label><input type="date" name="tglLahir" required class="inp"></div>' +
@@ -46,6 +40,31 @@ function viewPendaftaran() {
     '<div id="testPickerWrap">' + renderTestPicker() + '</div>' +
     '<div style="margin-top:24px;"><label class="lbl">Catatan Klinis</label><textarea name="catatan" rows="2" class="inp-ta" placeholder="Keluhan / diagnosis / catatan"></textarea></div>' +
     '<div class="btn-row"><button type="submit" class="btn btn-primary">Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
+}
+
+// FUNGSI BARU UNTUK MENGAMBIL NOMOR DARI DATABASE
+async function fetchAutoNumbers() {
+  // Panggil fungsi apiCall bawaan dari api.js
+  var res = await apiCall('getNextNumbers');
+  
+  if (res && res.ok) {
+    var elId = document.getElementById('autoIdPasien');
+    var elAnt = document.getElementById('autoNoAntrian');
+    var elRM = document.getElementById('autoNoRM');
+    
+    if (elId) elId.value = res.id;
+    if (elAnt) elAnt.value = res.antrian;
+    if (elRM) elRM.value = res.rm;
+  } else {
+    console.error('Gagal ambil nomor dari server:', res ? res.error : 'Unknown Error');
+    var elId = document.getElementById('autoIdPasien');
+    var elAnt = document.getElementById('autoNoAntrian');
+    var elRM = document.getElementById('autoNoRM');
+    if (elId) elId.value = 'Error';
+    if (elAnt) elAnt.value = 'Error';
+    if (elRM) elRM.value = 'Error';
+    if (typeof toastMsg === 'function') toastMsg('Gagal memuat nomor otomatis', 'err');
+  }
 }
 function renderTestPicker() {
   if (TESTS.length === 0) { return '<div class="info-box info-blue"><span class="info-em">ℹ️</span><span>Belum ada pemeriksaan. Tambahkan di <a onclick="goToMaster(\'pemeriksaan\')">Master Lab → Pemeriksaan</a>.</span></div>'; }
