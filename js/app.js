@@ -389,14 +389,6 @@ function updatePesertaField(idx, field, val) {
   if (!window._prolanisDetail.peserta[idx]) return;
   window._prolanisDetail.peserta[idx][field] = val;
 }
-
-function hapusPesertaProlanis(idx) {
-  if (!window._prolanisDetail || !window._prolanisDetail.peserta) return;
-  if (!confirm('Hapus baris ini?')) return;
-  window._prolanisDetail.peserta.splice(idx, 1);
-  render();
-}
-
 /* ===== PROLANIS: PASTE/IMPORT EXCEL (Level 2+3+4) ===== */
 
 // --- Helper: normalisasi tanggal berbagai format ---
@@ -1189,14 +1181,6 @@ function cetakProlanisPeserta(kegId, idx) {
   var page = buildProlanisPrintPage(keg, p);
   var title = 'Cetak — ' + (p.nama || 'Peserta');
   showMultiPagePrint([page], title);
-}
-function hapusKegiatanProlanis(id, nama) {
-  if (!confirm('Hapus kegiatan "' + nama + '"? Semua peserta di dalamnya akan hilang.')) return;
-  window._prolanisList = (window._prolanisList || []).filter(function(x) { return String(x.id_kegiatan) !== String(id); });
-  apiCall('deleteProlanisKegiatan', { id: id, nama: nama }).then(function() {
-    toastMsg('Kegiatan dihapus', 'ok');
-  });
-  render();
 }
 async function prosesBackupSekarang() {
   if (!confirm('Apakah Anda yakin ingin membuat file backup baru sekarang?')) return;
