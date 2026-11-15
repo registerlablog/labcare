@@ -57,37 +57,33 @@ function viewPendaftaran() {
     '<div class="btn-row"><button type="button" class="btn btn-primary" onclick="prosesSimpanPasien()">Daftarkan Pasien</button><button type="reset" class="btn btn-secondary" onclick="clearPickedTests()">Reset</button></div></form>';
 }
 
-// FUNGSI BARU UNTUK MENGAMBIL NOMOR DARI DATABASE
 async function fetchAutoNumbers() {
-  // Panggil fungsi apiCall bawaan dari api.js
   var res = await apiCall('getNextNumbers');
   
   if (res && res.ok) {
-    // 1. Update Tampilan Teks (Div)
     var elId = document.getElementById('autoIdPasien');
     var elAnt = document.getElementById('autoNoAntrian');
     var elRM = document.getElementById('autoNoRM');
-    if (elId) elId.textContent = res.id;
-    if (elAnt) elAnt.textContent = res.antrian;
-    if (elRM) elRM.textContent = res.rm;
     
-    // 2. Update Nilai Hidden Input (Agar bisa disimpan ke database)
     var hidId = document.getElementById('hiddenIdPasien');
     var hidAnt = document.getElementById('hiddenNoAntrian');
     var hidRM = document.getElementById('hiddenNoRM');
+
+    if (elId) elId.textContent = res.id;
+    if (elRM) elRM.textContent = res.rm;
     if (hidId) hidId.value = res.id;
-    if (hidAnt) hidAnt.value = res.antrian;
     if (hidRM) hidRM.value = res.rm;
 
+    // ✅ PERBAIKAN: Jangan timpa nomor antrian JIKA form dibuka dari menu Antrian Pendaftaran
+    if (!window._isDariAntrian) {
+      if (elAnt) elAnt.textContent = res.antrian;
+      if (hidAnt) hidAnt.value = res.antrian;
+      var antrianNum = parseInt(res.antrian.replace(/\D/g, ''));
+      localStorage.setItem('labcare_last_generated_Q', antrianNum);
+    }
+
   } else {
-    console.error('Gagal ambil nomor dari server:', res ? res.error : 'Unknown Error');
-    var elId = document.getElementById('autoIdPasien');
-    var elAnt = document.getElementById('autoNoAntrian');
-    var elRM = document.getElementById('autoNoRM');
-    if (elId) elId.textContent = 'Error';
-    if (elAnt) elAnt.textContent = 'Error';
-    if (elRM) elRM.textContent = 'Error';
-    if (typeof toastMsg === 'function') toastMsg('Gagal memuat nomor otomatis', 'err');
+    // ... (biarkan kode error seperti aslinya)
   }
 }
 function renderTestPicker() {
@@ -155,6 +151,7 @@ function prosesSimpanPasien() {
   window._pickedTests = {}; 
   window._katFilter = 'semua'; 
   window._pickSearch = '';
+  window._isDariAntrian = false;
   
   document.getElementById('modalContent').innerHTML = '<div class="modal-success"><div class="big-em">✅</div><h3>Pasien Terdaftar</h3><p>' + esc(p.nama) + ' — ' + esc(p.noRM) + '</p><div class="success-number-box"><p>Nomor Antrian</p><div class="big-no">' + esc(p.noAntrian) + '</div></div>' +
     '<div style="display:flex;gap:8px;">' +
@@ -219,24 +216,25 @@ function viewAntrianPendaftaran() {
 
 // FUNGSI BARU: JEMBATAN DARI ANTRIAN KE FORM PENDAFTARAN
 function daftarkanDariAntrian(noAntrian) {
-  // 1. Pindah ke halaman form pendaftaran
+  // 1. Set penanda bahwa kita sedang mendaftar dari antrian
+  window._isDariAntrian = true;
+
+  // 2. Pindah ke halaman form pendaftaran
   view = 'pendaftaran';
-  renderNav(); // Sesuaikan dengan fungsi render navigasi Anda
+  renderNav(); 
   
-  // 2. Render form pendaftaran, lalu isi otomatis nomor antreannya
-  document.getElementById('mainContent').innerHTML = viewPendaftaran(); // Sesuaikan ID container konten Anda
+  // 3. Render form (Gunakan ID 'app')
+  document.getElementById('app').innerHTML = viewPendaftaran(); 
   
   setTimeout(function() {
-    // Isi kolom No. Antrian
+    // 4. Isi kolom No. Antrian secara paksa
     var elAnt = document.getElementById('autoNoAntrian');
-    if (elAnt) {
-        elAnt.textContent = noAntrian;
-        // (Jika Anda mengikuti saran saya sebelumnya untuk membuatnya jadi input text, gunakan: elAnt.value = noAntrian;)
-    }
+    if (elAnt) elAnt.textContent = noAntrian;
+    
     var hidAnt = document.getElementById('hiddenNoAntrian');
     if (hidAnt) hidAnt.value = noAntrian;
 
-    // Hapus nomor ini dari daftar tunggu (LocalStorage) karena sudah mulai didaftarkan
+    // 5. Hapus dari daftar tunggu (LocalStorage)
     var list = JSON.parse(localStorage.getItem('labcare_antrian_pendaftaran') || '[]');
     var newList = list.filter(function(item) { return item.noAntrian !== noAntrian; });
     localStorage.setItem('labcare_antrian_pendaftaran', JSON.stringify(newList));
