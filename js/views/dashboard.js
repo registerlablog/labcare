@@ -103,7 +103,6 @@ var pasienBelumCetak = patients.filter(function(p) {
 // ✅ SINKRONISASI MESIN TIKET (MEMPERHITUNGKAN DATABASE, BOOKING, & CETAK)
 var tglKey = today();
 var printKey = 'labcare_printQ_' + tglKey;
-var callKey = 'labcare_callQ_' + tglKey;
 
 // 1. Cari nomor antrian tertinggi dari database pasien hari ini
 var highestAntrianNum = 0;
@@ -121,15 +120,11 @@ var lastGeneratedQ = parseInt(localStorage.getItem('labcare_last_generated_Q')) 
 
 // 3. Ambil counter lokal (tiket kosong yang sudah tercetak)
 var localPrintQ = parseInt(localStorage.getItem(printKey)) || 0;
-var localCallQ = parseInt(localStorage.getItem(callKey)) || 0;
 
-// 4. Tentukan nomor tiket cetak berikutnya (Ambil nilai tertinggi dari ketiga sumber, lalu +1)
+// 4. Tentukan nomor tiket cetak berikutnya (Ambil nilai tertinggi, lalu +1)
 var nextPrintQNum = Math.max(highestAntrianNum, lastGeneratedQ, localPrintQ) + 1;
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
-// 5. Tentukan nomor panggilan loket berikutnya
-var nextCallQNum = Math.max(highestAntrianNum, lastGeneratedQ, localCallQ) + 1;
-var nextCallQ = 'A-' + String(nextCallQNum).padStart(3, '0');
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
@@ -143,18 +138,6 @@ var nextQHtml = `
   </div>
 `;
 
-var callQHtml = `
-  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #fff7ed; padding: 16px 20px; border-radius: 16px; border: 1px solid #ffedd5; box-shadow: 0 4px 12px rgba(249,115,22,0.05);">
-    <div>
-      <div style="font-size: 10px; font-weight: 700; color: #c2410c; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Panggil Antrian Loket</div>
-      <div style="font-size: 28px; font-weight: 900; color: #ea580c; line-height: 1;">${nextCallQ}</div>
-    </div>
-    <button onclick="panggilAntrianPendaftaran('${nextCallQ}')" class="btn btn-primary" style="background: #ea580c; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(234,88,12,0.3); transition: all 0.2s;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-      Panggil
-    </button>
-  </div>
-`;
 // 6. Gabungkan Semua Layout
 return `
   <div class="page-header" style="margin-bottom: 16px;">
@@ -173,7 +156,6 @@ return `
     <!-- KOLOM KANAN -->
     <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
       ${nextQHtml}
-      ${callQHtml}
     </div>
 
   </div>
