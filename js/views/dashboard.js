@@ -153,7 +153,7 @@ return `
     </div>
 
     <!-- KOLOM KANAN -->
-    <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column;">
+    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
     ${nextQHtml}
     </div>
 
