@@ -100,10 +100,10 @@ var pasienBelumCetak = patients.filter(function(p) {
   return (a.noAntrian || '').localeCompare(b.noAntrian || '');
 });
 
-// ✅ SINKRONISASI MESIN TIKET (MURNI DARI SPREADSHEET / DATA PASIEN)
+// ✅ SINKRONISASI MESIN TIKET (MEMBACA DARI DATABASE, ANTRIAN, & CETAKAN)
 var tglKey = today();
 
-// 1. Cari nomor antrian tertinggi HANYA dari data pasien hari ini di Spreadsheet
+// 1. Ambil angka tertinggi dari Database (Pasien sungguhan)
 var highestAntrianNum = 0;
 patients.filter(function(p) { 
     return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
@@ -114,8 +114,24 @@ patients.filter(function(p) {
     }
 });
 
-// 2. Tentukan nomor tiket cetak berikutnya langsung dari data tertinggi Spreadsheet + 1
-var nextPrintQNum = highestAntrianNum + 1;
+// 2. Ambil angka tertinggi dari Menu "Antrian Pendaftaran" (Tiket yang belum didaftarkan)
+var antrianPendaftaran = JSON.parse(localStorage.getItem('labcare_antrian_pendaftaran') || '[]');
+antrianPendaftaran.forEach(function(item) {
+    if (item.noAntrian) {
+        var num = parseInt(item.noAntrian.replace(/\D/g, ''));
+        if (num > highestAntrianNum) highestAntrianNum = num;
+    }
+});
+
+// 3. Ambil angka tertinggi dari tiket kosong yang sudah dicetak hari ini
+var printKey = 'labcare_printQ_' + tglKey;
+var localPrintQ = parseInt(localStorage.getItem(printKey)) || 0;
+
+// 4. Ambil angka dari form pendaftaran jika ada yang sedang dibooking
+var lastGeneratedQ = parseInt(localStorage.getItem('labcare_last_generated_Q_' + tglKey)) || 0;
+
+// 5. Tentukan nomor tiket berikutnya (Ambil nilai tertinggi dari semua sumber, lalu +1)
+var nextPrintQNum = Math.max(highestAntrianNum, localPrintQ, lastGeneratedQ) + 1;
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
 var nextQHtml = `
