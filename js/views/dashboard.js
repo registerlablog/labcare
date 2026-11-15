@@ -225,20 +225,37 @@ function bukaFormPendaftaran() {
       </div>
 
       <div style="padding: 20px 24px; max-height: 65vh; overflow-y: auto;">
-        <form id="formDaftar">
+        <!-- TAMBAHKAN onsubmit AGAR FORM BISA DISIMPAN -->
+        <form id="formDaftar" onsubmit="event.preventDefault(); prosesSimpanPasien();">
+          
+          <!-- BAGIAN AUTO NUMBER (SAMA SEPERTI HALAMAN PENUH) -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; border-bottom: 2px dashed #e5e7eb; padding-bottom: 16px;">
+            <div>
+              <label class="lbl" style="color: #6b7280;">ID Pasien</label>
+              <div id="autoIdPasien" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>
+              <input type="hidden" name="id" id="hiddenIdPasien"> 
+            </div>
+            <div>
+              <label class="lbl" style="color: #6b7280;">No. Antrian</label>
+              <div id="autoNoAntrian" style="font-size: 20px; font-weight: 800; color: #0f766e; margin-top: 2px;">Memuat...</div>
+              <input type="hidden" name="noAntrian" id="hiddenNoAntrian">
+            </div>
+            <div>
+              <label class="lbl" style="color: #6b7280;">No. Rekam Medis</label>
+              <div id="autoNoRM" style="font-size: 16px; font-weight: 700; color: #374151; margin-top: 4px;">Memuat...</div>
+              <input type="hidden" name="noRM" id="hiddenNoRM">
+            </div>
+            <input type="hidden" name="tglDaftar" value="${new Date().toISOString()}">
+          </div>
+
+          <!-- DATA PASIEN -->
           <div class="form-row" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
             <div style="grid-column: 1 / -1;">
               <label class="lbl">Nama Lengkap *</label>
               <input type="text" name="nama" class="inp" required placeholder="Nama pasien">
             </div>
             <div>
-  <label class="lbl">No. RM *</label>
-  <!-- Tambahkan readonly, autocomplete="off", dan styling abu-abu -->
-  <input type="text" name="noRM" class="inp" required readonly autocomplete="off" value="RM-${String(patients.length + 1).padStart(4, '0')}" style="background: #f1f5f9; color: #64748b; cursor: not-allowed; font-weight: 600;">
-  <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">*Dibuat otomatis oleh sistem</div>
-</div>
-            <div>
-              <label class="lbl">Tgl Lahir *</label>
+              <label class="lbl">Tanggal Lahir *</label>
               <input type="date" name="tglLahir" class="inp" required>
             </div>
             <div>
@@ -252,10 +269,24 @@ function bukaFormPendaftaran() {
               <label class="lbl">No. Telepon</label>
               <input type="text" name="telepon" class="inp" placeholder="08xxxxxxxxxx">
             </div>
-            <div style="grid-column: 1 / -1;">
+            <div>
               <label class="lbl">Pengirim</label>
               <input type="text" name="pengirim" class="inp" placeholder="Contoh: Umum / Puskesmas" value="Umum">
             </div>
+            
+            <!-- STATUS SPESIMEN (UBAH JADI RADIO BUTTON) -->
+            <div style="grid-column: 1 / -1;">
+              <label class="lbl">Status Spesimen *</label>
+              <div style="display:flex;gap:24px;padding-top:8px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">
+                  <input type="radio" name="spesimen" value="belum" checked required> 📦 Belum Ada (perlu sampling)
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;">
+                  <input type="radio" name="spesimen" value="ada" required> 📦 Sudah Ada (dari luar)
+                </label>
+              </div>
+            </div>
+
             <div>
               <label class="lbl">Dokter Penanggung Jawab</label>
               ${dokterField}
@@ -265,23 +296,15 @@ function bukaFormPendaftaran() {
               ${analisField}
             </div>
             <div style="grid-column: 1 / -1;">
-              <label class="lbl">Status Spesimen</label>
-              <select name="spesimen" class="inp-sel">
-                <option value="belum">📦 Belum Ada (Menunggu)</option>
-                <option value="ada">📦 Sudah Ada (Langsung Proses)</option>
-              </select>
-            </div>
-            <div style="grid-column: 1 / -1;">
               <label class="lbl">Alamat</label>
               <textarea name="alamat" class="inp-ta" rows="2" placeholder="Alamat lengkap"></textarea>
             </div>
           </div>
 
-          <!-- BAGIAN PEMILIHAN TES YANG BARU -->
+          <!-- BAGIAN PEMILIHAN TES -->
           <div style="margin-bottom: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px;">
             <label class="lbl" style="font-size: 14px; margin-bottom: 10px;">B. Pemeriksaan Laboratorium *</label>
             
-            <!-- Filter Kategori & Search -->
             <div class="pick-bar" style="margin-bottom: 10px;">
               <div>
                 <select class="inp-sel" id="quick_kat" onchange="window._quickKatFilter=this.value; renderQuickPickItems();">
@@ -294,19 +317,14 @@ function bukaFormPendaftaran() {
               </div>
             </div>
 
-            <!-- Tombol Aksi Massal -->
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
               <button type="button" class="btn btn-secondary" onclick="pilihSemuaQuickTests()" style="font-size: 11px; padding: 6px 12px;">✔️ Pilih Semua (Tampil)</button>
               <button type="button" class="btn btn-secondary" onclick="bersihkanQuickTests()" style="font-size: 11px; padding: 6px 12px;">🗑️ Bersihkan Semua</button>
             </div>
 
-            <!-- Ringkasan Tes yang Dipilih (Chips) -->
             <div id="quick_summary_wrap" style="margin-bottom: 10px;"></div>
 
-            <!-- Grid Tes -->
-            <div class="pick-grid" id="quick_pick_grid" style="max-height: 250px; overflow-y: auto;">
-              <!-- Item tes akan dimuat oleh JS -->
-            </div>
+            <div class="pick-grid" id="quick_pick_grid" style="max-height: 250px; overflow-y: auto;"></div>
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -325,11 +343,13 @@ function bukaFormPendaftaran() {
     modalContent.style.padding = "0"; 
     modalOverlay.classList.add('open');
     
-    // Panggil fungsi untuk merender item tes pertama kali
+    // Tampilkan item tes
     renderQuickPickItems();
+
+    // PANGGIL API UNTUK MENDAPATKAN NOMOR OTOMATIS
+    fetchAutoNumbers(); 
   }
 }
-
 // ==========================================
 // FUNGSI BANTUAN UNTUK FILTER & PILIH TES
 // ==========================================
