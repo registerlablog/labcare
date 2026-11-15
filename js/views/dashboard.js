@@ -100,11 +100,10 @@ var pasienBelumCetak = patients.filter(function(p) {
   return (a.noAntrian || '').localeCompare(b.noAntrian || '');
 });
 
-// ✅ SINKRONISASI MESIN TIKET (MEMPERHITUNGKAN DATABASE, BOOKING, & CETAK)
+// ✅ SINKRONISASI MESIN TIKET (MURNI DARI SPREADSHEET / DATA PASIEN)
 var tglKey = today();
-var printKey = 'labcare_printQ_' + tglKey;
 
-// 1. Cari nomor antrian tertinggi dari database pasien hari ini
+// 1. Cari nomor antrian tertinggi HANYA dari data pasien hari ini di Spreadsheet
 var highestAntrianNum = 0;
 patients.filter(function(p) { 
     return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
@@ -115,14 +114,8 @@ patients.filter(function(p) {
     }
 });
 
-// 2. Ambil nomor yang sedang "dibooking" di form pendaftaran
-var lastGeneratedQ = parseInt(localStorage.getItem('labcare_last_generated_Q')) || 0;
-
-// 3. Ambil counter lokal (tiket kosong yang sudah tercetak)
-var localPrintQ = parseInt(localStorage.getItem(printKey)) || 0;
-
-// 4. Tentukan nomor tiket cetak berikutnya (Ambil nilai tertinggi, lalu +1)
-var nextPrintQNum = Math.max(highestAntrianNum, lastGeneratedQ, localPrintQ) + 1;
+// 2. Tentukan nomor tiket cetak berikutnya langsung dari data tertinggi Spreadsheet + 1
+var nextPrintQNum = highestAntrianNum + 1;
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
 var nextQHtml = `
@@ -851,12 +844,9 @@ async function cetakTiketKosong(nomorAntrian) {
   patients.push(p); 
   save(); 
   apiCall('savePasien', p); // Kirim ke Google Apps Script
-
-  // 4. Update localStorage agar angka antrean selanjutnya sinkron
-  var antrianNum = parseInt(nomorAntrian.replace(/\D/g, ''));
-  var tglKey = today();
-  localStorage.setItem('labcare_printQ_' + tglKey, antrianNum + 1);
-  localStorage.setItem('labcare_last_generated_Q', antrianNum);
+// 4. Tidak perlu update localStorage lagi karena Dashboard 
+// akan otomatis membaca dari array `patients` yang baru ditambahkan di atas.
+// Cukup pastikan sinkronisasi data ke server berjalan lancar.
 
   // 5. Siapkan Desain Tiket (Untuk dicetak)
   var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
