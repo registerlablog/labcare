@@ -811,3 +811,42 @@ function panggilAntrianPendaftaran(nomor) {
     render(); // Refresh tampilan dashboard
   }
 }
+function cetakTiketKosong(nomorAntrian) {
+  var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  
+  // Perhatikan: kita menambahkan tag <style> di dalam HTML tiket
+  var tiketHtml = `
+    <style>
+      /* KUNCI UTAMA UNTUK PRINTER STRUK THERMAL */
+      @page { size: 58mm auto; margin: 0; } /* Ubah ke 80mm auto jika kertas Anda 80mm */
+      body { margin: 0; padding: 5mm; font-family: 'Courier New', Courier, monospace; color: #000; }
+      .text-center { text-align: center; }
+      .title { font-size: 16px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+      .subtitle { font-size: 11px; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+      .label { font-size: 12px; margin-bottom: 5px; }
+      .nomor { font-size: 55px; font-weight: 900; margin: 15px 0; line-height: 1; }
+      .footer { font-size: 10px; margin-top: 15px; }
+    </style>
+    <div class="text-center">
+      <div class="title">LABKESDA BONDOWOSO</div>
+      <div class="subtitle">Sistem Pelayanan Laboratorium</div>
+      
+      <div class="label">Nomor Antrean</div>
+      <div class="nomor">${nomorAntrian}</div>
+      
+      <div class="footer">Silakan menunggu nomor Anda dipanggil.</div>
+      <div class="footer" style="margin-top: 5px;">${tgl}</div>
+    </div>
+  `;
+
+  if (typeof showPrintPreview === 'function') {
+    showPrintPreview(tiketHtml, 'Cetak Antrean');
+  } else {
+    var printWindow = window.open('', '', 'height=600,width=400');
+    printWindow.document.write('<html><body>');
+    printWindow.document.write(tiketHtml);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  }
+}
