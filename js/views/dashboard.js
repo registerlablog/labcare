@@ -811,31 +811,68 @@ function panggilAntrianPendaftaran(nomor) {
     render(); // Refresh tampilan dashboard
   }
 }
-function cetakTiketKosong(nomorAntrian) {
+async function cetakTiketKosong(nomorAntrian) {
+  // Tampilkan indikator loading
+  var loadingEl = document.getElementById('loading');
+  if (loadingEl) loadingEl.classList.add('show');
+
+  // 1. Ambil ID dan No. RM terbaru dari server (Database)
+  var res = await apiCall('getNextNumbers');
+  
+  if (!res || !res.ok) {
+    if (loadingEl) loadingEl.classList.remove('show');
+    alert('Gagal terhubung ke database. Periksa koneksi internet.');
+    return;
+  }
+
+  // 2. Buat Data Pasien Baru (Status Menunggu, Data Kosong)
+  var p = { 
+    id: res.id, 
+    noRM: res.rm, 
+    nama: "Pasien Walk-in", // Nama default sebelum dilengkapi admin
+    tglLahir: '', 
+    jk: 'L', 
+    telepon: '', 
+    pengirim: 'Umum', 
+    dokter: '', 
+    analis: '', 
+    alamat: '', 
+    catatan: '', 
+    tests: [], 
+    hasil: {}, 
+    status: 'menunggu', // Status awal
+    spesimen: 'belum', 
+    noAntrian: nomorAntrian, 
+    tglDaftar: new Date().toISOString(), 
+    kesimpulan: '' 
+  };
+  
+  // 3. Simpan ke Memori Aplikasi & Google Sheets
+  patients.push(p); 
+  save(); 
+  apiCall('savePasien', p); // Kirim ke Google Apps Script
+
+  // 4. Update localStorage agar angka antrean selanjutnya sinkron
+  var antrianNum = parseInt(nomorAntrian.replace(/\D/g, ''));
+  var tglKey = today();
+  localStorage.setItem('labcare_printQ_' + tglKey, antrianNum + 1);
+  localStorage.setItem('labcare_last_generated_Q', antrianNum);
+
+  // 5. Siapkan Desain Tiket (Untuk dicetak)
   var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   
-  // Desain khusus printer struk (Thermal)
   var tiketHtml = `
     <!DOCTYPE html>
     <html>
     <head>
       <title>Cetak Antrean ${nomorAntrian}</title>
       <style>
-        /* MENGUNCI UKURAN KERTAS MENJADI 58mm */
         @page { size: 58mm auto; margin: 0; }
-        
-        body { 
-          margin: 0; 
-          padding: 5mm 2mm; 
-          font-family: Arial, Helvetica, sans-serif; 
-          color: #000; 
-          background: #fff;
-        }
+        body { margin: 0; padding: 5mm 2mm; font-family: Arial, sans-serif; color: #000; background: #fff; }
         .text-center { text-align: center; }
         .title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
         .subtitle { font-size: 10px; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
         .label { font-size: 11px; margin-bottom: 5px; }
-        /* Angka antrean dibuat sangat besar agar terbaca dari jauh */
         .nomor { font-size: 60px; font-weight: 900; margin: 10px 0; line-height: 1; }
         .footer { font-size: 9px; margin-top: 10px; }
       </style>
@@ -855,16 +892,20 @@ function cetakTiketKosong(nomorAntrian) {
     </html>
   `;
 
-  // Buka jendela baru khusus untuk mencetak (Bypass modal preview)
+  // 6. Buka Jendela Cetak
   var printWindow = window.open('', '', 'width=400,height=600');
   printWindow.document.open();
   printWindow.document.write(tiketHtml);
   printWindow.document.close();
   
-  // Tunggu sebentar agar CSS termuat, lalu panggil print
   setTimeout(function() {
     printWindow.focus();
     printWindow.print();
-    // printWindow.close(); // Opsional: tutup otomatis setelah print (kadang bikin bug di beberapa browser)
   }, 500);
+
+  // 7. Sembunyikan Loading & Refresh Dashboard
+  setTimeout(function() {
+    if (loadingEl) loadingEl.classList.remove('show');
+    render(); // Agar tampilan dashboard langsung terupdate
+  }, 1000);
 }
