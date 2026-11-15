@@ -814,39 +814,57 @@ function panggilAntrianPendaftaran(nomor) {
 function cetakTiketKosong(nomorAntrian) {
   var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   
-  // Perhatikan: kita menambahkan tag <style> di dalam HTML tiket
+  // Desain khusus printer struk (Thermal)
   var tiketHtml = `
-    <style>
-      /* KUNCI UTAMA UNTUK PRINTER STRUK THERMAL */
-      @page { size: 58mm auto; margin: 0; } /* Ubah ke 80mm auto jika kertas Anda 80mm */
-      body { margin: 0; padding: 5mm; font-family: 'Courier New', Courier, monospace; color: #000; }
-      .text-center { text-align: center; }
-      .title { font-size: 16px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-      .subtitle { font-size: 11px; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-      .label { font-size: 12px; margin-bottom: 5px; }
-      .nomor { font-size: 55px; font-weight: 900; margin: 15px 0; line-height: 1; }
-      .footer { font-size: 10px; margin-top: 15px; }
-    </style>
-    <div class="text-center">
-      <div class="title">LABKESDA BONDOWOSO</div>
-      <div class="subtitle">Sistem Pelayanan Laboratorium</div>
-      
-      <div class="label">Nomor Antrean</div>
-      <div class="nomor">${nomorAntrian}</div>
-      
-      <div class="footer">Silakan menunggu nomor Anda dipanggil.</div>
-      <div class="footer" style="margin-top: 5px;">${tgl}</div>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Cetak Antrean ${nomorAntrian}</title>
+      <style>
+        /* MENGUNCI UKURAN KERTAS MENJADI 58mm */
+        @page { size: 58mm auto; margin: 0; }
+        
+        body { 
+          margin: 0; 
+          padding: 5mm 2mm; 
+          font-family: Arial, Helvetica, sans-serif; 
+          color: #000; 
+          background: #fff;
+        }
+        .text-center { text-align: center; }
+        .title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+        .subtitle { font-size: 10px; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; }
+        .label { font-size: 11px; margin-bottom: 5px; }
+        /* Angka antrean dibuat sangat besar agar terbaca dari jauh */
+        .nomor { font-size: 60px; font-weight: 900; margin: 10px 0; line-height: 1; }
+        .footer { font-size: 9px; margin-top: 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="text-center">
+        <div class="title">LABKESDA BONDOWOSO</div>
+        <div class="subtitle">Sistem Pelayanan Laboratorium</div>
+        
+        <div class="label">Nomor Antrean</div>
+        <div class="nomor">${nomorAntrian}</div>
+        
+        <div class="footer">Silakan menunggu nomor Anda dipanggil.</div>
+        <div class="footer" style="margin-top: 5px;">${tgl}</div>
+      </div>
+    </body>
+    </html>
   `;
 
-  if (typeof showPrintPreview === 'function') {
-    showPrintPreview(tiketHtml, 'Cetak Antrean');
-  } else {
-    var printWindow = window.open('', '', 'height=600,width=400');
-    printWindow.document.write('<html><body>');
-    printWindow.document.write(tiketHtml);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
+  // Buka jendela baru khusus untuk mencetak (Bypass modal preview)
+  var printWindow = window.open('', '', 'width=400,height=600');
+  printWindow.document.open();
+  printWindow.document.write(tiketHtml);
+  printWindow.document.close();
+  
+  // Tunggu sebentar agar CSS termuat, lalu panggil print
+  setTimeout(function() {
+    printWindow.focus();
     printWindow.print();
-  }
+    // printWindow.close(); // Opsional: tutup otomatis setelah print (kadang bikin bug di beberapa browser)
+  }, 500);
 }
