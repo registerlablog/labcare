@@ -126,13 +126,13 @@ var nextPrintQNum = Math.max(highestAntrianNum, lastGeneratedQ, localPrintQ) + 1
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
 var nextQHtml = `
-  <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
+  <div style="flex: 1; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 24px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
-      <div style="font-size: 10px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Mesin Tiket Antrian</div>
-      <div style="font-size: 28px; font-weight: 900; color: #047857; line-height: 1;">${nextPrintQ}</div>
+      <div style="font-size: 11px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">Mesin Tiket Antrian</div>
+      <div style="font-size: 42px; font-weight: 900; color: #047857; line-height: 1;">\${nextPrintQ}</div>
     </div>
-    <button onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    <button onclick="cetakTiketKosong('\${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s; font-size: 15px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Cetak
     </button>
   </div>
@@ -154,8 +154,8 @@ return `
     </div>
 
     <!-- KOLOM KANAN -->
-    <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
-      ${nextQHtml}
+    <div style="flex: 1.5; min-width: 300px; display: flex; flex-direction: column;">
+    ${nextQHtml}
     </div>
 
   </div>
