@@ -818,32 +818,25 @@ async function cetakTiketKosong(nomorAntrian) {
     return;
   }
 
-  // 2. Buat Data Pasien Baru (Status Menunggu, Data Kosong)
-  var p = { 
-    id: res.id, 
-    noRM: res.rm, 
-    nama: "Pasien Walk-in", // Nama default sebelum dilengkapi admin
-    tglLahir: '', 
-    jk: 'L', 
-    telepon: '', 
-    pengirim: 'Umum', 
-    dokter: '', 
-    analis: '', 
-    alamat: '', 
-    catatan: '', 
-    tests: [], 
-    hasil: {}, 
-    status: 'menunggu', // Status awal
-    spesimen: 'belum', 
-    noAntrian: nomorAntrian, 
-    tglDaftar: new Date().toISOString(), 
-    kesimpulan: '' 
-  };
-  
-  // 3. Simpan ke Memori Aplikasi & Google Sheets
-  patients.push(p); 
-  save(); 
-  apiCall('savePasien', p); // Kirim ke Google Apps Script
+// 2. JANGAN SIMPAN KE DATABASE PASIEN
+// Kita simpan ke daftar tunggu (Antrian Pendaftaran) di LocalStorage
+
+var antrianPendaftaran = JSON.parse(localStorage.getItem('labcare_antrian_pendaftaran') || '[]');
+
+// Cek agar tidak ada nomor ganda
+if (!antrianPendaftaran.some(function(item) { return item.noAntrian === nomorAntrian; })) {
+    antrianPendaftaran.push({
+        noAntrian: nomorAntrian,
+        waktuCetak: new Date().toISOString()
+    });
+    localStorage.setItem('labcare_antrian_pendaftaran', JSON.stringify(antrianPendaftaran));
+}
+
+// 3. Update localStorage agar angka antrean selanjutnya sinkron (tetap biarkan kode ini)
+var antrianNum = parseInt(nomorAntrian.replace(/\D/g, ''));
+var tglKey = today();
+localStorage.setItem('labcare_printQ_' + tglKey, antrianNum);
+localStorage.setItem('labcare_last_generated_Q_' + tglKey, antrianNum);
 // 4. Tidak perlu update localStorage lagi karena Dashboard 
 // akan otomatis membaca dari array `patients` yang baru ditambahkan di atas.
 // Cukup pastikan sinkronisasi data ke server berjalan lancar.
