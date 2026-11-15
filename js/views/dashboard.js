@@ -101,15 +101,33 @@ var pasienBelumCetak = patients.filter(function(p) {
 });
 
 // ✅ MESIN TIKET MANDIRI (Tidak butuh data pasien dulu)
+// ✅ SINKRONISASI MESIN TIKET (MENGGABUNGKAN DATA DATABASE & LOCAL STORAGE)
 var tglKey = today();
 var printKey = 'labcare_printQ_' + tglKey;
 var callKey = 'labcare_callQ_' + tglKey;
 
-var currentPrintQ = parseInt(localStorage.getItem(printKey)) || 1;
-var currentCallQ = parseInt(localStorage.getItem(callKey)) || 1;
+// 1. Cari nomor antrian tertinggi dari database pasien hari ini
+var highestAntrianNum = 0;
+patients.filter(function(p) { 
+    return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
+}).forEach(function(p) {
+    if (p.noAntrian) {
+        var num = parseInt(p.noAntrian.replace(/\D/g, ''));
+        if (num > highestAntrianNum) highestAntrianNum = num;
+    }
+});
 
-var nextPrintQ = 'A-' + String(currentPrintQ).padStart(3, '0');
-var nextCallQ = 'A-' + String(currentCallQ).padStart(3, '0');
+// 2. Ambil counter lokal (untuk tiket yang dicetak tapi pasiennya belum daftar)
+var localPrintQ = parseInt(localStorage.getItem(printKey)) || 1;
+var localCallQ = parseInt(localStorage.getItem(callKey)) || 1;
+
+// 3. Tentukan nomor tiket cetak berikutnya (Ambil yang tertinggi)
+var nextPrintQNum = Math.max(highestAntrianNum + 1, localPrintQ);
+var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
+
+// 4. Tentukan nomor panggilan loket berikutnya
+var nextCallQNum = Math.max(highestAntrianNum + 1, localCallQ);
+var nextCallQ = 'A-' + String(nextCallQNum).padStart(3, '0');
 var nextQHtml = `
   <div style="flex: 1; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 16px 20px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
     <div>
