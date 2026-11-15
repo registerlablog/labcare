@@ -163,3 +163,32 @@ function prosesSimpanPasien() {
     '</div></div>';
   document.getElementById('modal').classList.add('open');
 }
+async function fetchAutoNumbers() {
+  var res = await apiCall('getNextNumbers');
+  
+  if (res && res.ok) {
+    // 1. Update Tampilan Teks (Div)
+    var elId = document.getElementById('autoIdPasien');
+    var elAnt = document.getElementById('autoNoAntrian');
+    var elRM = document.getElementById('autoNoRM');
+    if (elId) elId.textContent = res.id;
+    if (elAnt) elAnt.textContent = res.antrian;
+    if (elRM) elRM.textContent = res.rm;
+    
+    // 2. Update Nilai Hidden Input
+    var hidId = document.getElementById('hiddenIdPasien');
+    var hidAnt = document.getElementById('hiddenNoAntrian');
+    var hidRM = document.getElementById('hiddenNoRM');
+    if (hidId) hidId.value = res.id;
+    if (hidAnt) hidAnt.value = res.antrian;
+    if (hidRM) hidRM.value = res.rm;
+
+    // ✅ TAMBAHKAN BARIS INI:
+    // Simpan nomor antrian terakhir yang di-booking ke LocalStorage
+    var antrianNum = parseInt(res.antrian.replace(/\D/g, '')); // Ambil angkanya saja (misal "A-003" jadi 3)
+    localStorage.setItem('labcare_last_generated_Q', antrianNum);
+
+  } else {
+    // ... (kode error biarkan seperti sebelumnya)
+  }
+}
