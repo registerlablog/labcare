@@ -1,4 +1,10 @@
 // TAMPILAN: PENDAFTARAN & TEST PICKER
+// ✅ HELPER: Mendapatkan waktu lokal (bukan UTC) agar tidak tertukar harinya
+function getLocalISOString() {
+  var d = new Date();
+  var offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString();
+}
 function viewPendaftaran() {
   var dokterField;
   if (dokterList.length > 0) { dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(function(d) { return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
@@ -34,7 +40,7 @@ function viewPendaftaran() {
     '<input type="hidden" name="noRM" id="hiddenNoRM">' +
   '</div>' +
   // PERBAIKAN: Tambahkan input tersembunyi untuk tanggal pendaftaran
-  '<input type="hidden" name="tglDaftar" value="' + new Date().toISOString() + '">' +
+  '<input type="hidden" name="tglDaftar" value="' + getLocalISOString() + '">' +
 '</div>' +
     
     '<div class="form-row">' +
@@ -139,7 +145,7 @@ function prosesSimpanPasien() {
     status: statusAwal, 
     spesimen: spesimen, 
     noAntrian: f.get('noAntrian'), 
-    tglDaftar: new Date().toISOString(), 
+    tglDaftar: getLocalISOString(),  
     kesimpulan: '' 
   };
   
@@ -190,7 +196,7 @@ function daftarkanDariAntrian(id) {
   }, 200);
 }
 
-// FUNGSI YANG HILANG: TAMPILAN ANTRIAN PENDAFTARAN
+// FUNGSI: TAMPILAN ANTRIAN PENDAFTARAN
 function viewAntrianPendaftaran() {
   var list = patients.filter(function(p) {
     return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
@@ -208,11 +214,34 @@ function viewAntrianPendaftaran() {
             '<div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TIKET DICETAK (Jam ' + jam + ')</div>' +
             '<div style="font-size: 28px; font-weight: 900; color: #0f766e; line-height: 1;">' + item.noAntrian + '</div>' +
           '</div>' +
-          '<button onclick="daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Daftarkan</button>' +
+          // ✅ PERBAIKAN UX: Tambahkan efek loading agar tidak diklik 2x
+          '<button onclick="this.innerHTML=\'⏳ Memuat...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Daftarkan</button>' +
         '</div>';
       }).join('') + '</div>';
   }
 
   return '<div class="page-header"><h2>Antrian Pendaftaran</h2><p>Daftar tiket walk-in yang sudah dicetak dan menunggu untuk diinput datanya.</p></div>' +
     '<div class="card" style="padding: 24px;">' + listHtml + '</div>';
+}
+
+// FUNGSI: JEMBATAN DARI ANTRIAN KE FORM PENDAFTARAN (HANYA SATU FUNGSI INI YANG BOLEH ADA)
+function daftarkanDariAntrian(id) {
+  var p = patients.find(function(x) { return x.id === id; });
+  if (!p) { toastMsg('Data walk-in tidak ditemukan', 'err'); return; }
+
+  window._isDariAntrian = true;
+  view = 'pendaftaran';
+  renderNav(); 
+  document.getElementById('app').innerHTML = viewPendaftaran(); 
+  
+  setTimeout(function() {
+    document.getElementById('autoIdPasien').textContent = p.id;
+    document.getElementById('hiddenIdPasien').value = p.id;
+
+    document.getElementById('autoNoAntrian').textContent = p.noAntrian;
+    document.getElementById('hiddenNoAntrian').value = p.noAntrian;
+
+    document.getElementById('autoNoRM').textContent = p.noRM;
+    document.getElementById('hiddenNoRM').value = p.noRM;
+  }, 200);
 }
