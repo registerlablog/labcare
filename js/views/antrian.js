@@ -2,10 +2,11 @@
 // ==========================================
 function viewAntrian() {
   var filter = window._filter || 'semua'; var dateFilter = window._dateFilter || 'today';
-  var list = patients.slice().sort(function(a, b) { return (a.tglDaftar || '').localeCompare(b.tglDaftar || ''); });
+  var list = patients.filter(function(p) { return p.status !== 'walk-in'; }).sort(function(a, b) { return (a.tglDaftar || '').localeCompare(b.tglDaftar || ''); });
   if (dateFilter === 'today') { list = list.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); }); }
   var filtered = filter === 'semua' ? list : list.filter(function(p) { return p.status === filter; });
-  var tabsHtml = ['semua'].concat(Object.keys(STATUS)).map(function(k) { var count = k === 'semua' ? list.length : list.filter(function(p) { return p.status === k; }).length; var label = k === 'semua' ? 'Semua' : STATUS[k].label; return '<button class="pill' + (filter === k ? ' active' : '') + '" onclick="window._filter=\'' + k + '\'; render();">' + label + ' <span class="count">(' + count + ')</span></button>'; }).join('');
+  var statusKeys = Object.keys(STATUS).filter(function(k) { return k !== 'walk-in'; });
+var tabsHtml = ['semua'].concat(statusKeys).map(function(k) { var count = k === 'semua' ? list.length : list.filter(function(p) { return p.status === k; }).length; : list.filter(function(p) { return p.status === k; }).length; var label = k === 'semua' ? 'Semua' : STATUS[k].label; return '<button class="pill' + (filter === k ? ' active' : '') + '" onclick="window._filter=\'' + k + '\'; render();">' + label + ' <span class="count">(' + count + ')</span></button>'; }).join('');
   var dateTabsHtml = '<button class="pill' + (dateFilter === 'today' ? ' active' : '') + '" onclick="window._dateFilter=\'today\'; window._filter=\'semua\'; render();">📅 Hari Ini</button><button class="pill' + (dateFilter === 'all' ? ' active' : '') + '" onclick="window._dateFilter=\'all\'; window._filter=\'semua\'; render();">📋 Semua Tanggal</button>';
   var content;
   if (filtered.length === 0) { var emptyMsg = dateFilter === 'today' ? 'Belum ada pasien terdaftar hari ini.' : 'Tidak ada pasien pada kategori ini.'; content = '<div class="empty-state"><span class="em">📭</span><p>' + emptyMsg + '</p></div>'; }
