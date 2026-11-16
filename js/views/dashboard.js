@@ -126,9 +126,20 @@ var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 var pasienProses = patients.find(function(p) {
     return p.status === 'proses' && p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey;
 });
-var noSaatIni = pasienProses ? pasienProses.noAntrian : '-';
-var namaProses = pasienProses ? pasienProses.nama : 'Belum ada';
+var noSaatIni = '-';
+var namaProses = 'Belum ada';
 
+if (pasienProses) {
+    noSaatIni = pasienProses.noAntrian;
+    namaProses = pasienProses.nama;
+} else {
+    // ✅ Cek memori sementara jika form pendaftaran sedang dibuka
+    var sedangDiinput = localStorage.getItem('labcare_sedang_dilayani');
+    if (sedangDiinput) {
+        noSaatIni = sedangDiinput;
+        namaProses = 'Sedang diinput...';
+    }
+}
 // 3. Desain Mesin Tiket 3 Kolom
 var nextQHtml = `
   <div style="flex: 1; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; background: #f0fdf4; padding: 20px 24px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
