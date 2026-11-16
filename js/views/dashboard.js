@@ -879,7 +879,7 @@ function panggilAntrianPendaftaran(nomor) {
     status: 'walk-in', // Status khusus agar masuk ke antrian pendaftaran
     spesimen: 'belum', 
     noAntrian: nomorAntrian, 
-    tglDaftar: new Date().toISOString(), 
+    tglDaftar: (typeof getLocalISOString === 'function') ? getLocalISOString() : new Date().toISOString(), 
     kesimpulan: '' 
   };
   
