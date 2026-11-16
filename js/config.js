@@ -44,7 +44,8 @@ var DEFAULT_TESTS = [
 var STATUS = {
   menunggu: { label: 'Menunggu', cls: 'badge-menunggu' },
   proses:   { label: 'Diproses', cls: 'badge-proses' },
-  selesai:  { label: 'Selesai',  cls: 'badge-selesai' }
+  selesai:  { label: 'Selesai',  cls: 'badge-selesai' },
+  'walk-in': { label: 'Antrian Tiket', cls: 'badge-menunggu' }
 };
 
 var NAV_ITEMS = [
