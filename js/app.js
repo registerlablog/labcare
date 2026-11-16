@@ -56,7 +56,7 @@ function render() {
   var app = document.getElementById('app');
   app.className = 'fade-in';
   if (view === 'dashboard')        app.innerHTML = viewDashboard();
-  else if (view === 'pendaftaran') app.innerHTML = viewPendaftaran();
+  else if (view === 'pendaftaran') { window._isDariAntrian = false;app.innerHTML = viewPendaftaran();}
   else if (view === 'antrianPendaftaran') app.innerHTML = viewAntrianPendaftaran();
   else if (view === 'antrian')     app.innerHTML = viewAntrian();
   else if (view === 'hasil')       app.innerHTML = viewHasil();
