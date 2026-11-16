@@ -86,6 +86,7 @@ async function fetchAutoNumbers() {
       if (hidAnt) hidAnt.value = res.antrian;
       var antrianNum = parseInt(res.antrian.replace(/\D/g, ''));
       localStorage.setItem('labcare_last_generated_Q', antrianNum);
+      localStorage.setItem('labcare_sedang_dilayani', res.antrian); 
     }
 
   } else {
