@@ -80,14 +80,34 @@ async function fetchAutoNumbers() {
     if (hidId) hidId.value = res.id;
     if (hidRM) hidRM.value = res.rm;
 
-    // ✅ PERBAIKAN: Jangan timpa nomor antrian JIKA form dibuka dari menu Antrian Pendaftaran
     if (!window._isDariAntrian) {
-      if (elAnt) elAnt.textContent = res.antrian;
-      if (hidAnt) hidAnt.value = res.antrian;
-      var antrianNum = parseInt(res.antrian.replace(/\D/g, ''));
-      localStorage.setItem('labcare_last_generated_Q', antrianNum);
-      localStorage.setItem('labcare_sedang_dilayani', res.antrian); 
-    }
+  // ✅ CEK: Apakah nomor dari server sudah dipakai di layar?
+  var isUsed = patients.some(function(p) {
+      return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.noAntrian === res.antrian;
+  });
+
+  if (isUsed) {
+      // Jika sudah dipakai, cari nomor tertinggi dari pasien hari ini
+      var highest = 0;
+      patients.forEach(function(p) {
+          if (p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.noAntrian) {
+              var n = parseInt(p.noAntrian.replace(/\D/g, ''));
+              if (n > highest) highest = n;
+          }
+      });
+      // Buat nomor baru (+1 dari nomor tertinggi)
+      var nextNum = highest + 1;
+      res.antrian = 'A-' + String(nextNum).padStart(3, '0');
+  }
+
+  // Tampilkan nomor final (entah dari server atau hasil kalkulasi di atas)
+  if (elAnt) elAnt.textContent = res.antrian;
+  if (hidAnt) hidAnt.value = res.antrian;
+  
+  var antrianNum = parseInt(res.antrian.replace(/\D/g, ''));
+  localStorage.setItem('labcare_last_generated_Q', antrianNum);
+  localStorage.setItem('labcare_sedang_dilayani', res.antrian);
+}
 
   } else {
     // ... (biarkan kode error seperti aslinya)
