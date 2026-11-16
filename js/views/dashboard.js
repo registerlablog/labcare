@@ -108,6 +108,23 @@ var pasienBelumCetak = patients.filter(function(p) {
 var tglKey = today();
 var highestAntrianNum = 0;
 
+// 1. Cari dari data pasien yang sudah tersimpan di database
+patients.filter(function(p) { 
+    return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
+}).forEach(function(p) {
+    if (p.noAntrian) {
+        var num = parseInt(p.noAntrian.replace(/\D/g, ''));
+        if (num > highestAntrianNum) highestAntrianNum = num;
+    }
+});
+
+// ✅ 2. TAMBAHKAN KODE INI: Cek dari nomor yang sedang diinput di form pendaftaran
+var lastGeneratedQ = parseInt(localStorage.getItem('labcare_last_generated_Q') || '0', 10);
+if (lastGeneratedQ > highestAntrianNum) {
+    highestAntrianNum = lastGeneratedQ;
+}
+
+
 // 1. Cari angka antrean tertinggi (Terakhir dicetak)
 patients.filter(function(p) { 
     return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
