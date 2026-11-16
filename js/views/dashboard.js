@@ -108,7 +108,7 @@ var pasienBelumCetak = patients.filter(function(p) {
 var tglKey = today();
 var highestAntrianNum = 0;
 
-// Cari angka antrean tertinggi dari semua data hari ini (pasien asli + walk-in)
+// 1. Cari angka antrean tertinggi (Terakhir dicetak)
 patients.filter(function(p) { 
     return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
 }).forEach(function(p) {
@@ -118,19 +118,58 @@ patients.filter(function(p) {
     }
 });
 
+var lastPrintQ = highestAntrianNum > 0 ? 'A-' + String(highestAntrianNum).padStart(3, '0') : 'A-000';
 var nextPrintQNum = highestAntrianNum + 1;
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
+// 2. Cari Pasien yang sedang dilayani (status = 'proses')
+var pasienProses = patients.find(function(p) {
+    return p.status === 'proses' && p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey;
+});
+var noSaatIni = pasienProses ? pasienProses.noAntrian : '-';
+var namaProses = pasienProses ? pasienProses.nama : 'Belum ada';
+
+// 3. Desain Mesin Tiket 3 Kolom
 var nextQHtml = `
-  <div style="flex: 1; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; background: #f0fdf4; padding: 24px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
-    <div>
-      <div style="font-size: 11px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">Mesin Tiket Antrian</div>
-      <div style="font-size: 42px; font-weight: 900; color: #047857; line-height: 1;">${nextPrintQ}</div>
+  <div style="flex: 1; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; background: #f0fdf4; padding: 20px 24px; border-radius: 16px; border: 1px solid #bbf7d0; box-shadow: 0 4px 12px rgba(5,150,105,0.05);">
+    
+    <!-- Header Mesin Tiket -->
+    <div style="font-size: 11px; font-weight: 700; color: #059669; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;">Mesin Tiket Antrian</div>
+    
+    <!-- Isi 3 Kolom -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+      
+      <!-- KOLOM 1: Sedang Dilayani -->
+      <div style="flex: 1; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #047857; margin-bottom: 4px;">DILAYANI</div>
+        <div style="font-size: 32px; font-weight: 900; color: #047857; line-height: 1; margin-bottom: 4px;">${noSaatIni}</div>
+        <div style="font-size: 11px; color: #065f46; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; margin: 0 auto;">${esc(namaProses)}</div>
+      </div>
+
+      <!-- Garis Pemisah -->
+      <div style="width: 1px; height: 50px; background: #86efac;"></div>
+
+      <!-- KOLOM 2: Terakhir Dicetak -->
+      <div style="flex: 1; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TERAKHIR</div>
+        <div style="font-size: 28px; font-weight: 800; color: #64748b; line-height: 1; margin-bottom: 4px;">${lastPrintQ}</div>
+        <div style="font-size: 11px; color: #94a3b8;">Dicetak</div>
+      </div>
+
+      <!-- Garis Pemisah -->
+      <div style="width: 1px; height: 50px; background: #86efac;"></div>
+
+      <!-- KOLOM 3: Tiket Berikutnya & Tombol -->
+      <div style="flex: 1.2; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #059669; margin-bottom: 4px;">BERIKUTNYA</div>
+        <div style="font-size: 32px; font-weight: 900; color: #059669; line-height: 1; margin-bottom: 8px;">${nextPrintQ}</div>
+        <button onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s; font-size: 13px; width: 100%; margin: 0 auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Cetak
+        </button>
+      </div>
+
     </div>
-    <button onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s; font-size: 15px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Cetak
-    </button>
   </div>
 `;
 // 6. Gabungkan Semua Layout
