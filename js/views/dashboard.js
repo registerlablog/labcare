@@ -5,7 +5,9 @@ var dashboardChartInstance = null;
 var _chartRawDates = []; // Menyimpan format YYYY-MM-DD untuk grafik
 
 function viewDashboard() {
-  var t = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
+  var t = patients.filter(function(p) { 
+  return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.status !== 'walk-in'; 
+});
   var c = function(s) { return t.filter(function(p) { return p.status === s; }).length; };
   
   var cards = [
@@ -46,7 +48,9 @@ function viewDashboard() {
     </div>
   `;
 
-  var recent = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
+  var recent = patients.filter(function(p) { 
+  return p.status !== 'walk-in'; 
+}).slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
   var recentHtml;
   if (recent.length === 0) { 
     recentHtml = '<div class="empty-state"><span class="em">📭</span><p>Belum ada data pasien.</p></div>'; 
@@ -166,7 +170,9 @@ return `
 // FUNGSI KLIK KARTU STATISTIK
 // ==========================================
 function bukaModalPasienHariIni() {
-  var list = patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === today(); });
+  var list = patients.filter(function(p) { 
+  return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.status !== 'walk-in'; 
+});
   
   // Buat tombol tambah pasien
   var btnAddHtml = `<button onclick="bukaFormPendaftaran()" class="btn btn-primary" style="flex: 2; padding: 10px 24px; background: #0f766e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
@@ -646,7 +652,9 @@ function renderTrenChart(days) {
     
     _chartRawDates.push(dateStr); // Simpan format YYYY-MM-DD
     labels.push(String(d.getDate()).padStart(2, '0') + ' ' + bulanIndo[d.getMonth()]);
-    dataKunjungan.push(patients.filter(function(p) { return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr; }).length);
+    dataKunjungan.push(patients.filter(function(p) { 
+  return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr && p.status !== 'walk-in'; 
+}).length);
   }
 
   dashboardChartInstance = new Chart(ctx, {
