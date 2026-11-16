@@ -100,11 +100,11 @@ var pasienBelumCetak = patients.filter(function(p) {
   return (a.noAntrian || '').localeCompare(b.noAntrian || '');
 });
 
-// ✅ SINKRONISASI MESIN TIKET (MURNI DARI DATABASE & ANTRIAN PENDAFTARAN)
+// ✅ SINKRONISASI MESIN TIKET (MURNI DARI DATABASE)
 var tglKey = today();
 var highestAntrianNum = 0;
 
-// 1. Ambil angka tertinggi dari Database (Pasien yang sudah sah didaftarkan)
+// Cari angka antrean tertinggi dari semua data hari ini (pasien asli + walk-in)
 patients.filter(function(p) { 
     return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
 }).forEach(function(p) {
@@ -114,16 +114,6 @@ patients.filter(function(p) {
     }
 });
 
-// 2. Ambil angka tertinggi dari Menu "Antrian Pendaftaran" (Tiket walk-in yang belum diinput)
-var antrianPendaftaran = JSON.parse(localStorage.getItem('labcare_antrian_pendaftaran') || '[]');
-antrianPendaftaran.forEach(function(item) {
-    if (item.noAntrian) {
-        var num = parseInt(item.noAntrian.replace(/\D/g, ''));
-        if (num > highestAntrianNum) highestAntrianNum = num;
-    }
-});
-
-// 3. Tentukan nomor berikutnya (Cukup dari 2 sumber di atas, lalu +1)
 var nextPrintQNum = highestAntrianNum + 1;
 var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
@@ -812,47 +802,46 @@ function panggilAntrianPendaftaran(nomor) {
     
     render(); // Refresh tampilan dashboard
   }
-}
-async function cetakTiketKosong(nomorAntrian) {
-  // Tampilkan indikator loading
+}async function cetakTiketKosong(nomorAntrian) {
   var loadingEl = document.getElementById('loading');
   if (loadingEl) loadingEl.classList.add('show');
 
-  // 1. Ambil ID dan No. RM terbaru dari server (Database)
   var res = await apiCall('getNextNumbers');
   
   if (!res || !res.ok) {
     if (loadingEl) loadingEl.classList.remove('show');
-    alert('Gagal terhubung ke database. Periksa koneksi internet.');
+    alert('Gagal terhubung ke database.');
     return;
   }
 
-// 2. JANGAN SIMPAN KE DATABASE PASIEN
-// Kita simpan ke daftar tunggu (Antrian Pendaftaran) di LocalStorage
-
-var antrianPendaftaran = JSON.parse(localStorage.getItem('labcare_antrian_pendaftaran') || '[]');
-
-// Cek agar tidak ada nomor ganda
-if (!antrianPendaftaran.some(function(item) { return item.noAntrian === nomorAntrian; })) {
-    antrianPendaftaran.push({
-        noAntrian: nomorAntrian,
-        waktuCetak: new Date().toISOString()
-    });
-    localStorage.setItem('labcare_antrian_pendaftaran', JSON.stringify(antrianPendaftaran));
-}
-
-// 3. Update localStorage agar angka antrean selanjutnya sinkron (tetap biarkan kode ini)
-var antrianNum = parseInt(nomorAntrian.replace(/\D/g, ''));
-var tglKey = today();
-localStorage.setItem('labcare_printQ_' + tglKey, antrianNum);
-localStorage.setItem('labcare_last_generated_Q_' + tglKey, antrianNum);
-// 4. Tidak perlu update localStorage lagi karena Dashboard 
-// akan otomatis membaca dari array `patients` yang baru ditambahkan di atas.
-// Cukup pastikan sinkronisasi data ke server berjalan lancar.
-
-  // 5. Siapkan Desain Tiket (Untuk dicetak)
-  var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  // ✅ SIMPAN DRAFT WALK-IN KE DATABASE
+  var p = { 
+    id: res.id, 
+    noRM: res.rm, 
+    nama: "Pasien Walk-in", 
+    tglLahir: '', 
+    jk: 'L', 
+    telepon: '', 
+    pengirim: 'Umum', 
+    dokter: '', 
+    analis: '', 
+    alamat: '', 
+    catatan: '', 
+    tests: [], 
+    hasil: {}, 
+    status: 'walk-in', // Status khusus agar masuk ke antrian pendaftaran
+    spesimen: 'belum', 
+    noAntrian: nomorAntrian, 
+    tglDaftar: new Date().toISOString(), 
+    kesimpulan: '' 
+  };
   
+  patients.push(p); 
+  save(); 
+  apiCall('savePasien', p); // Tembak ke Spreadsheet!
+
+  // Siapkan Desain Tiket (sama seperti sebelumnya)
+  var tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   var tiketHtml = `
     <!DOCTYPE html>
     <html>
@@ -873,10 +862,8 @@ localStorage.setItem('labcare_last_generated_Q_' + tglKey, antrianNum);
       <div class="text-center">
         <div class="title">LABKESDA BONDOWOSO</div>
         <div class="subtitle">Sistem Pelayanan Laboratorium</div>
-        
         <div class="label">Nomor Antrean</div>
         <div class="nomor">${nomorAntrian}</div>
-        
         <div class="footer">Silakan menunggu nomor Anda dipanggil.</div>
         <div class="footer" style="margin-top: 5px;">${tgl}</div>
       </div>
@@ -884,7 +871,6 @@ localStorage.setItem('labcare_last_generated_Q_' + tglKey, antrianNum);
     </html>
   `;
 
-  // 6. Buka Jendela Cetak
   var printWindow = window.open('', '', 'width=400,height=600');
   printWindow.document.open();
   printWindow.document.write(tiketHtml);
@@ -895,9 +881,8 @@ localStorage.setItem('labcare_last_generated_Q_' + tglKey, antrianNum);
     printWindow.print();
   }, 500);
 
-  // 7. Sembunyikan Loading & Refresh Dashboard
   setTimeout(function() {
     if (loadingEl) loadingEl.classList.remove('show');
-    render(); // Agar tampilan dashboard langsung terupdate
+    render(); 
   }, 1000);
 }
