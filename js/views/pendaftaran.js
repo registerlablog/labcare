@@ -157,7 +157,7 @@ if (existingIdx >= 0) {
 } else {
   patients.push(p); // Pasien baru murni
 }
-
+localStorage.removeItem('labcare_sedang_dilayani');
 save(); 
 apiCall('savePasien', p);
   
