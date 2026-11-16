@@ -181,7 +181,7 @@ var nextQHtml = `
       <div style="flex: 1; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TERAKHIR</div>
         <div style="font-size: 28px; font-weight: 800; color: #64748b; line-height: 1; margin-bottom: 4px;">${lastPrintQ}</div>
-        <div style="font-size: 11px; color: #94a3b8;">Dicetak</div>
+        <div style="font-size: 11px; color: #94a3b8;">Tercatat</div>
       </div>
 
       <!-- Garis Pemisah -->
