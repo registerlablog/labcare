@@ -44,6 +44,14 @@ function viewPendaftaran() {
   // Gabungkan keduanya
   return walkInHtml + daftarBaruHtml;
 }
+// FUNGSI BARU: Tombol Daftarkan Pasien Baru diklik
+function mulaiDaftarBaru() {
+  window._isDariAntrian = false;
+  view = 'pendaftaran';
+  renderNav();
+  document.getElementById('app').innerHTML = renderFormPendaftaran();
+  setTimeout(fetchAutoNumbers, 100);
+}
 function renderFormPendaftaran() {
   var dokterField;
   if (dokterList.length > 0) { dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(function(d) { return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
