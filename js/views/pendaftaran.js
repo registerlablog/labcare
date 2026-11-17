@@ -5,7 +5,54 @@ function getLocalISOString() {
   var offset = d.getTimezoneOffset() * 60000;
   return new Date(d.getTime() - offset).toISOString();
 }
+// FUNGSI BARU: SATPAM PENGATUR ALUR PENDAFTARAN
 function viewPendaftaran() {
+  // Jika flag ini aktif, artinya petugas baru saja klik tombol "Proses" dari antrian
+  if (window._isDariAntrian) {
+    return renderFormPendaftaran(); 
+  }
+
+  // Cek apakah ada pasien walk-in hari ini
+  var list = patients.filter(function(p) {
+    return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
+  });
+
+  // JIKA ADA ANTRIAN: Tampilkan daftar antrian, sembunyikan tombol daftar baru
+  if (list.length > 0) {
+    var listHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">' +
+      list.map(function(item) {
+        var jam = new Date(item.tglDaftar).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        return '<div class="card" style="padding: 20px; border-left: 4px solid #0f766e; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">' +
+          '<div>' +
+            '<div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TIKET WALK-IN (Jam ' + jam + ')</div>' +
+            '<div style="font-size: 28px; font-weight: 900; color: #0f766e; line-height: 1;">' + item.noAntrian + '</div>' +
+          '</div>' +
+          '<button onclick="this.innerHTML=\'⏳...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Proses</button>' +
+        '</div>';
+      }).join('') + '</div>';
+
+    return '<div class="page-header"><h2>Antrian Menunggu</h2><p>⚠️ Selesaikan pendaftaran antrian di bawah ini terlebih dahulu sebelum mendaftarkan pasien baru.</p></div>' +
+      '<div class="card" style="padding: 24px;">' + listHtml + '</div>';
+  }
+
+  // JIKA TIDAK ADA ANTRIAN: Tampilkan tombol untuk daftar pasien baru
+  return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Belum ada antrian walk-in. Silakan daftarkan pasien baru.</p></div>' +
+    '<div class="card" style="padding: 40px; text-align: center;">' +
+      '<div style="font-size: 50px; margin-bottom: 20px;">🛎️</div>' +
+      '<h3 style="margin-bottom: 20px; color: #334155;">Antrian Kosong</h3>' +
+      '<button onclick="mulaiDaftarBaru()" class="btn btn-primary" style="padding: 12px 24px; font-size: 15px; border-radius: 8px;">➕ Daftarkan Pasien Baru</button>' +
+    '</div>';
+}
+
+// FUNGSI BARU: Tombol Daftarkan Pasien Baru diklik
+function mulaiDaftarBaru() {
+  window._isDariAntrian = false;
+  view = 'pendaftaran';
+  renderNav();
+  document.getElementById('app').innerHTML = renderFormPendaftaran();
+  setTimeout(fetchAutoNumbers, 100);
+}
+function renderFormPendaftaran() {
   var dokterField;
   if (dokterList.length > 0) { dokterField = '<select name="dokter" class="inp-sel"><option value="">— Pilih Dokter —</option>' + dokterList.map(function(d) { return '<option value="' + esc(d.nama) + '">' + esc(d.nama) + (d.kode ? ' (' + esc(d.kode) + ')' : '') + '</option>'; }).join('') + '</select>'; }
   else { dokterField = '<input name="dokter" class="inp" placeholder="Ketik nama dokter"><div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data dokter. Tambahkan di <a onclick="goToMaster(\'dokter\')">Master Lab → Dokter</a>.</span></div>'; }
@@ -202,10 +249,10 @@ function daftarkanDariAntrian(id) {
   window._isDariAntrian = true;
   view = 'pendaftaran';
   renderNav(); 
-  document.getElementById('app').innerHTML = viewPendaftaran(); 
+  // Ganti viewPendaftaran() menjadi renderFormPendaftaran()
+  document.getElementById('app').innerHTML = renderFormPendaftaran(); 
   
   setTimeout(function() {
-    // Isi form secara paksa dengan data draft
     document.getElementById('autoIdPasien').textContent = p.id;
     document.getElementById('hiddenIdPasien').value = p.id;
 
