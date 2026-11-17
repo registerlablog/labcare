@@ -7,19 +7,17 @@ function getLocalISOString() {
 }
 // FUNGSI BARU: SATPAM PENGATUR ALUR PENDAFTARAN
 function viewPendaftaran() {
-  // Jika flag ini aktif, artinya petugas baru saja klik tombol "Proses" dari antrian
   if (window._isDariAntrian) {
     return renderFormPendaftaran(); 
   }
 
-  // Cek apakah ada pasien walk-in hari ini
   var list = patients.filter(function(p) {
     return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
   });
 
-  // JIKA ADA ANTRIAN: Tampilkan daftar antrian, sembunyikan tombol daftar baru
+  var walkInHtml = '';
   if (list.length > 0) {
-    var listHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">' +
+    var listHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">' +
       list.map(function(item) {
         var jam = new Date(item.tglDaftar).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         return '<div class="card" style="padding: 20px; border-left: 4px solid #0f766e; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">' +
@@ -31,26 +29,20 @@ function viewPendaftaran() {
         '</div>';
       }).join('') + '</div>';
 
-    return '<div class="page-header"><h2>Antrian Menunggu</h2><p>⚠️ Selesaikan pendaftaran antrian di bawah ini terlebih dahulu sebelum mendaftarkan pasien baru.</p></div>' +
-      '<div class="card" style="padding: 24px;">' + listHtml + '</div>';
+    walkInHtml = '<div class="page-header"><h2>Antrian Walk-in Menunggu</h2><p>Daftar tiket walk-in yang belum diinput datanya.</p></div>' +
+      '<div class="card" style="padding: 24px; margin-bottom: 24px;">' + listHtml + '</div>';
   }
 
-  // JIKA TIDAK ADA ANTRIAN: Tampilkan tombol untuk daftar pasien baru
-  return '<div class="page-header"><h2>Pendaftaran Pasien</h2><p>Belum ada antrian walk-in. Silakan daftarkan pasien baru.</p></div>' +
+  // TAMPILAN TOMBOL DAFTAR BARU (SELALU MUNCUL)
+  var daftarBaruHtml = '<div class="page-header"><h2>Pendaftaran Pasien Baru</h2><p>Klik tombol di bawah jika ingin mendaftarkan pasien baru (tanpa tiket walk-in).</p></div>' +
     '<div class="card" style="padding: 40px; text-align: center;">' +
       '<div style="font-size: 50px; margin-bottom: 20px;">🛎️</div>' +
-      '<h3 style="margin-bottom: 20px; color: #334155;">Antrian Kosong</h3>' +
+      '<h3 style="margin-bottom: 20px; color: #334155;">Daftarkan Pasien Baru</h3>' +
       '<button onclick="mulaiDaftarBaru()" class="btn btn-primary" style="padding: 12px 24px; font-size: 15px; border-radius: 8px;">➕ Daftarkan Pasien Baru</button>' +
     '</div>';
-}
 
-// FUNGSI BARU: Tombol Daftarkan Pasien Baru diklik
-function mulaiDaftarBaru() {
-  window._isDariAntrian = false;
-  view = 'pendaftaran';
-  renderNav();
-  document.getElementById('app').innerHTML = renderFormPendaftaran();
-  setTimeout(fetchAutoNumbers, 100);
+  // Gabungkan keduanya
+  return walkInHtml + daftarBaruHtml;
 }
 function renderFormPendaftaran() {
   var dokterField;
