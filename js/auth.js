@@ -204,7 +204,7 @@ async function doLoginAdmin() {
       localStorage.setItem('labcare_operator', json.nama_asli);
       if(json.jabatan) localStorage.setItem('labcare_role', json.jabatan);
       localStorage.setItem('labcare_token', json.token);
-      localStorage.setItem('labcare_token_expiry', Date.now() + (15 * 1000));
+      localStorage.setItem('labcare_token_expiry', Date.now() + (12 * 60 * 60 * 1000));
       
       document.getElementById('loginOverlay').style.display = 'none';
       updateOperatorUI();
