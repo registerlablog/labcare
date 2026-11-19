@@ -47,6 +47,15 @@ async function apiCall(action, data) {
     var text = await res.text();
     try {
       var json = JSON.parse(text);
+      if (json && json.ok === false) {
+        var errMsg = (json.error || '').toLowerCase();
+        // Jika pesan error mengandung kata token/sesi
+        if (errMsg.includes('token') || errMsg.includes('sesi') || errMsg.includes('login')) {
+          setSyncState('offline');
+          forceLogout('Sesi Anda telah berakhir. Silakan login kembali.');
+          return json;
+        }
+      }
       setSyncState(json && json.ok ? 'online' : 'offline');
       return json;
     } catch (parseErr) {
@@ -57,6 +66,16 @@ async function apiCall(action, data) {
     setSyncState('offline');
     return { ok: false, error: 'Koneksi putus: ' + e.message };
   }
+}
+function forceLogout(pesan) {
+  if (window._isLoggingOut) return; // Cegah popup dobel
+  window._isLoggingOut = true;
+  alert(pesan);
+  localStorage.removeItem('labcare_operator');
+  localStorage.removeItem('labcare_token');
+  localStorage.removeItem('labcare_token_expiry');
+  localStorage.removeItem('labcare_role');
+  location.reload();
 }
 
 async function syncAllFromServer(silent) {
