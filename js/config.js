@@ -51,7 +51,6 @@ var STATUS = {
 var NAV_ITEMS = [
   { view: 'dashboard',   label: 'Dashboard',   icon: 'dashboard' },
   { view: 'pendaftaran', label: 'Pendaftaran', icon: 'user-plus' },
-  { view: 'antrianPendaftaran', label: 'Antrian Pendaftaran', icon: 'clipboard' },
   { view: 'antrian',     label: 'Antrian',     icon: 'clock' },
   { view: 'hasil',       label: 'Input Hasil', icon: 'flask' },
   { view: 'laporan',     label: 'Laporan',     icon: 'file' },
