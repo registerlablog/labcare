@@ -53,6 +53,9 @@ function render() {
     view = 'dashboard';
     toastMsg('Akses ditolak: Anda tidak memiliki izin ke Master Lab.', 'err');
   }
+  if (view === 'antrianPendaftaran') {
+    view = 'pendaftaran'; // Alihkan otomatis ke halaman pendaftaran
+  }
   var app = document.getElementById('app');
   app.className = 'fade-in';
   if (view === 'dashboard')        app.innerHTML = viewDashboard();
