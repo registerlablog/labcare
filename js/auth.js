@@ -441,10 +441,26 @@ async function ubahStatusPetugas(id, statusBaru) {
 function initLoginState() {
   var isLoggedIn = localStorage.getItem('labcare_operator');
   var overlay = document.getElementById('loginOverlay');
+  var tokenExpiry = localStorage.getItem('labcare_token_expiry');
   
+  // 1. Cek apakah waktu sekarang sudah melewati waktu expired
+  if (isLoggedIn && tokenExpiry && Date.now() > parseInt(tokenExpiry)) {
+    forceLogout('Sesi Anda telah berakhir (kedaluwarsa). Silakan login kembali.');
+    return;
+  }
+
   if (isLoggedIn && isLoggedIn !== 'Admin LabCare') {
     if(overlay) overlay.style.display = 'none';
     updateOperatorUI();
+    
+    // 2. Pasang Timer Pengecekan Setiap 1 Menit
+    setInterval(function() {
+      var currentExpiry = localStorage.getItem('labcare_token_expiry');
+      if (currentExpiry && Date.now() > parseInt(currentExpiry)) {
+        forceLogout('Sesi Anda telah berakhir (kedaluwarsa). Silakan login kembali.');
+      }
+    }, 60000); // 60000 ms = 1 menit
+    
   } else {
     if(overlay) overlay.style.display = 'flex';
     loadAdminCards();
