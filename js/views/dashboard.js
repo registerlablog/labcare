@@ -957,3 +957,5 @@ if (nomorAntrian !== res.antrian) {
   window._isPrintingTiket = false;
   render(); 
 }, 1000);
+}
+
