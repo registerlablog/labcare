@@ -67,7 +67,8 @@ function renderFormPendaftaran() {
   } else { 
     analisField = '<input name="analis" class="inp" placeholder="Ketik nama analis"><div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data analis. Tambahkan di <a onclick="goToMaster(\'analis\')">Master Lab → Analis</a>.</span></div>'; 
   }
-
+  // [FIX #3] Reset status walk-in agar form selalu bersih saat dibuka manual
+  window._isDariAntrian = false;
   // ✅ PERBAIKAN: Hanya minta nomor baru dari server jika BUKAN dari antrian walk-in
   if (!window._isDariAntrian) {
     setTimeout(fetchAutoNumbers, 100);
@@ -136,26 +137,14 @@ async function fetchAutoNumbers() {
     if (hidId) hidId.value = res.id;
     if (hidRM) hidRM.value = res.rm;
 
-    var isUsed = patients.some(function(p) {
-        return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.noAntrian === res.antrian;
-    });
-
-    if (isUsed) {
-        var highest = 0;
-        patients.forEach(function(p) {
-            if (p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.noAntrian) {
-                var n = parseInt(p.noAntrian.replace(/\D/g, ''));
-                if (n > highest) highest = n;
-            }
-        });
-        var nextNum = highest + 1;
-        res.antrian = 'A-' + String(nextNum).padStart(3, '0');
-    }
-
+    // [FIX #2] Hapus total fallback client (isUsed). 
+    // Langsung gunakan nomor otoritatif dari server.
     if (elAnt) elAnt.textContent = res.antrian;
     if (hidAnt) hidAnt.value = res.antrian;
     
-    var antrianNum = parseInt(res.antrian.replace(/\D/g, ''));
+    // [FIX #8] Hapus prefix 'A-' secara spesifik, bukan semua karakter non-digit
+    var antrianNum = parseInt(res.antrian.replace(/^A-/, ''), 10) || 1;
+    
     localStorage.setItem('labcare_last_generated_Q', antrianNum);
     localStorage.setItem('labcare_sedang_dilayani', res.antrian);
   }
