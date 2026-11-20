@@ -902,7 +902,7 @@ if (nomorAntrian !== res.antrian) {
     hasil: {}, 
     status: 'walk-in', // Status khusus agar masuk ke antrian pendaftaran
     spesimen: 'belum', 
-    noAntrian: res.antrian
+    noAntrian: res.antrian,
     tglDaftar: (typeof getLocalISOString === 'function') ? getLocalISOString() : new Date().toISOString(), 
     kesimpulan: '' 
   };
