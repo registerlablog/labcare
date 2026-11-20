@@ -861,7 +861,12 @@ function panggilAntrianPendaftaran(nomor) {
     
     render(); // Refresh tampilan dashboard
   }
-}async function cetakTiketKosong(nomorAntrian) {
+}
+async function cetakTiketKosong(nomorAntrian) {
+  // [FIX] Cegah double-click
+  if (window._isPrintingTiket) return;
+  window._isPrintingTiket = true;
+
   var loadingEl = document.getElementById('loading');
   if (loadingEl) loadingEl.classList.add('show');
 
@@ -872,7 +877,14 @@ function panggilAntrianPendaftaran(nomor) {
     alert('Gagal terhubung ke database.');
     return;
   }
-
+// [FIX] Validasi apakah nomor di layar masih sama dengan server
+if (nomorAntrian !== res.antrian) {
+  if (loadingEl) loadingEl.classList.remove('show');
+  window._isPrintingTiket = false;
+  alert('Nomor antrean sudah berubah (Server: ' + res.antrian + '). Silakan klik Cetak lagi.');
+  render(); 
+  return;
+}
   // ✅ SIMPAN DRAFT WALK-IN KE DATABASE
   var p = { 
     id: res.id, 
@@ -890,7 +902,7 @@ function panggilAntrianPendaftaran(nomor) {
     hasil: {}, 
     status: 'walk-in', // Status khusus agar masuk ke antrian pendaftaran
     spesimen: 'belum', 
-    noAntrian: nomorAntrian, 
+    noAntrian: res.antrian 
     tglDaftar: (typeof getLocalISOString === 'function') ? getLocalISOString() : new Date().toISOString(), 
     kesimpulan: '' 
   };
@@ -905,7 +917,7 @@ function panggilAntrianPendaftaran(nomor) {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Cetak Antrean ${nomorAntrian}</title>
+      <title>Cetak Antrean ${res.antrian}</title>
       <style>
         @page { size: 58mm auto; margin: 0; }
         body { margin: 0; padding: 5mm 2mm; font-family: Arial, sans-serif; color: #000; background: #fff; }
@@ -922,7 +934,7 @@ function panggilAntrianPendaftaran(nomor) {
         <div class="title">LABKESDA BONDOWOSO</div>
         <div class="subtitle">Sistem Pelayanan Laboratorium</div>
         <div class="label">Nomor Antrean</div>
-        <div class="nomor">${nomorAntrian}</div>
+        <div class="nomor">${res.antrian}</div>
         <div class="footer">Silakan menunggu nomor Anda dipanggil.</div>
         <div class="footer" style="margin-top: 5px;">${tgl}</div>
       </div>
@@ -941,7 +953,7 @@ function panggilAntrianPendaftaran(nomor) {
   }, 500);
 
   setTimeout(function() {
-    if (loadingEl) loadingEl.classList.remove('show');
-    render(); 
-  }, 1000);
-}
+  if (loadingEl) loadingEl.classList.remove('show');
+  window._isPrintingTiket = false;
+  render(); 
+}, 1000);
