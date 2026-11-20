@@ -223,11 +223,11 @@ function prosesSimpanPasien() {
     kesimpulan: '' 
   };
   
-  // ✅ Hapus semua draft walk-in yang memiliki nomor antrean yang sama agar tidak menggantung
-  patients = patients.filter(function(x) {
-    var isSameWalkIn = x.status === 'walk-in' && x.noAntrian === p.noAntrian && x.tglDaftar && x.tglDaftar.slice(0, 10) === today();
-    return !isSameWalkIn;
-  });
+  // [FIX #5] Hapus walk-in berdasarkan ID spesifik, jangan berdasarkan noAntrian
+// Ini mencegah data walk-in pasien lain ikut terhapus jika nomornya kebetulan sama.
+patients = patients.filter(function(x) {
+  return !(x.status === 'walk-in' && x.id === p.id);
+});
 
   // Update data berdasarkan ID atau masukkan sebagai pasien baru
   var existingIdx = patients.findIndex(function(x) { return x.id === p.id; });
