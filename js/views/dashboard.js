@@ -68,7 +68,18 @@ function viewDashboard() {
   }
 
   setTimeout(function() { renderTrenChart(7); }, 100);
-
+  // [FIX #6] Ambil nomor terbaru dari server saat dashboard dirender
+  if (typeof apiCall === 'function') {
+    apiCall('getNextNumbers').then(function(res) {
+      if (res && res.ok) {
+        var elQ = document.getElementById('widgetNextQ');
+        if (elQ) elQ.textContent = res.antrian;
+        
+        var btn = document.getElementById('btnCetakTiket');
+        if (btn) btn.setAttribute('onclick', "cetakTiketKosong('" + res.antrian + "')");
+      }
+    });
+  }
   // 1. Ambil Data Petugas
 var namaPetugas = localStorage.getItem('labcare_nama') || 'Petugas LabCare';
 var jabatanPetugas = localStorage.getItem('labcare_role') || 'Analis Laboratorium';
@@ -174,8 +185,8 @@ var nextQHtml = `
       <!-- KOLOM 3: Tiket Berikutnya & Tombol -->
       <div style="flex: 1.2; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #059669; margin-bottom: 4px;">BERIKUTNYA</div>
-        <div style="font-size: 32px; font-weight: 900; color: #059669; line-height: 1; margin-bottom: 8px;">${nextPrintQ}</div>
-        <button onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s; font-size: 13px; width: 100%; margin: 0 auto;">
+<div id="widgetNextQ" style="font-size: 32px; font-weight: 900; color: #059669; line-height: 1; margin-bottom: 8px;">${nextPrintQ}</div>
+<button id="btnCetakTiket" onclick="cetakTiketKosong('${nextPrintQ}')" class="btn btn-primary" style="background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(5,150,105,0.3); transition: all 0.2s; font-size: 13px; width: 100%; margin: 0 auto;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Cetak
         </button>
