@@ -6,10 +6,20 @@ function updateOperatorUI() {
   if (el) el.textContent = getOperatorName();
 }
 
-function doLogoutAdmin() {
+async function doLogoutAdmin() {
   if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
+    // 1. Ambil token dari HP
+    var token = localStorage.getItem('labcare_token');
+    
+    // 2. Perintahkan server untuk menghapus token dari Spreadsheet
+    if (token) {
+       await apiCall('logoutAdmin', { token: token }); 
+    }
+    
+    // 3. Bersihkan sisa login di HP
     localStorage.removeItem('labcare_operator');
     localStorage.removeItem('labcare_token');
+    localStorage.removeItem('labcare_token_expiry');
     localStorage.removeItem('labcare_role');
     location.reload();
   }
