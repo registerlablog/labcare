@@ -99,7 +99,11 @@ window._logDate   = '';
 // ==========================================
 function uid()  { return 'P' + Date.now() + Math.floor(Math.random() * 1000); }
 function uidK() { return 'K' + Date.now() + Math.floor(Math.random() * 1000); }
-function today() { return new Date().toISOString().slice(0, 10); }
+function today() {
+  var d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
 
 function fmtDate(iso) {
   try { return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); }
