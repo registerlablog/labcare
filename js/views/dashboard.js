@@ -5,6 +5,7 @@ var dashboardChartInstance = null;
 var _chartRawDates = []; // Menyimpan format YYYY-MM-DD untuk grafik
 
 function viewDashboard() {
+  localStorage.removeItem('labcare_sedang_dilayani');
   var t = patients.filter(function(p) { 
   return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.status !== 'walk-in'; 
 });
