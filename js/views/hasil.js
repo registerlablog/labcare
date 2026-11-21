@@ -11,7 +11,11 @@ function viewHasil() {
 }
 
 function viewHasilUmum() {
-  var list = patients.slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); });
+  var list = patients.filter(function(p) { 
+  return p.status !== 'walk-in'; 
+}).sort(function(a, b) { 
+  return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); 
+});
   if (list.length === 0) { return '<div class="page-header-flex"><div><h3 style="font-size:17px;font-weight:700;">Pasien Umum</h3><p style="font-size:13px;color:var(--slate-500);">Belum ada pasien terdaftar.</p></div><button class="btn btn-secondary btn-sm" onclick="modalKalibrasi()">🧮 Atur Kalibrasi</button></div><div class="empty-state"><span class="em">🔬</span><p>Belum ada pasien terdaftar.</p></div>'; }
   var rowsHtml = list.map(function(p) {
     var tests = p.tests || []; var hasil = p.hasil || {};
