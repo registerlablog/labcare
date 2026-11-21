@@ -48,6 +48,10 @@ function viewPendaftaran() {
 // Tombol Daftarkan Pasien Baru diklik
 function mulaiDaftarBaru() {
   window._isDariAntrian = false;
+  
+  // [PATCH] Bersihkan memori "Sedang diinput..." agar Dashboard tidak stuck
+  localStorage.removeItem('labcare_sedang_dilayani'); 
+  
   view = 'pendaftaran';
   renderNav();
   document.getElementById('app').innerHTML = renderFormPendaftaran();
