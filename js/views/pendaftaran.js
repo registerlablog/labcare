@@ -71,8 +71,6 @@ function renderFormPendaftaran() {
   } else { 
     analisField = '<input name="analis" class="inp" placeholder="Ketik nama analis"><div class="info-box"><span class="info-em">ℹ️</span><span>Belum ada data analis. Tambahkan di <a onclick="goToMaster(\'analis\')">Master Lab → Analis</a>.</span></div>'; 
   }
-  // [FIX #3] Reset status walk-in agar form selalu bersih saat dibuka manual
-  window._isDariAntrian = false;
   // ✅ PERBAIKAN: Hanya minta nomor baru dari server jika BUKAN dari antrian walk-in
   if (!window._isDariAntrian) {
     setTimeout(fetchAutoNumbers, 100);
