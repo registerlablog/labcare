@@ -131,9 +131,9 @@ patients.filter(function(p) {
 });
 
 
-var lastPrintQ = highestAntrianNum > 0 ? 'B-' + String(highestAntrianNum).padStart(3, '0') : 'B-000';
+var lastPrintQ = highestAntrianNum > 0 ? 'A-' + String(highestAntrianNum).padStart(3, '0') : 'A-000';
 var nextPrintQNum = highestAntrianNum + 1;
-var nextPrintQ = 'B-' + String(nextPrintQNum).padStart(3, '0');
+var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
 
 // 2. Cari Pasien yang sedang dilayani (status = 'proses')
 var pasienProses = patients.find(function(p) {
@@ -842,8 +842,8 @@ function panggilAntrianPendaftaran(nomor) {
       mainkanChime(function() {
         try {
           speechSynthesis.cancel();
-          var angka = nomor.replace('B-', '').split('').join(' ');
-          var teks = 'Nomor antrian pendaftaran B - ' + angka + ', silakan menuju meja administrasi';
+          var angka = nomor.replace('A-', '').split('').join(' ');
+          var teks = 'Nomor antrian pendaftaran A - ' + angka + ', silakan menuju meja administrasi';
           var voices = speechSynthesis.getVoices();
           var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
           
