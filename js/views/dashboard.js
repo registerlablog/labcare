@@ -70,7 +70,7 @@ function viewDashboard() {
   setTimeout(function() { renderTrenChart(7); }, 100);
   // [FIX #6] Ambil nomor terbaru dari server saat dashboard dirender
   if (typeof apiCall === 'function') {
-    apiCall('getNextNumbers').then(function(res) {
+    apiCall('getNextNumbers', { type: 'walkin' }).then(function(res) { // <--- TAMBAHKAN PARAMETER INI
       if (res && res.ok) {
         var elQ = document.getElementById('widgetNextQ');
         if (elQ) elQ.textContent = res.antrian;
