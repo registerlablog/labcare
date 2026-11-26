@@ -179,7 +179,7 @@ function removePickedTest(kode) { delete window._pickedTests[kode]; var summary 
 function clearPickedTests() { window._pickedTests = {}; refreshPicker(); }
 function selectAllVisible() { var filter = window._katFilter; var search = (window._pickSearch || '').toLowerCase(); var filtered = TESTS.filter(function(t) { var matchKat = filter === 'semua' || t.kategori === filter; var matchSearch = !search || t.kode.toLowerCase().indexOf(search) >= 0 || t.nama.toLowerCase().indexOf(search) >= 0 || t.kategori.toLowerCase().indexOf(search) >= 0; return matchKat && matchSearch; }); filtered.forEach(function(t) { window._pickedTests[t.kode] = true; }); refreshPicker(); toastMsg(filtered.length + ' pemeriksaan ditambahkan'); }
 
-function prosesSimpanPasien() {
+async function prosesSimpanPasien() {
   var form = document.getElementById('formDaftar');
   if (!form.checkValidity()) {
     form.reportValidity();
@@ -194,11 +194,33 @@ function prosesSimpanPasien() {
     return; 
   }
 
-  // Kunci tombol submit agar tidak klik ganda
+  // Kunci tombol submit
   var btnSubmit = document.getElementById('btnSubmitPasien');
   if (btnSubmit) {
     btnSubmit.disabled = true;
-    btnSubmit.textContent = 'Menyimpan...';
+    btnSubmit.textContent = 'Memproses...';
+  }
+
+  var isWalkin = window._isDariAntrian;
+  var finalNoAntrian = f.get('noAntrian'); // Default: A-XXX dari fetchAutoNumbers
+  var noAntrianWalkin = '';
+
+  // JIKA DARI WALK-IN: Minta nomor A baru ke server
+  if (isWalkin) {
+    try {
+      var res = await apiCall('getNextNumbers', { type: 'daftar' });
+      if (!res || !res.ok) {
+        alert('Gagal mendapatkan nomor antrian A. Silakan coba lagi.');
+        if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Daftarkan Pasien'; }
+        return;
+      }
+      noAntrianWalkin = f.get('noAntrian'); // Tangkap B-XXX dari form
+      finalNoAntrian = res.antrian;         // Dapatkan A-XXX baru
+    } catch (e) {
+      alert('Koneksi terputus saat mengambil nomor A.');
+      if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Daftarkan Pasien'; }
+      return;
+    }
   }
 
   var spesimen = f.get('spesimen') || 'belum';
@@ -220,16 +242,16 @@ function prosesSimpanPasien() {
     hasil: {}, 
     status: statusAwal, 
     spesimen: spesimen, 
-    noAntrian: f.get('noAntrian'), 
+    noAntrian: finalNoAntrian,           // A-XXX
+    noAntrianWalkin: noAntrianWalkin,    // B-XXX (kosong jika daftar langsung)
     tglDaftar: getLocalISOString(),  
     kesimpulan: '' 
   };
   
-  // [FIX #5] Hapus walk-in berdasarkan ID spesifik, jangan berdasarkan noAntrian
-// Ini mencegah data walk-in pasien lain ikut terhapus jika nomornya kebetulan sama.
-patients = patients.filter(function(x) {
-  return !(x.status === 'walk-in' && x.id === p.id);
-});
+  // Hapus record walk-in lama berdasarkan ID
+  patients = patients.filter(function(x) {
+    return !(x.status === 'walk-in' && x.id === p.id);
+  });
 
   // Update data berdasarkan ID atau masukkan sebagai pasien baru
   var existingIdx = patients.findIndex(function(x) { return x.id === p.id; });
