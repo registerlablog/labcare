@@ -5,7 +5,6 @@ var dashboardChartInstance = null;
 var _chartRawDates = []; // Menyimpan format YYYY-MM-DD untuk grafik
 
 function viewDashboard() {
-  localStorage.removeItem('labcare_sedang_dilayani');
   var t = patients.filter(function(p) { 
   return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.status !== 'walk-in'; 
 });
@@ -118,22 +117,21 @@ var pasienBelumCetak = patients.filter(function(p) {
 
 // ✅ SINKRONISASI MESIN TIKET (MURNI DARI DATABASE)
 var tglKey = today();
-var highestAntrianNum = 0;
+var highestWalkinNum = 0;
 
-// Cari angka antrean tertinggi dari data pasien di database hari ini
-patients.filter(function(p) { 
-    return p.tglDaftar && p.tglDaftar.slice(0, 10) === tglKey; 
+// Hitung counter B berdasarkan noAntrianWalkin
+patients.filter(function(p) {
+    return p.tglDaftar 
+        && p.tglDaftar.slice(0, 10) === tglKey 
+        && p.noAntrianWalkin 
+        && p.noAntrianWalkin.indexOf('B-') === 0;
 }).forEach(function(p) {
-    if (p.noAntrian) {
-        var num = parseInt(p.noAntrian.replace(/\D/g, ''));
-        if (num > highestAntrianNum) highestAntrianNum = num;
-    }
+    var num = parseInt(p.noAntrianWalkin.replace(/\D/g, '')) || 0;
+    if (num > highestWalkinNum) highestWalkinNum = num;
 });
 
-
-var lastPrintQ = highestAntrianNum > 0 ? 'A-' + String(highestAntrianNum).padStart(3, '0') : 'A-000';
-var nextPrintQNum = highestAntrianNum + 1;
-var nextPrintQ = 'A-' + String(nextPrintQNum).padStart(3, '0');
+var lastPrintQ = highestWalkinNum > 0 ? 'B-' + String(highestWalkinNum).padStart(3, '0') : 'B-000';
+var nextPrintQ = 'B-' + String(highestWalkinNum + 1).padStart(3, '0');
 
 // 2. Cari Pasien yang sedang dilayani (status = 'proses')
 var pasienProses = patients.find(function(p) {
@@ -146,12 +144,6 @@ if (pasienProses) {
     noSaatIni = pasienProses.noAntrian;
     namaProses = pasienProses.nama;
 } else {
-    // ✅ Cek memori sementara jika form pendaftaran sedang dibuka
-    var sedangDiinput = localStorage.getItem('labcare_sedang_dilayani');
-    if (sedangDiinput) {
-        noSaatIni = sedangDiinput;
-        namaProses = 'Sedang diinput...';
-    }
 }
 // 3. Desain Mesin Tiket 3 Kolom
 var nextQHtml = `
@@ -864,13 +856,6 @@ function panggilAntrianPendaftaran(nomor) {
         } catch(e) {}
       });
     }
-
-    // Tambah antrean panggil ke angka selanjutnya
-    var tglKey = today();
-    var callKey = 'labcare_callQ_' + tglKey;
-    var currentCallQ = parseInt(localStorage.getItem(callKey)) || 1;
-    localStorage.setItem(callKey, currentCallQ + 1);
-    
     render(); // Refresh tampilan dashboard
   }
 }
@@ -882,7 +867,7 @@ async function cetakTiketKosong(nomorAntrian) {
   var loadingEl = document.getElementById('loading');
   if (loadingEl) loadingEl.classList.add('show');
 
-  var res = await apiCall('getNextNumbers');
+var res = await apiCall('getNextNumbers', { type: 'walkin' });
   
   if (!res || !res.ok) {
     if (loadingEl) loadingEl.classList.remove('show');
@@ -915,6 +900,7 @@ if (nomorAntrian !== res.antrian) {
     status: 'walk-in', // Status khusus agar masuk ke antrian pendaftaran
     spesimen: 'belum', 
     noAntrian: res.antrian,
+    noAntrianWalkin: res.antrian,
     tglDaftar: (typeof getLocalISOString === 'function') ? getLocalISOString() : new Date().toISOString(), 
     kesimpulan: '' 
   };
