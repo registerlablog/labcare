@@ -147,8 +147,6 @@ async function fetchAutoNumbers() {
     // [FIX #8] Hapus prefix 'A-' secara spesifik, bukan semua karakter non-digit
     var antrianNum = parseInt(res.antrian.replace(/^A-/, ''), 10) || 1;
     
-    localStorage.setItem('labcare_last_generated_Q', antrianNum);
-    localStorage.setItem('labcare_sedang_dilayani', res.antrian);
   }
 }
 
@@ -260,8 +258,6 @@ async function prosesSimpanPasien() {
   } else {
     patients.push(p); 
   }
-
-  localStorage.removeItem('labcare_sedang_dilayani');
   save(); 
   apiCall('savePasien', p);
   
