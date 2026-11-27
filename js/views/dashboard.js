@@ -5,6 +5,10 @@ var dashboardChartInstance = null;
 var _chartRawDates = []; // Menyimpan format YYYY-MM-DD untuk grafik
 
 function viewDashboard() {
+  if (localStorage.getItem('labcare_last_cleanup') !== today()) {
+    bersihkanWalkinKemarin();
+    localStorage.setItem('labcare_last_cleanup', today());
+  }
   var t = patients.filter(function(p) { 
   return p.tglDaftar && p.tglDaftar.slice(0, 10) === today() && p.status !== 'walk-in'; 
 });
