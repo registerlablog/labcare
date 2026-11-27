@@ -18,7 +18,7 @@ function viewPendaftaran() {
   }
 
   var list = patients.filter(function(p) {
-    return p.status === 'walk-in';
+    return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
 });
 
   var walkInHtml = '';
@@ -313,7 +313,7 @@ function daftarkanDariAntrian(id) {
 // FUNGSI: TAMPILAN ANTRIAN PENDAFTARAN
 function viewAntrianPendaftaran() {
   var list = patients.filter(function(p) {
-    return p.status === 'walk-in';
+    return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
 });
   
   var listHtml = '';
