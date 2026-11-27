@@ -119,9 +119,10 @@ var pasienBelumCetak = patients.filter(function(p) {
 var tglKey = today();
 var highestWalkinNum = 0;
 
-// Hapus syarat tglDaftar === tglKey agar menghitung seluruh B
 patients.filter(function(p) {
-    return p.noAntrianWalkin 
+    return p.tglDaftar 
+        && p.tglDaftar.slice(0, 10) === tglKey 
+        && p.noAntrianWalkin 
         && p.noAntrianWalkin.indexOf('B-') === 0;
 }).forEach(function(p) {
     var num = parseInt(p.noAntrianWalkin.replace(/\D/g, '')) || 0;
