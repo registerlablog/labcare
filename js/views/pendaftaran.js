@@ -2,8 +2,13 @@
 // ✅ HELPER: Mendapatkan waktu lokal (bukan UTC) agar tidak tertukar harinya
 function getLocalISOString() {
   var d = new Date();
-  var offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString();
+  var pad = function(num) { return ('00' + num).slice(-2); };
+  return d.getFullYear() + '-' +
+         pad(d.getMonth() + 1) + '-' +
+         pad(d.getDate()) + 'T' +
+         pad(d.getHours()) + ':' +
+         pad(d.getMinutes()) + ':' +
+         pad(d.getSeconds());
 }
 
 // FUNGSI SATPAM PENGATUR ALUR PENDAFTARAN
