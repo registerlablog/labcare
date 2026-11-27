@@ -45,7 +45,8 @@ var STATUS = {
   menunggu: { label: 'Menunggu', cls: 'badge-menunggu' },
   proses:   { label: 'Diproses', cls: 'badge-proses' },
   selesai:  { label: 'Selesai',  cls: 'badge-selesai' },
-  'walk-in': { label: 'Antrian Tiket', cls: 'badge-menunggu' }
+  'walk-in': { label: 'Antrian Tiket', cls: 'badge-menunggu' },
+  'batal': { label: 'Batal', cls: 'badge-menunggu' }
 };
 
 var NAV_ITEMS = [
