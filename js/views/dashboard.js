@@ -52,8 +52,8 @@ function viewDashboard() {
     </div>
   `;
 
-  var recent = patients.filter(function(p) { 
-  return p.status !== 'walk-in'; 
+    var recent = patients.filter(function(p) { 
+  return p.status !== 'walk-in' && p.status !== 'batal'; 
 }).slice().sort(function(a, b) { return (b.tglDaftar || '').localeCompare(a.tglDaftar || ''); }).slice(0, 6);
   var recentHtml;
   if (recent.length === 0) { 
@@ -710,8 +710,8 @@ function renderTrenChart(days) {
     
     _chartRawDates.push(dateStr); // Simpan format YYYY-MM-DD
     labels.push(String(d.getDate()).padStart(2, '0') + ' ' + bulanIndo[d.getMonth()]);
-    dataKunjungan.push(patients.filter(function(p) { 
-  return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr && p.status !== 'walk-in'; 
+        dataKunjungan.push(patients.filter(function(p) { 
+  return p.tglDaftar && p.tglDaftar.slice(0, 10) === dateStr && p.status !== 'walk-in' && p.status !== 'batal'; 
 }).length);
   }
 
