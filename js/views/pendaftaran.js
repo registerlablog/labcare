@@ -338,3 +338,21 @@ function viewAntrianPendaftaran() {
   return '<div class="page-header"><h2>Antrian Pendaftaran</h2><p>Daftar tiket walk-in yang sudah dicetak dan menunggu untuk diinput datanya.</p></div>' +
     '<div class="card" style="padding: 24px;">' + listHtml + '</div>';
 }
+// Panggil fungsi ini saat pertama kali aplikasi dibuka
+function bersihkanWalkinKemarin() {
+  var tglHariIni = today();
+  var adaPerubahan = false;
+
+  patients.forEach(function(p) {
+    if (p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) !== tglHariIni) {
+      p.status = 'batal'; // Ubah jadi batal agar tidak dihitung sebagai antrean aktif
+      adaPerubahan = true;
+      apiCall('savePasien', p); // Update ke database
+    }
+  });
+
+  if (adaPerubahan) {
+    save();
+    console.log('Membersihkan antrean walk-in dari hari sebelumnya.');
+  }
+}
