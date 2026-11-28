@@ -837,8 +837,14 @@ function panggilAntrianPendaftaran(nomor) {
       mainkanChime(function() {
         try {
           speechSynthesis.cancel();
-          var angka = nomor.replace('A-', '').split('').join(' ');
-          var teks = 'Nomor antrian pendaftaran A - ' + angka + ', silakan menuju meja administrasi';
+          
+          // 1. Ambil awalan (A atau B) dan angkanya
+          var prefix = nomor.charAt(0); 
+          var angka = nomor.slice(2).split('').join(' '); 
+          
+          // 2. Teks yang akan dibacakan
+          var teks = 'Nomor antrian ' + prefix + ' - ' + angka + ', silakan menuju meja administrasi';
+          
           var voices = speechSynthesis.getVoices();
           var suaraID = voices.find(function(v) { return v.lang === 'id-ID' || v.lang.indexOf('id') === 0; });
           
