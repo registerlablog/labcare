@@ -30,7 +30,10 @@ function viewPendaftaran() {
             '<div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TIKET WALK-IN (' + tanggal + ' - ' + jam + ')</div>' +
             '<div style="font-size: 28px; font-weight: 900; color: #0f766e; line-height: 1;">' + item.noAntrian + '</div>' +
           '</div>' +
-          '<button onclick="this.innerHTML=\'⏳...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Proses</button>' +
+          '<div style="display:flex; gap:8px;">' +
+  '<button onclick="panggilAntrianPendaftaran(\'' + item.noAntrian + '\')" class="btn" style="padding: 10px 16px; border-radius: 8px; font-size: 13px; background: #eab308; color: white; border: none; cursor: pointer; font-weight: 600; display:flex; align-items:center; gap:4px;" title="Panggil Antrean dengan Suara">🔊 Panggil</button>' +
+  '<button onclick="this.innerHTML=\'⏳...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Proses</button>' +
+'</div>' +
         '</div>';
       }).join('') + '</div>';
 
@@ -327,7 +330,10 @@ function viewAntrianPendaftaran() {
             '<div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px;">TIKET WALK-IN (' + tanggal + ' - ' + jam + ')</div>' +
             '<div style="font-size: 28px; font-weight: 900; color: #0f766e; line-height: 1;">' + item.noAntrian + '</div>' +
           '</div>' +
-          '<button onclick="this.innerHTML=\'⏳ Memuat...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Daftarkan</button>' +
+          '<div style="display:flex; gap:8px;">' +
+  '<button onclick="panggilAntrianPendaftaran(\'' + item.noAntrian + '\')" class="btn" style="padding: 10px 16px; border-radius: 8px; font-size: 13px; background: #eab308; color: white; border: none; cursor: pointer; font-weight: 600; display:flex; align-items:center; gap:4px;" title="Panggil Antrean dengan Suara">🔊 Panggil</button>' +
+  '<button onclick="this.innerHTML=\'⏳...\'; this.disabled=true; daftarkanDariAntrian(\'' + item.id + '\')" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px; font-size: 13px;">Proses</button>' +
+'</div>' +
         '</div>';
       }).join('') + '</div>';
   }
