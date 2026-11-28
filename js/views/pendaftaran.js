@@ -13,10 +13,7 @@ function getLocalISOString() {
 
 // FUNGSI SATPAM PENGATUR ALUR PENDAFTARAN
 function viewPendaftaran() {
-  if (window._isDariAntrian) {
-    return renderFormPendaftaran(); 
-  }
-
+ window._isDariAntrian = false;
   var list = patients.filter(function(p) {
     return p.status === 'walk-in' && p.tglDaftar && p.tglDaftar.slice(0, 10) === today();
 });
